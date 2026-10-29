@@ -4,10 +4,14 @@
 <head>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#102544">
+  <meta name="description" content="TA’LIM PRO — o‘quv markazi uchun zamonaviy boshqaruv platformasi.">
+  <link rel="manifest" href="{% url 'web_manifest' %}">
+  <link rel="icon" type="image/svg+xml" href="{% static 'school/icon.svg' %}">
   <title>{% block title %}TA'LIM PRO{% endblock %}</title>
   <link rel="stylesheet" href="{% static 'school/app.css' %}">
 </head>
 <body>
+<a class="skip-link" href="#main-content">Asosiy qismga o‘tish</a>
 <div class="app-shell">
   {% if user.is_authenticated %}
   <aside class="sidebar">
@@ -20,10 +24,10 @@
       <a href="{% url 'schedule' %}">▦ <span>Dars jadvali</span></a>
       {% if user.is_staff or user.is_superuser %}<a href="/admin/">⚙ <span>Boshqaruv</span></a>{% endif %}
     </nav>
-    <div class="sidebar-bottom"><div class="avatar">{{ user.first_name|first|default:user.username|first|upper }}</div><div class="user-meta"><b>{{ user.get_full_name|default:user.username }}</b><small>{{ user.get_role_display|default:"Administrator" }}</small></div><form method="post" action="{% url 'logout' %}">{% csrf_token %}<button class="icon-button" title="Chiqish">↗</button></form></div>
+    <div class="sidebar-bottom"><div class="avatar">{{ user.first_name|first|default:user.username|first|upper }}</div><div class="user-meta"><b>{{ user.get_full_name|default:user.username }}</b><small>{{ user.get_role_display|default:"Administrator" }}</small></div><form method="post" action="{% url 'logout' %}">{% csrf_token %}<button class="icon-button" type="submit" aria-label="Tizimdan chiqish" title="Tizimdan chiqish">↗</button></form></div>
   </aside>
   {% endif %}
-  <main class="main-area">
+  <main class="main-area" id="main-content" tabindex="-1">
     {% if user.is_authenticated %}<header class="topbar"><div><span class="eyebrow">TA'LIM BOSHQARUVI</span><h1>{% block page_heading %}Bosh sahifa{% endblock %}</h1></div><div class="top-actions"><span class="date-pill">◷ {% now "j F Y" %}</span><div class="avatar avatar-light">{{ user.first_name|first|default:user.username|first|upper }}</div></div></header>{% endif %}
     <section class="content">
       {% for message in messages %}<div class="message {{ message.tags }}">{{ message }}</div>{% endfor %}
@@ -33,4 +37,5 @@
   </main>
 </div>
 <script src="{% static 'school/app.js' %}"></script>
+<script>if ('serviceWorker' in navigator) { window.addEventListener('load', () => navigator.serviceWorker.register('{% url "service_worker" %}').catch(() => {})); }</script>
 </body></html>

@@ -4,10 +4,42 @@ from django.core.exceptions import PermissionDenied
 from django.db import transaction
 from django.db.models import Avg, Sum, Count
 from django.shortcuts import render, redirect, get_object_or_404
+from django.http import FileResponse, JsonResponse
+from django.conf import settings
+from django.templatetags.static import static
 from django.utils import timezone
 from .forms import GradeRecordForm
 from .models import User, StudyGroup, StudentProfile, Lesson, GradeRecord, Attendance, SMSLog
 from .sms import send_parent_sms
+
+def service_worker(request):
+    response = FileResponse(
+        (settings.BASE_DIR / "static" / "school" / "service-worker.js").open("rb"),
+        content_type="application/javascript",
+    )
+    response["Service-Worker-Allowed"] = "/"
+    response["Cache-Control"] = "no-cache"
+    return response
+
+def web_manifest(request):
+    return JsonResponse({
+        "id": "/", "name": "TA’LIM PRO — O‘quv markazi", "short_name": "TA’LIM PRO",
+        "description": "O‘quv jarayonini boshqarish platformasi", "lang": "uz",
+        "start_url": "/", "scope": "/", "display": "standalone",
+        "orientation": "portrait-primary", "background_color": "#f5f7fb",
+        "theme_color": "#102544",
+        "icons": [
+            {"src": static("school/icon-192.png"), "sizes": "192x192", "type": "image/png", "purpose": "any maskable"},
+            {"src": static("school/icon-512.png"), "sizes": "512x512", "type": "image/png", "purpose": "any maskable"},
+            {"src": static("school/icon.svg"), "sizes": "any", "type": "image/svg+xml", "purpose": "any"},
+        ],
+    }, content_type="application/manifest+json")
+
+def offline_page(request):
+    return FileResponse(
+        (settings.BASE_DIR / "static" / "school" / "offline.html").open("rb"),
+        content_type="text/html; charset=utf-8",
+    )
 
 def is_admin(user): return user.is_authenticated and (user.is_superuser or user.role == User.Role.ADMIN)
 
@@ -34,7 +66,9 @@ def dashboard(request):
                         "recent_grades": GradeRecord.objects.filter(teacher=user).select_related("student__user", "lesson").order_by("-updated_at")[:8]})
     elif user.role == User.Role.STUDENT:
         profile = get_object_or_404(StudentProfile, user=user)
-        context.update({"profile": profile, "grades": profile.grades.select_related("lesson").prefetch_related("reasons").order_by("-updated_at")[:10],
+        context.update({"profile": profile, "average_score": profile.grades.aggregate(value=Avg("score"))["value"],
+                        "upcoming_lessons": Lesson.objects.filter(group=profile.group, starts_at__gte=timezone.now()).select_related("teacher").order_by("starts_at")[:5],
+                        "grades": profile.grades.select_related("lesson").prefetch_related("reasons").order_by("-updated_at")[:10],
                         "attendance_records": profile.attendance.select_related("lesson").order_by("-lesson__starts_at")[:10]})
     elif user.role == User.Role.PARENT:
         children = StudentProfile.objects.filter(parent=user).select_related("user", "group")
@@ -101,7 +135,7 @@ def schedule(request):
         profile = get_object_or_404(StudentProfile, user=user)
         lessons = lessons.filter(group=profile.group)
     elif user.role == User.Role.PARENT:
-        lessons = lessons.filter(group__students__parent=user)
+        lessons = lessons.filter(group__students__parent=user).distinct()
     elif not is_admin(user):
         raise PermissionDenied
     return render(request, "school/schedule.html", {"lessons": lessons.order_by("starts_at")})

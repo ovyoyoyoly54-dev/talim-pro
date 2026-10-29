@@ -4,3 +4,4 @@ dj-database-url>=2.3
 python-dotenv>=1.0
 requests>=2.32
 gunicorn>=23.0
+whitenoise>=6.12,<7

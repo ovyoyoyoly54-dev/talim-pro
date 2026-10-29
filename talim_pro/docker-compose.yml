@@ -5,7 +5,7 @@ services:
     environment:
       POSTGRES_DB: talimpro
       POSTGRES_USER: talimpro
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-change-this-password}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
     ports:
       - "5432:5432"
     volumes:
@@ -15,5 +15,22 @@ services:
       interval: 5s
       timeout: 5s
       retries: 10
+
+  web:
+    build: .
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql://talimpro:${POSTGRES_PASSWORD}@db:5432/talimpro
+      DATABASE_SSL_REQUIRE: "false"
+      DJANGO_DEBUG: ${DJANGO_DEBUG:-True}
+      DJANGO_ALLOWED_HOSTS: ${DJANGO_ALLOWED_HOSTS:-localhost,127.0.0.1}
+      DJANGO_SECURE_SSL_REDIRECT: ${DJANGO_SECURE_SSL_REDIRECT:-False}
+    ports:
+      - "${PORT:-8000}:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+
 volumes:
   talimpro_pgdata:

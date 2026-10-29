@@ -7,3 +7,10 @@ db.sqlite3
 staticfiles/
 media/
 .DS_Store
+android/.gradle/
+android/**/build/
+android/.idea/
+*.apk
+*.aab
+*.jks
+*.keystore

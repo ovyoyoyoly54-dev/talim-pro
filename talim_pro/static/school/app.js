@@ -2,11 +2,14 @@ document.addEventListener("DOMContentLoaded", () => {
   const score = document.querySelector("#id_score");
   const value = document.querySelector("#score-value");
   const section = document.querySelector("#reason-section");
-  const checkboxes = [...document.querySelectorAll('input[name="reasons"]')];
   function updateScore() {
     if (!score || !value) return;
-    const n = Number(score.value);
-    value.innerHTML = `${Number.isFinite(n) ? n : "—"}<small>/10</small>`;
+    const raw = score.value.trim();
+    const n = raw === "" ? Number.NaN : Number(raw);
+    value.textContent = Number.isFinite(n) ? String(n) : "—";
+    const suffix = document.createElement("small");
+    suffix.textContent = "/10";
+    value.append(suffix);
     if (section) section.classList.toggle("reason-required", Number.isFinite(n) && n < 8);
   }
   score?.addEventListener("input", updateScore);

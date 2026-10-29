@@ -92,3 +92,26 @@ Bu umumiy JSON adapteri (`to`, `message`, `sender`) va Bearer token ishlatadi. S
 - Demo loginlarni o‘chirish
 - SMS provayderning haqiqiy API formatini tekshirish
 - Baholash va ota-onaga xabar yuborish siyosatini markaz bilan kelishish
+
+### Saytni serverga chiqarish
+
+Loyiha Docker orqali Django + PostgreSQL sifatida ishga tushadi. `.env.example` ni `.env` ga ko‘chiring, `DJANGO_SECRET_KEY` va `POSTGRES_PASSWORD` ni alohida kuchli qiymatlarga almashtiring, so‘ng quyidagilarni sozlang:
+
+```env
+DJANGO_DEBUG=False
+DJANGO_ALLOWED_HOSTS=talimpro.uz,www.talimpro.uz
+DJANGO_CSRF_TRUSTED_ORIGINS=https://talimpro.uz,https://www.talimpro.uz
+DJANGO_SECURE_SSL_REDIRECT=True
+```
+
+```powershell
+docker compose up --build -d
+```
+
+Ommaviy foydalanishda domenni HTTPS sertifikati beradigan reverse proxy yoki hosting platformasiga ulang. Proxy `X-Forwarded-Proto: https` yuborishi kerak. PostgreSQL ma'lumotlari Docker volume'da saqlanadi; hostingda zaxira nusxa siyosatini ham yoqing. Docker Compose lokal ishlab chiqishda `DJANGO_DEBUG=True` va SSL redirect o‘chiq qolishi mumkin; bunday konfiguratsiyani ochiq internetga chiqarmang.
+
+### PWA va APK
+
+Sayt telefon ekraniga moslashadi va qo‘llab-quvvatlanadigan brauzerlarda o‘rnatiladigan PWA sifatida ishlaydi. Internet bo‘lmaganda faqat offline ma'lumot sahifasi ko‘rsatiladi; baho, davomat va boshqa kirilgan sahifalar keshga yozilmaydi.
+
+Android Studio loyihasi `android/` papkasida. APK yig‘ishdan oldin `android/gradle.properties` dagi `siteUrl` ni ommaviy HTTPS domeniga almashtiring. Android Studio'da papkani ochib Gradle sinxronlashini tugating, so‘ng **Build → Build Bundle(s) / APK(s) → Build APK(s)** ni tanlang. JDK 17 va Android SDK Platform 36 kerak. Android ilova hosted Django saytiga ulanadi; sayt serverda ishlamasa, APK foydalanuvchi ma'lumotlariga kira olmaydi.
