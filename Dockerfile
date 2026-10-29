@@ -1,1 +1,1 @@
-talim_pro/Dockerfile
+/talim_pro/Dockerfile
