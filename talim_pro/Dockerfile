@@ -11,7 +11,7 @@ COPY . ./
 RUN groupadd --system app && useradd --system --gid app --create-home app
 
 # Static assets are collected at image build time. Runtime secrets are injected separately.
-RUN DJANGO_DEBUG=False DJANGO_SECRET_KEY=collectstatic-build-key-only DJANGO_ALLOWED_HOSTS=localhost python manage.py collectstatic --noinput
+RUN DJANGO_STATIC_BUILD=True DJANGO_DEBUG=False DJANGO_ALLOWED_HOSTS=localhost python manage.py collectstatic --noinput
 
 USER app
 EXPOSE 8000

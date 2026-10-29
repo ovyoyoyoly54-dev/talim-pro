@@ -1,4 +1,5 @@
 import os
+import secrets
 from pathlib import Path
 from urllib.parse import urlsplit
 from dotenv import load_dotenv
@@ -7,7 +8,13 @@ import dj_database_url
 BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(BASE_DIR / ".env")
 
-SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "dev-only-change-this-secret-before-deployment")
+STATIC_BUILD = os.getenv("DJANGO_STATIC_BUILD", "False").lower() == "true"
+SECRET_KEY = os.getenv("DJANGO_SECRET_KEY")
+if STATIC_BUILD and not SECRET_KEY:
+    # collectstatic does not use a persistent signing key; keep this process-only.
+    SECRET_KEY = secrets.token_urlsafe(64)
+elif not SECRET_KEY:
+    SECRET_KEY = "dev-only-change-this-secret-before-deployment"
 DEBUG = os.getenv("DJANGO_DEBUG", "True").lower() == "true"
 ALLOWED_HOSTS = [x.strip() for x in os.getenv("DJANGO_ALLOWED_HOSTS", "127.0.0.1,localhost").split(",") if x.strip()]
 PUBLIC_SITE_URL = os.getenv("PUBLIC_SITE_URL", "").strip().rstrip("/")
@@ -16,7 +23,7 @@ if PUBLIC_SITE_URL:
     if public_site.scheme != "https" or not public_site.hostname or public_site.path or public_site.query or public_site.fragment or public_site.username:
         from django.core.exceptions import ImproperlyConfigured
         raise ImproperlyConfigured("PUBLIC_SITE_URL faqat domenning HTTPS root manzili bo‘lishi kerak.")
-if not DEBUG and (not SECRET_KEY or SECRET_KEY in {
+if not DEBUG and not STATIC_BUILD and (not os.getenv("DJANGO_SECRET_KEY") or SECRET_KEY in {
     "dev-only-change-this-secret-before-deployment",
     "replace-with-a-long-random-secret",
     "build-collectstatic-only-placeholder",
