@@ -4,14 +4,49 @@ from django.core.exceptions import PermissionDenied
 from django.db import transaction
 from django.db.models import Avg, Sum, Count
 from django.shortcuts import render, redirect, get_object_or_404
-from django.http import FileResponse, JsonResponse
+from django.http import FileResponse, JsonResponse, HttpResponse
 from django.conf import settings
 from django.templatetags.static import static
+from django.urls import reverse
 from django.utils import timezone
+from django.views.decorators.http import require_GET
+from xml.sax.saxutils import escape
 from .forms import GradeRecordForm
 from .models import User, StudyGroup, StudentProfile, Lesson, GradeRecord, Attendance, SMSLog
 from .sms import send_parent_sms
 
+@require_GET
+def public_home(request):
+    if request.user.is_authenticated:
+        return redirect("dashboard")
+    canonical_url = settings.PUBLIC_SITE_URL or request.build_absolute_uri("/").rstrip("/")
+    return render(request, "school/home.html", {"canonical_url": canonical_url})
+
+@require_GET
+def robots_txt(request):
+    site_url = settings.PUBLIC_SITE_URL or request.build_absolute_uri("/").rstrip("/")
+    body = "\n".join([
+        "User-agent: *", "Allow: /", "Disallow: /admin/", "Disallow: /login/",
+        "Disallow: /logout/", "Disallow: /dashboard/", "Disallow: /baholash/",
+        "Disallow: /jadval/", "Disallow: /reyting/", "Disallow: /oquvchi/",
+        "Disallow: /offline/", "Disallow: /service-worker.js", "Disallow: /manifest.webmanifest",
+        f"Sitemap: {site_url}{reverse('sitemap_xml')}", "",
+    ])
+    return HttpResponse(body, content_type="text/plain; charset=utf-8")
+
+@require_GET
+def sitemap_xml(request):
+    site_url = settings.PUBLIC_SITE_URL or request.build_absolute_uri("/").rstrip("/")
+    location = escape(f"{site_url}{reverse('home')}")
+    body = (
+        '<?xml version="1.0" encoding="UTF-8"?>'
+        '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'
+        f"<url><loc>{location}</loc></url>"
+        "</urlset>"
+    )
+    return HttpResponse(body, content_type="application/xml; charset=utf-8")
+
+@require_GET
 def service_worker(request):
     response = FileResponse(
         (settings.BASE_DIR / "static" / "school" / "service-worker.js").open("rb"),
@@ -19,10 +54,12 @@ def service_worker(request):
     )
     response["Service-Worker-Allowed"] = "/"
     response["Cache-Control"] = "no-cache"
+    response["X-Robots-Tag"] = "noindex, nofollow"
     return response
 
+@require_GET
 def web_manifest(request):
-    return JsonResponse({
+    response = JsonResponse({
         "id": "/", "name": "TA’LIM PRO — O‘quv markazi", "short_name": "TA’LIM PRO",
         "description": "O‘quv jarayonini boshqarish platformasi", "lang": "uz",
         "start_url": "/", "scope": "/", "display": "standalone",
@@ -34,12 +71,17 @@ def web_manifest(request):
             {"src": static("school/icon.svg"), "sizes": "any", "type": "image/svg+xml", "purpose": "any"},
         ],
     }, content_type="application/manifest+json")
+    response["X-Robots-Tag"] = "noindex, nofollow"
+    return response
 
+@require_GET
 def offline_page(request):
-    return FileResponse(
+    response = FileResponse(
         (settings.BASE_DIR / "static" / "school" / "offline.html").open("rb"),
         content_type="text/html; charset=utf-8",
     )
+    response["X-Robots-Tag"] = "noindex, nofollow"
+    return response
 
 def is_admin(user): return user.is_authenticated and (user.is_superuser or user.role == User.Role.ADMIN)
 
@@ -94,11 +136,17 @@ def grade_lesson(request):
                 form.add_error("student", "O‘quvchi tanlangan guruhga tegishli emas.")
             else:
                 with transaction.atomic():
-                    grade, _ = GradeRecord.objects.update_or_create(
+                    grade, _ = GradeRecord.objects.get_or_create(
                         lesson=lesson, student=student,
-                        defaults={"score": form.cleaned_data["score"], "note": form.cleaned_data["note"], "teacher": request.user}
+                        defaults={"score": 8, "note": form.cleaned_data["note"], "teacher": request.user}
                     )
+                    grade.score = 8
+                    grade.note = form.cleaned_data["note"]
+                    grade.teacher = request.user
+                    grade.save()
                     grade.reasons.set(form.cleaned_data["reasons"])
+                    grade.score = form.cleaned_data["score"]
+                    grade.save()
                     attendance, _ = Attendance.objects.update_or_create(
                         lesson=lesson, student=student,
                         defaults={"status": form.cleaned_data["attendance"], "teacher": request.user}

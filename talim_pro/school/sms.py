@@ -24,7 +24,12 @@ def send_parent_sms(*, parent, student, body):
         )
         response.raise_for_status()
         return SMSLog.objects.create(parent=parent, student=student, body=body,
-                                     status=SMSLog.Status.SENT, provider_response=response.text[:2000])
+                                     status=SMSLog.Status.SENT, provider_response=f"HTTP {response.status_code}")
     except requests.RequestException as exc:
+        response = getattr(exc, "response", None)
+        if response is not None:
+            provider_response = f"HTTP {response.status_code}"
+        else:
+            provider_response = f"Ulanish xatosi: {type(exc).__name__}"
         return SMSLog.objects.create(parent=parent, student=student, body=body,
-                                     status=SMSLog.Status.FAILED, provider_response=str(exc)[:2000])
+                                     status=SMSLog.Status.FAILED, provider_response=provider_response)

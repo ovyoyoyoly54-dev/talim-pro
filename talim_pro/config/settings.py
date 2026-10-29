@@ -1,5 +1,6 @@
 import os
 from pathlib import Path
+from urllib.parse import urlsplit
 from dotenv import load_dotenv
 import dj_database_url
 
@@ -9,13 +10,24 @@ load_dotenv(BASE_DIR / ".env")
 SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "dev-only-change-this-secret-before-deployment")
 DEBUG = os.getenv("DJANGO_DEBUG", "True").lower() == "true"
 ALLOWED_HOSTS = [x.strip() for x in os.getenv("DJANGO_ALLOWED_HOSTS", "127.0.0.1,localhost").split(",") if x.strip()]
-if not DEBUG and SECRET_KEY in {
+PUBLIC_SITE_URL = os.getenv("PUBLIC_SITE_URL", "").strip().rstrip("/")
+if PUBLIC_SITE_URL:
+    public_site = urlsplit(PUBLIC_SITE_URL)
+    if public_site.scheme != "https" or not public_site.hostname or public_site.path or public_site.query or public_site.fragment or public_site.username:
+        from django.core.exceptions import ImproperlyConfigured
+        raise ImproperlyConfigured("PUBLIC_SITE_URL faqat domenning HTTPS root manzili bo‘lishi kerak.")
+if not DEBUG and (not SECRET_KEY or SECRET_KEY in {
     "dev-only-change-this-secret-before-deployment",
     "replace-with-a-long-random-secret",
     "build-collectstatic-only-placeholder",
-}:
+    "collectstatic-build-key-only",
+    "generate-before-use",
+}):
     from django.core.exceptions import ImproperlyConfigured
     raise ImproperlyConfigured("Production muhitida DJANGO_SECRET_KEY sozlanishi shart.")
+if not DEBUG and not os.getenv("DJANGO_ALLOWED_HOSTS", "").strip():
+    from django.core.exceptions import ImproperlyConfigured
+    raise ImproperlyConfigured("Production muhitida DJANGO_ALLOWED_HOSTS aniq ko‘rsatilishi shart.")
 
 INSTALLED_APPS = [
     "django.contrib.admin", "django.contrib.auth", "django.contrib.contenttypes",
@@ -64,7 +76,7 @@ LANGUAGE_CODE = "uz"
 TIME_ZONE = "Asia/Tashkent"
 USE_I18N = True
 USE_TZ = True
-STATIC_URL = "static/"
+STATIC_URL = "/static/"
 STATICFILES_DIRS = [BASE_DIR / "static"]
 STATIC_ROOT = BASE_DIR / "staticfiles"
 STORAGES = {"default": {"BACKEND": "django.core.files.storage.FileSystemStorage"}}

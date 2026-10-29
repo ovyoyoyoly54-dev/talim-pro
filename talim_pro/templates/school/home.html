@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}TA’LIM PRO — O‘quv markazini boshqarish{% endblock %}
+{% block meta_description %}O‘quv markazidagi darslar, baholar, davomat va ota-onalar bilan aloqani TA’LIM PRO platformasida boshqaring.{% endblock %}
+{% block robots_meta %}index,follow{% endblock %}
+{% block canonical_meta %}<link rel="canonical" href="{{ canonical_url }}">{% endblock %}
+{% block open_graph_meta %}
+<meta property="og:type" content="website">
+<meta property="og:locale" content="uz_UZ">
+<meta property="og:site_name" content="TA’LIM PRO">
+<meta property="og:title" content="TA’LIM PRO — O‘quv markazini boshqarish">
+<meta property="og:description" content="Darslar, baholar, davomat va ota-onalar bilan aloqani bitta platformada boshqaring.">
+<meta property="og:url" content="{{ canonical_url }}">
+<meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{% static 'school/icon-512.png' %}">
+{% endblock %}
+{% block content %}
+<div class="public-home">
+  <header class="public-nav">
+    <a class="brand" href="{% url 'home' %}"><span class="brand-mark">T</span><span>TA’LIM <b>PRO</b><small>O‘quv markazi</small></span></a>
+    <a class="button button-primary" href="{% url 'login' %}">Tizimga kirish <span aria-hidden="true">→</span></a>
+  </header>
+
+  <section class="public-hero" aria-labelledby="hero-title">
+    <div class="hero-copy">
+      <span class="pill pill-blue">O‘QUV MARKAZI UCHUN</span>
+      <h1 id="hero-title">Ta’lim jarayoni <span>bitta joyda.</span></h1>
+      <p>Dars jadvali, baholar va davomatni tartibli boshqaring. O‘qituvchi, o‘quvchi va ota-onalar kerakli ma’lumotni o‘z roliga mos sahifada ko‘radi.</p>
+      <div class="hero-actions"><a class="button button-primary" href="{% url 'login' %}">Platformaga kirish <span aria-hidden="true">→</span></a><a class="text-link" href="#imkoniyatlar">Imkoniyatlarni ko‘rish ↓</a></div>
+      <p class="hero-note">Telefon va kompyuterda foydalanish uchun moslashtirilgan.</p>
+    </div>
+    <div class="hero-visual" aria-hidden="true">
+      <div class="visual-orbit"></div>
+      <div class="preview-card"><div class="preview-top"><span class="preview-brand"><i>T</i> TA’LIM PRO</span><span class="preview-dot"></span></div><div class="preview-greeting">O‘quv jarayoni <b>bir joyda</b></div><div class="preview-stats"><div><small>Guruhlar</small><b>12</b></div><div><small>O‘quvchilar</small><b>248</b></div></div><div class="preview-row"><span class="preview-calendar">12<br><small>OKT</small></span><span><b>Matematika</b><small>Algebra · 10:30</small></span><i>→</i></div><div class="preview-row"><span class="preview-calendar blue-tile">14<br><small>OKT</small></span><span><b>Ingliz tili</b><small>Intermediate · 14:00</small></span><i>→</i></div></div>
+      <div class="floating-score"><span>O‘rtacha baho</span><b>8.6 <small>/ 10</small></b></div>
+    </div>
+  </section>
+
+  <section class="feature-section" id="imkoniyatlar" aria-labelledby="features-title">
+    <div class="section-intro"><span class="eyebrow">SODDA VA TARTIBLI BOSHQARUV</span><h2 id="features-title">Kundalik ishlar uchun kerakli vositalar</h2><p class="muted">Markaz jamoasi uchun bitta tushunarli ish maydoni.</p></div>
+    <div class="feature-grid">
+      <article class="feature-card"><span class="feature-icon">▦</span><h3>Dars jadvali</h3><p>Guruh, o‘qituvchi, xona va dars vaqtlarini bir jadvalda ko‘ring.</p></article>
+      <article class="feature-card"><span class="feature-icon">✓</span><h3>Baho va davomat</h3><p>Har bir dars natijasini qayd eting, past bahoga izoh va sabab kiriting.</p></article>
+      <article class="feature-card"><span class="feature-icon">♡</span><h3>Ota-ona bilan aloqa</h3><p>Ruxsat berilgan akkauntlarda farzandning o‘quv jarayonini kuzating.</p></article>
+    </div>
+  </section>
+
+  <section class="public-cta"><div><span class="eyebrow">TA’LIM PRO</span><h2>O‘quv jarayonini tartib bilan boshqaring.</h2><p>Hisobingiz bo‘lsa, platformaga kirib davom eting.</p></div><a class="button button-primary" href="{% url 'login' %}">Tizimga kirish <span aria-hidden="true">→</span></a></section>
+</div>
+{% endblock %}

@@ -1,7 +1,7 @@
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser
 from django.core.exceptions import ValidationError
-from django.db import models
+from django.db import models, transaction
 from django.db.models import Q
 
 class User(AbstractUser):
@@ -57,17 +57,36 @@ class Lesson(models.Model):
         ordering = ["starts_at"]
 
     def clean(self):
-        if self.teacher_id and self.teacher.role != User.Role.TEACHER and self.teacher.role != User.Role.ADMIN:
+        if self.teacher_id and not (self.teacher.is_superuser or self.teacher.role in (User.Role.TEACHER, User.Role.ADMIN)):
             raise ValidationError({"teacher": "Darsga faqat o‘qituvchi biriktirilishi mumkin."})
+
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        return super().save(*args, **kwargs)
 
     def __str__(self):
         return f"{self.title} — {self.starts_at:%Y-%m-%d %H:%M}"
 
+class GradeReasonQuerySet(models.QuerySet):
+    def delete(self):
+        if self.filter(grade_records__score__lt=8).exists():
+            raise ValidationError("Past baholarda ishlatilgan sababni o‘chirib bo‘lmaydi. Uni faolsizlantiring.")
+        return super().delete()
+
+
 class GradeReason(models.Model):
     title = models.CharField(max_length=120, unique=True)
     active = models.BooleanField(default=True)
+    objects = GradeReasonQuerySet.as_manager()
+
     class Meta:
         ordering = ["title"]
+
+    def delete(self, *args, **kwargs):
+        if self.grade_records.filter(score__lt=8).exists():
+            raise ValidationError("Past baholarda ishlatilgan sababni o‘chirib bo‘lmaydi. Uni faolsizlantiring.")
+        return super().delete(*args, **kwargs)
+
     def __str__(self):
         return self.title
 
@@ -88,10 +107,40 @@ class GradeRecord(models.Model):
         ordering = ["student__user__last_name", "student__user__first_name"]
 
     def clean(self):
-        if self.score < 8 and self.pk and not self.reasons.exists():
-            raise ValidationError("8 dan past baho uchun kamida bitta sabab tanlang.")
+        score = getattr(self, "score", None)
+        if score is not None and score < 8:
+            if self.pk:
+                has_reason = self.reasons.exists()
+            else:
+                has_reason = bool(getattr(self, "_pending_reasons", None))
+            if not has_reason:
+                raise ValidationError({"reasons": "8 dan past baho uchun kamida bitta sabab tanlang."})
         if self.lesson_id and self.student_id and self.lesson.group_id != self.student.group_id:
             raise ValidationError("O‘quvchi ushbu dars guruhiga tegishli emas.")
+        if self.lesson_id and self.teacher_id:
+            teacher = self.teacher
+            if teacher.is_superuser or teacher.role == User.Role.ADMIN:
+                return
+            if teacher.role != User.Role.TEACHER:
+                raise ValidationError({"teacher": "Bahoni faqat o‘qituvchi yoki administrator kiritishi mumkin."})
+            if teacher.id != self.lesson.teacher_id or not self.lesson.group.teachers.filter(id=teacher.id).exists():
+                raise ValidationError({"teacher": "O‘qituvchi ushbu darsga biriktirilmagan."})
+
+    def save(self, *args, **kwargs):
+        pending_reasons = getattr(self, "_pending_reasons", None)
+        self.full_clean()
+        if self.pk is None and self.score < 8:
+            if not pending_reasons:
+                raise ValidationError({"reasons": "Past baholi yangi qayd uchun sabab belgilang."})
+            score = self.score
+            with transaction.atomic():
+                self.score = 8
+                super().save(*args, **kwargs)
+                self.reasons.set(pending_reasons)
+                self.score = score
+                super().save()
+            return
+        return super().save(*args, **kwargs)
 
     def __str__(self):
         return f"{self.student} — {self.score}/10"
@@ -113,6 +162,18 @@ class Attendance(models.Model):
     def clean(self):
         if self.lesson_id and self.student_id and self.lesson.group_id != self.student.group_id:
             raise ValidationError("O‘quvchi ushbu dars guruhiga tegishli emas.")
+        if self.teacher_id:
+            teacher = self.teacher
+            if teacher.is_superuser or teacher.role == User.Role.ADMIN:
+                return
+            if teacher.role != User.Role.TEACHER:
+                raise ValidationError({"teacher": "Davomatni faqat o‘qituvchi yoki administrator kiritishi mumkin."})
+            if self.lesson_id and (teacher.id != self.lesson.teacher_id or not self.lesson.group.teachers.filter(id=teacher.id).exists()):
+                raise ValidationError({"teacher": "O‘qituvchi ushbu darsga biriktirilmagan."})
+
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        return super().save(*args, **kwargs)
 
 class SMSLog(models.Model):
     class Status(models.TextChoices):
