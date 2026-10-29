@@ -1,0 +1,36 @@
+{% load static %}
+<!doctype html>
+<html lang="uz">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#102544">
+  <title>{% block title %}TA'LIM PRO{% endblock %}</title>
+  <link rel="stylesheet" href="{% static 'school/app.css' %}">
+</head>
+<body>
+<div class="app-shell">
+  {% if user.is_authenticated %}
+  <aside class="sidebar">
+    <a class="brand" href="{% url 'dashboard' %}"><span class="brand-mark">T</span><span>TA'LIM <b>PRO</b><small>O‘quv markazi</small></span></a>
+    <div class="nav-label">ASOSIY</div>
+    <nav>
+      <a href="{% url 'dashboard' %}">◫ <span>Bosh sahifa</span></a>
+      {% if user.role == 'teacher' or user.role == 'admin' or user.is_superuser %}<a href="{% url 'grade_lesson' %}">✎ <span>Baho qo‘yish</span></a>{% endif %}
+      <a href="{% url 'ranking' %}">↗ <span>Reyting</span></a>
+      <a href="{% url 'schedule' %}">▦ <span>Dars jadvali</span></a>
+      {% if user.is_staff or user.is_superuser %}<a href="/admin/">⚙ <span>Boshqaruv</span></a>{% endif %}
+    </nav>
+    <div class="sidebar-bottom"><div class="avatar">{{ user.first_name|first|default:user.username|first|upper }}</div><div class="user-meta"><b>{{ user.get_full_name|default:user.username }}</b><small>{{ user.get_role_display|default:"Administrator" }}</small></div><form method="post" action="{% url 'logout' %}">{% csrf_token %}<button class="icon-button" title="Chiqish">↗</button></form></div>
+  </aside>
+  {% endif %}
+  <main class="main-area">
+    {% if user.is_authenticated %}<header class="topbar"><div><span class="eyebrow">TA'LIM BOSHQARUVI</span><h1>{% block page_heading %}Bosh sahifa{% endblock %}</h1></div><div class="top-actions"><span class="date-pill">◷ {% now "j F Y" %}</span><div class="avatar avatar-light">{{ user.first_name|first|default:user.username|first|upper }}</div></div></header>{% endif %}
+    <section class="content">
+      {% for message in messages %}<div class="message {{ message.tags }}">{{ message }}</div>{% endfor %}
+      {% block content %}{% endblock %}
+      <footer>© {% now "Y" %} TA'LIM PRO <span>Ta'limni boshqarishning sodda yo‘li</span></footer>
+    </section>
+  </main>
+</div>
+<script src="{% static 'school/app.js' %}"></script>
+</body></html>
