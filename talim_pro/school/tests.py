@@ -10,10 +10,73 @@ from django.test import RequestFactory
 from datetime import timedelta
 from unittest.mock import patch
 import requests
-from .models import User, StudyGroup, StudentProfile, Lesson, GradeReason, GradeRecord, Attendance
+from .models import User, StudyGroup, StudentProfile, Lesson, GradeReason, GradeRecord, Attendance, PhoneOTP
 from .forms import GradeRecordForm
 from .admin import GradeRecordAdmin, GradeRecordAdminForm
 from .sms import send_parent_sms
+
+
+class PhoneAccountSecurityTests(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(
+            "phone_student", password="OldSecurePass!2026", role=User.Role.STUDENT,
+            phone="+998 90 123 45 67",
+        )
+
+    @patch("school.phone_auth._send_code", return_value=True)
+    def test_password_reset_requires_phone_otp_and_changes_password(self, send_code):
+        response = self.client.post(reverse("password_reset"), {
+            "action": "send_code", "username": self.user.username, "phone": "90 123 45 67",
+        })
+        self.assertRedirects(response, reverse("password_reset"))
+        sent_code = send_code.call_args.args[1]
+        self.assertEqual(len(sent_code), 6)
+        challenge = PhoneOTP.objects.get(user=self.user, purpose=PhoneOTP.Purpose.RESET_PASSWORD)
+        self.assertNotIn(sent_code, challenge.code_hash)
+        wrong_code = ("0" if sent_code[0] != "0" else "1") + sent_code[1:]
+        self.client.post(reverse("password_reset"), {
+            "action": "reset_password", "code": wrong_code,
+            "new_password": "NewSecurePass!2026", "confirm_password": "NewSecurePass!2026",
+        })
+        challenge.refresh_from_db()
+        self.assertEqual(challenge.attempts, 1)
+        response = self.client.post(reverse("password_reset"), {
+            "action": "reset_password", "code": sent_code,
+            "new_password": "NewSecurePass!2026", "confirm_password": "NewSecurePass!2026",
+        })
+        self.assertRedirects(response, reverse("login"))
+        self.user.refresh_from_db()
+        self.assertTrue(self.user.check_password("NewSecurePass!2026"))
+        challenge.refresh_from_db()
+        self.assertIsNotNone(challenge.consumed_at)
+
+    @patch("school.phone_auth._send_code", return_value=True)
+    def test_password_reset_does_not_send_code_to_mismatched_phone(self, send_code):
+        self.client.post(reverse("password_reset"), {
+            "action": "send_code", "username": self.user.username, "phone": "+998 91 000 00 00",
+        })
+        send_code.assert_not_called()
+        self.assertFalse(PhoneOTP.objects.exists())
+        response = self.client.get(reverse("password_reset"))
+        self.assertFalse(response.context["has_challenge"])
+
+    @patch("school.phone_auth._send_code", return_value=True)
+    def test_account_close_uses_otp_and_preserves_school_history(self, send_code):
+        group = StudyGroup.objects.create(name="CloseTest", subject="Matematika")
+        profile = StudentProfile.objects.create(user=self.user, group=group)
+        self.client.force_login(self.user)
+        self.client.post(reverse("close_account"), {"action": "send_code"})
+        code = send_code.call_args.args[1]
+        response = self.client.post(reverse("close_account"), {"action": "close_account", "code": code})
+        self.assertRedirects(response, reverse("home"))
+        self.user.refresh_from_db()
+        self.assertFalse(self.user.is_active)
+        self.assertTrue(StudentProfile.objects.filter(pk=profile.pk).exists())
+
+    def test_admin_cannot_close_account_from_self_service(self):
+        admin_user = User.objects.create_user("phone_admin", password="StrongPassword123!", role=User.Role.ADMIN)
+        self.client.force_login(admin_user)
+        self.assertEqual(self.client.get(reverse("close_account")).status_code, 403)
 
 class PlatformRulesTests(TestCase):
     def setUp(self):
@@ -177,6 +240,7 @@ class PlatformRulesTests(TestCase):
         robots = client.get(reverse("robots_txt"))
         self.assertContains(robots, "Disallow: /oquvchi/")
         self.assertContains(robots, "Disallow: /dashboard/")
+        self.assertContains(robots, "Disallow: /parolni-tiklash/")
         self.assertContains(robots, "Sitemap: http://testserver/sitemap.xml")
 
     @override_settings(DEBUG=False)

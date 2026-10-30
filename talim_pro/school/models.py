@@ -186,3 +186,24 @@ class SMSLog(models.Model):
     status = models.CharField(max_length=10, choices=Status.choices)
     provider_response = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
+
+
+class PhoneOTP(models.Model):
+    class Purpose(models.TextChoices):
+        RESET_PASSWORD = "reset_password", "Parolni tiklash"
+        CLOSE_ACCOUNT = "close_account", "Akkauntni yopish"
+
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="phone_otps")
+    purpose = models.CharField(max_length=20, choices=Purpose.choices)
+    code_hash = models.CharField(max_length=128)
+    request_ip_digest = models.CharField(max_length=64, blank=True, db_index=True)
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+    expires_at = models.DateTimeField()
+    attempts = models.PositiveSmallIntegerField(default=0)
+    consumed_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        indexes = [models.Index(fields=["user", "purpose", "created_at"])]
+
+    def __str__(self):
+        return f"{self.user_id} — {self.purpose}"

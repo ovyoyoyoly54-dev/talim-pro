@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}Akkauntni yopish — TA'LIM PRO{% endblock %}
+{% block page_heading %}Akkauntni yopish{% endblock %}
+{% block content %}
+<div class="auth-card">
+  <span class="eyebrow">AKKAUNT XAVFSIZLIGI</span>
+  <h2>Akkauntni yopish</h2>
+  <p class="muted">Telefon raqamingizga yuborilgan SMS kod bilan tasdiqlang. Yopilgandan keyin akkauntga kira olmaysiz. O‘quv jarayoni tarixi va baholar o‘chmaydi.</p>
+  {% if not has_challenge %}
+  <form method="post" class="stack-form">
+    {% csrf_token %}<input type="hidden" name="action" value="send_code">
+    <button class="button button-primary" type="submit">Telefonimga tasdiqlash kodi yuborish</button>
+  </form>
+  {% else %}
+  <form method="post" class="stack-form">
+    {% csrf_token %}<input type="hidden" name="action" value="close_account">
+    {{ otp_form.non_field_errors }}
+    <label>SMS tasdiqlash kodi {{ otp_form.code }}{{ otp_form.code.errors }}</label>
+    <button class="button button-danger" type="submit">Akkauntni yopish</button>
+  </form>
+  {% endif %}
+  <p class="security-note"><a href="{% url 'dashboard' %}">Bekor qilish</a></p>
+</div>
+{% endblock %}

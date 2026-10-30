@@ -63,6 +63,7 @@ Demo loginlar: `admin_demo`, `teacher_demo`, `student_demo`, `parent_demo`. Buyr
 - O‘rtacha/jami ball reytingi
 - Dars jadvali
 - Ota-onaga SMS adapteri va SMS yuborish jurnali
+- Telefon OTP orqali parol tiklash va akkauntni yopish
 
 ## SMS integratsiyasi
 `.env` da quyidagilarni to‘ldiring:
@@ -72,6 +73,16 @@ SMS_API_TOKEN=provider-token
 SMS_SENDER=TalimPro
 ```
 Bu umumiy JSON adapteri (`to`, `message`, `sender`) va Bearer token ishlatadi. SMS provayderingizning hujjatiga qarab `school/sms.py` dagi request qismini moslang. Haqiqiy provayderdan test raqamiga sinov yubormasdan turib, SMS ishlashini tasdiqlamang.
+
+Parol tiklash va akkauntni yopish ham shu `SMS_API_URL`, `SMS_API_TOKEN`, `SMS_SENDER` sozlamalaridan foydalanadi. SMS adapteri `to`, `message`, `sender` maydonlarini yuboradi; provayderning haqiqiy API formatiga moslab tekshirilmaguncha OTP SMS ishlaydi deb bo‘lmaydi. OTP 10 daqiqa amal qiladi, 5 ta noto‘g‘ri urinishdan keyin bekor bo‘ladi; kod SMS jurnalida saqlanmaydi.
+
+### Render’da administrator va tizimga kirish
+
+Foydalanuvchilar dashboard’i `/dashboard/`, kirish sahifasi `/login/`. Dastlabki administratorni Render Dashboard → Web Service → **Shell** orqali `python manage.py createsuperuser` buyrug‘i bilan interaktiv yarating. O‘ziga xos login va kuchli parol tanlang; parolni environment variable, kod yoki GitHub’da saqlamang. Buyruq tugagach, `/login/` sahifasida shu hisob bilan kiring. Butun ilova uchun umumiy administrator paroli yoki yashirin backdoor bo‘lmasligi kerak.
+
+Render’dagi ma’lumotlar bazasi PostgreSQL bo‘lsin: shu hududdagi Render PostgreSQL bazasining internal URL manzilini `DATABASE_URL` qilib Environment bo‘limiga kiriting. `DJANGO_DEBUG=False`, `DJANGO_ALLOWED_HOSTS` va `DJANGO_CSRF_TRUSTED_ORIGINS` qiymatlarini service’ning haqiqiy `onrender.com` manzili yoki bog‘langan domeniga moslang; `PUBLIC_SITE_URL` uchun HTTPS public root manzilini kiriting. Barcha maxfiy qiymatlarni Render Environment’da saqlang.
+
+Agar sayt yuklanishidan oldin brauzerning o‘z popup oynasi chiqsa, bu Django’ning `/login/` sahifasi emas. Render service public **Web Service** ekanini va Render tomondagi himoya sozlamalarini tekshiring; Django kodi service tashqarisidagi HTTP Basic Auth’ni olib tashlay olmaydi.
 
 ## Ishlab chiqarish muhiti
 

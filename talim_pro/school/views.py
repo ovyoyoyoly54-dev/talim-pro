@@ -1,4 +1,5 @@
 from django.contrib import messages
+from django.contrib.auth import logout
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
 from django.db import transaction
@@ -11,8 +12,9 @@ from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.http import require_GET
 from xml.sax.saxutils import escape
-from .forms import GradeRecordForm
-from .models import User, StudyGroup, StudentProfile, Lesson, GradeRecord, Attendance, SMSLog
+from .forms import GradeRecordForm, PhoneResetRequestForm, PhoneOTPForm, PhonePasswordResetForm
+from .models import User, StudyGroup, StudentProfile, Lesson, GradeRecord, Attendance, SMSLog, PhoneOTP
+from .phone_auth import consume_phone_otp, issue_phone_otp, normalize_phone
 from .sms import send_parent_sms
 
 @require_GET
@@ -29,6 +31,7 @@ def robots_txt(request):
         "User-agent: *", "Allow: /", "Disallow: /admin/", "Disallow: /login/",
         "Disallow: /logout/", "Disallow: /dashboard/", "Disallow: /baholash/",
         "Disallow: /jadval/", "Disallow: /reyting/", "Disallow: /oquvchi/",
+        "Disallow: /parolni-tiklash/", "Disallow: /akkauntni-yopish/",
         "Disallow: /offline/", "Disallow: /service-worker.js", "Disallow: /manifest.webmanifest",
         f"Sitemap: {site_url}{reverse('sitemap_xml')}", "",
     ])
@@ -82,6 +85,104 @@ def offline_page(request):
     )
     response["X-Robots-Tag"] = "noindex, nofollow"
     return response
+
+
+def password_reset(request):
+    if request.user.is_authenticated:
+        return redirect("dashboard")
+    challenge_id = request.session.get("password_reset_otp_id")
+    challenge = PhoneOTP.objects.filter(
+        pk=challenge_id, purpose=PhoneOTP.Purpose.RESET_PASSWORD, consumed_at__isnull=True
+    ).select_related("user").first() if challenge_id else None
+
+    if request.method == "POST" and request.POST.get("action") == "send_code":
+        request_form = PhoneResetRequestForm(request.POST)
+        if request_form.is_valid():
+            username = request_form.cleaned_data["username"]
+            phone = request_form.cleaned_data["phone"]
+            user = User.objects.filter(username=username, is_active=True).first()
+            if user and normalize_phone(user.phone) == phone:
+                issued = issue_phone_otp(user=user, purpose=PhoneOTP.Purpose.RESET_PASSWORD, request=request)
+                if issued:
+                    request.session["password_reset_otp_id"] = issued.pk
+            messages.info(request, "Agar login va raqam mos bo‘lsa hamda SMS xizmati ishlasa, tasdiqlash kodi yuboriladi.")
+            return redirect("password_reset")
+    else:
+        request_form = PhoneResetRequestForm()
+
+    otp_form = PhonePasswordResetForm(user=challenge.user if challenge else None)
+    if request.method == "POST" and request.POST.get("action") == "reset_password":
+        otp_form = PhonePasswordResetForm(request.POST, user=challenge.user if challenge else None)
+        if challenge and otp_form.is_valid():
+            if consume_phone_otp(
+                challenge_id=challenge.pk, user=challenge.user,
+                purpose=PhoneOTP.Purpose.RESET_PASSWORD, code=otp_form.cleaned_data["code"],
+            ):
+                user = challenge.user
+                user.set_password(otp_form.cleaned_data["new_password"])
+                user.save(update_fields=["password"])
+                request.session.pop("password_reset_otp_id", None)
+                messages.success(request, "Parol yangilandi. Yangi parol bilan tizimga kiring.")
+                return redirect("login")
+            if not PhoneOTP.objects.filter(pk=challenge.pk, consumed_at__isnull=True, attempts__lt=5).exists():
+                request.session.pop("password_reset_otp_id", None)
+            otp_form.add_error("code", "Kod noto‘g‘ri yoki muddati tugagan. Yangi kod so‘rang.")
+        elif not challenge:
+            otp_form.add_error(None, "Faol tasdiqlash so‘rovi topilmadi. Avval yangi kod so‘rang.")
+
+    return render(request, "school/password_reset.html", {
+        "request_form": request_form,
+        "otp_form": otp_form,
+        "has_challenge": bool(challenge),
+    })
+
+
+@login_required
+def close_account(request):
+    user = request.user
+    if user.is_staff or user.is_superuser or user.role == User.Role.ADMIN:
+        raise PermissionDenied("Administrator akkauntini ushbu sahifadan yopib bo‘lmaydi.")
+
+    challenge_id = request.session.get("close_account_otp_id")
+    challenge = PhoneOTP.objects.filter(
+        pk=challenge_id, user=user, purpose=PhoneOTP.Purpose.CLOSE_ACCOUNT,
+        consumed_at__isnull=True,
+    ).first() if challenge_id else None
+
+    if request.method == "POST" and request.POST.get("action") == "send_code":
+        if not normalize_phone(user.phone):
+            messages.error(request, "Akkauntga to‘g‘ri telefon raqami biriktirilmagan. Markaz administratoriga murojaat qiling.")
+        else:
+            issued = issue_phone_otp(user=user, purpose=PhoneOTP.Purpose.CLOSE_ACCOUNT, request=request)
+            if issued:
+                request.session["close_account_otp_id"] = issued.pk
+                messages.info(request, "Telefon raqamingizga tasdiqlash kodi yuborildi.")
+            else:
+                messages.error(request, "Kod yuborilmadi. SMS xizmati sozlanganini tekshiring yoki bir daqiqadan keyin qayta urinib ko‘ring.")
+        return redirect("close_account")
+
+    otp_form = PhoneOTPForm()
+    if request.method == "POST" and request.POST.get("action") == "close_account":
+        otp_form = PhoneOTPForm(request.POST)
+        if challenge and otp_form.is_valid():
+            if consume_phone_otp(
+                challenge_id=challenge.pk, user=user,
+                purpose=PhoneOTP.Purpose.CLOSE_ACCOUNT, code=otp_form.cleaned_data["code"],
+            ):
+                # Preserve academic history and foreign-key integrity; disable sign-in only.
+                user.is_active = False
+                user.save(update_fields=["is_active"])
+                request.session.pop("close_account_otp_id", None)
+                logout(request)
+                messages.success(request, "Akkaunt yopildi. Ta’lim tarixi saqlanadi.")
+                return redirect("home")
+            if not PhoneOTP.objects.filter(pk=challenge.pk, consumed_at__isnull=True, attempts__lt=5).exists():
+                request.session.pop("close_account_otp_id", None)
+            otp_form.add_error("code", "Kod noto‘g‘ri yoki muddati tugagan. Yangi kod so‘rang.")
+        elif not challenge:
+            otp_form.add_error(None, "Faol tasdiqlash so‘rovi topilmadi. Avval yangi kod so‘rang.")
+
+    return render(request, "school/close_account.html", {"otp_form": otp_form, "has_challenge": bool(challenge)})
 
 def is_admin(user): return user.is_authenticated and (user.is_superuser or user.role == User.Role.ADMIN)
 
