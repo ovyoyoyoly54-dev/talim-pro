@@ -5,18 +5,26 @@
 <div class="auth-card">
   <span class="eyebrow">AKKAUNT XAVFSIZLIGI</span>
   <h2>Akkauntni yopish</h2>
-  <p class="muted">Telefon raqamingizga yuborilgan SMS kod bilan tasdiqlang. Yopilgandan keyin akkauntga kira olmaysiz. O‘quv jarayoni tarixi va baholar o‘chmaydi.</p>
-  {% if not has_challenge %}
+  <p class="muted">Avval telefoningizga yuborilgan SMS kodni, keyin login va joriy parolingizni kiriting. Akkaunt yopilgach, unga kira olmaysiz; o‘quv tarixi va baholar saqlanadi.</p>
+  {% if password_step %}
+  <form method="post" class="stack-form">
+    {% csrf_token %}<input type="hidden" name="action" value="confirm_close">
+    {{ password_form.non_field_errors }}
+    <label>Login {{ password_form.username }}{{ password_form.username.errors }}</label>
+    <label>Joriy parol {{ password_form.password }}{{ password_form.password.errors }}</label>
+    <button class="button button-danger" type="submit">Akkauntni yopishni tasdiqlash</button>
+  </form>
+  {% elif not has_challenge %}
   <form method="post" class="stack-form">
     {% csrf_token %}<input type="hidden" name="action" value="send_code">
     <button class="button button-primary" type="submit">Telefonimga tasdiqlash kodi yuborish</button>
   </form>
   {% else %}
   <form method="post" class="stack-form">
-    {% csrf_token %}<input type="hidden" name="action" value="close_account">
+    {% csrf_token %}<input type="hidden" name="action" value="verify_code">
     {{ otp_form.non_field_errors }}
     <label>SMS tasdiqlash kodi {{ otp_form.code }}{{ otp_form.code.errors }}</label>
-    <button class="button button-danger" type="submit">Akkauntni yopish</button>
+    <button class="button button-primary" type="submit">Kodni tasdiqlash</button>
   </form>
   {% endif %}
   <p class="security-note"><a href="{% url 'dashboard' %}">Bekor qilish</a></p>

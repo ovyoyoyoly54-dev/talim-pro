@@ -67,11 +67,34 @@ class PhoneAccountSecurityTests(TestCase):
         self.client.force_login(self.user)
         self.client.post(reverse("close_account"), {"action": "send_code"})
         code = send_code.call_args.args[1]
-        response = self.client.post(reverse("close_account"), {"action": "close_account", "code": code})
+        response = self.client.post(reverse("close_account"), {"action": "verify_code", "code": code})
+        self.assertRedirects(response, reverse("close_account"))
+        self.user.refresh_from_db()
+        self.assertTrue(self.user.is_active)
+        self.assertContains(self.client.get(reverse("close_account")), 'name="username"')
+        response = self.client.post(reverse("close_account"), {
+            "action": "confirm_close", "username": self.user.username,
+            "password": "OldSecurePass!2026",
+        })
         self.assertRedirects(response, reverse("home"))
         self.user.refresh_from_db()
         self.assertFalse(self.user.is_active)
         self.assertTrue(StudentProfile.objects.filter(pk=profile.pk).exists())
+
+    @patch("school.phone_auth._send_code", return_value=True)
+    def test_account_remains_active_when_password_confirmation_is_wrong(self, send_code):
+        self.client.force_login(self.user)
+        self.client.post(reverse("close_account"), {"action": "send_code"})
+        code = send_code.call_args.args[1]
+        self.client.post(reverse("close_account"), {"action": "verify_code", "code": code})
+        response = self.client.post(reverse("close_account"), {
+            "action": "confirm_close", "username": self.user.username,
+            "password": "WrongPassword!2026",
+        })
+        self.assertEqual(response.status_code, 200)
+        self.user.refresh_from_db()
+        self.assertTrue(self.user.is_active)
+        self.assertTrue(response.context["password_step"])
 
     def test_admin_cannot_close_account_from_self_service(self):
         admin_user = User.objects.create_user("phone_admin", password="StrongPassword123!", role=User.Role.ADMIN)
@@ -99,6 +122,28 @@ class AdminBootstrapCommandTests(TestCase):
         admin_user.refresh_from_db()
         self.assertTrue(admin_user.check_password("A-Long-Unique-Admin-Pass!2026"))
         self.assertFalse(admin_user.check_password("Another-Long-Admin-Pass!2026"))
+
+
+class AdminNavigationTests(TestCase):
+    def setUp(self):
+        self.admin = User.objects.create_superuser(
+            "navigation_admin", "navigation@example.invalid", "StrongNavigationPass!2026",
+            role=User.Role.ADMIN,
+        )
+        self.client.force_login(self.admin)
+
+    def test_management_index_is_localized_and_hides_recent_actions(self):
+        response = self.client.get(reverse("admin:index"))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Markaz boshqaruv paneli")
+        self.assertContains(response, "Foydalanuvchilar")
+        self.assertContains(response, "O‘quv guruhlari")
+        self.assertNotContains(response, "So‘nggi harakatlar")
+        self.assertNotContains(response, "Groups")
+
+    def test_dashboard_management_link_targets_same_admin_home(self):
+        response = self.client.get(reverse("dashboard"))
+        self.assertContains(response, f'href="{reverse("admin:index")}"')
 
 class PlatformRulesTests(TestCase):
     def setUp(self):

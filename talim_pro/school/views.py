@@ -12,7 +12,7 @@ from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.http import require_GET
 from xml.sax.saxutils import escape
-from .forms import GradeRecordForm, PhoneResetRequestForm, PhoneOTPForm, PhonePasswordResetForm, SignupRequestForm, SignupCompleteForm
+from .forms import GradeRecordForm, PhoneResetRequestForm, PhoneOTPForm, PhonePasswordResetForm, SignupRequestForm, SignupCompleteForm, AccountClosureConfirmForm
 from .models import User, StudyGroup, StudentProfile, Lesson, GradeRecord, Attendance, SMSLog, PhoneOTP
 from .phone_auth import consume_phone_otp, issue_phone_otp, normalize_phone
 from .sms import send_parent_sms
@@ -218,8 +218,20 @@ def close_account(request):
         pk=challenge_id, user=user, purpose=PhoneOTP.Purpose.CLOSE_ACCOUNT,
         consumed_at__isnull=True,
     ).first() if challenge_id else None
+    verified_at = request.session.get("close_account_otp_verified_at")
+    password_step = False
+    if verified_at:
+        try:
+            password_step = 0 <= timezone.now().timestamp() - float(verified_at) <= 300
+        except (TypeError, ValueError):
+            password_step = False
+        if not password_step:
+            request.session.pop("close_account_otp_verified_at", None)
+            request.session.pop("close_account_password_attempts", None)
 
     if request.method == "POST" and request.POST.get("action") == "send_code":
+        request.session.pop("close_account_otp_verified_at", None)
+        request.session.pop("close_account_password_attempts", None)
         if not normalize_phone(user.phone):
             messages.error(request, "Akkauntga to‘g‘ri telefon raqami biriktirilmagan. Markaz administratoriga murojaat qiling.")
         else:
@@ -232,27 +244,53 @@ def close_account(request):
         return redirect("close_account")
 
     otp_form = PhoneOTPForm()
-    if request.method == "POST" and request.POST.get("action") == "close_account":
+    password_form = AccountClosureConfirmForm(user=user)
+    if request.method == "POST" and request.POST.get("action") == "verify_code":
         otp_form = PhoneOTPForm(request.POST)
         if challenge and otp_form.is_valid():
             if consume_phone_otp(
                 challenge_id=challenge.pk, user=user,
                 purpose=PhoneOTP.Purpose.CLOSE_ACCOUNT, code=otp_form.cleaned_data["code"],
             ):
-                # Preserve academic history and foreign-key integrity; disable sign-in only.
-                user.is_active = False
-                user.save(update_fields=["is_active"])
                 request.session.pop("close_account_otp_id", None)
-                logout(request)
-                messages.success(request, "Akkaunt yopildi. Ta’lim tarixi saqlanadi.")
-                return redirect("home")
+                request.session["close_account_otp_verified_at"] = timezone.now().timestamp()
+                request.session["close_account_password_attempts"] = 0
+                return redirect("close_account")
             if not PhoneOTP.objects.filter(pk=challenge.pk, consumed_at__isnull=True, attempts__lt=5).exists():
                 request.session.pop("close_account_otp_id", None)
             otp_form.add_error("code", "Kod noto‘g‘ri yoki muddati tugagan. Yangi kod so‘rang.")
         elif not challenge:
             otp_form.add_error(None, "Faol tasdiqlash so‘rovi topilmadi. Avval yangi kod so‘rang.")
 
-    return render(request, "school/close_account.html", {"otp_form": otp_form, "has_challenge": bool(challenge)})
+    if request.method == "POST" and request.POST.get("action") == "confirm_close":
+        password_form = AccountClosureConfirmForm(request.POST, user=user)
+        attempts = int(request.session.get("close_account_password_attempts", 0))
+        if password_step and attempts < 5 and password_form.is_valid():
+            # Preserve academic history and foreign-key integrity; disable sign-in only.
+            user.is_active = False
+            user.save(update_fields=["is_active"])
+            for key in ("close_account_otp_id", "close_account_otp_verified_at", "close_account_password_attempts"):
+                request.session.pop(key, None)
+            logout(request)
+            messages.success(request, "Akkaunt yopildi. Ta’lim tarixi saqlanadi.")
+            return redirect("home")
+        if not password_step:
+            password_form.add_error(None, "Tasdiqlash muddati tugagan. SMS kodni yangidan so‘rang.")
+        else:
+            attempts += 1
+            request.session["close_account_password_attempts"] = attempts
+            if attempts >= 5:
+                request.session.pop("close_account_otp_verified_at", None)
+                request.session.pop("close_account_password_attempts", None)
+                password_step = False
+                password_form.add_error(None, "Ko‘p noto‘g‘ri urinish bo‘ldi. Yangi SMS kod so‘rang.")
+
+    return render(request, "school/close_account.html", {
+        "otp_form": otp_form,
+        "password_form": password_form,
+        "has_challenge": bool(challenge),
+        "password_step": password_step,
+    })
 
 def is_admin(user): return user.is_authenticated and (user.is_superuser or user.role == User.Role.ADMIN)
 

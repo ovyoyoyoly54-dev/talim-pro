@@ -14,6 +14,10 @@ class User(AbstractUser):
     phone = models.CharField(max_length=24, blank=True)
     # For a parent account, students are connected through StudentProfile.parent.
 
+    class Meta(AbstractUser.Meta):
+        verbose_name = "foydalanuvchi"
+        verbose_name_plural = "Foydalanuvchilar"
+
     def __str__(self):
         return self.get_full_name() or self.username
 
@@ -25,6 +29,8 @@ class StudyGroup(models.Model):
 
     class Meta:
         ordering = ["name"]
+        verbose_name = "o‘quv guruhi"
+        verbose_name_plural = "O‘quv guruhlari"
 
     def clean(self):
         if not self.pk and StudyGroup.objects.count() >= 5:
@@ -43,6 +49,10 @@ class StudentProfile(models.Model):
     parent = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="children")
     joined_on = models.DateField(auto_now_add=True)
 
+    class Meta:
+        verbose_name = "o‘quvchi profili"
+        verbose_name_plural = "O‘quvchilar"
+
     def __str__(self):
         return str(self.user)
 
@@ -55,6 +65,8 @@ class Lesson(models.Model):
 
     class Meta:
         ordering = ["starts_at"]
+        verbose_name = "dars"
+        verbose_name_plural = "Darslar"
 
     def clean(self):
         if self.teacher_id and not (self.teacher.is_superuser or self.teacher.role in (User.Role.TEACHER, User.Role.ADMIN)):
@@ -81,6 +93,8 @@ class GradeReason(models.Model):
 
     class Meta:
         ordering = ["title"]
+        verbose_name = "baho sababi"
+        verbose_name_plural = "Baho sabablari"
 
     def delete(self, *args, **kwargs):
         if self.grade_records.filter(score__lt=8).exists():
@@ -105,6 +119,8 @@ class GradeRecord(models.Model):
             models.CheckConstraint(condition=Q(score__gte=0) & Q(score__lte=10), name="grade_score_0_to_10"),
         ]
         ordering = ["student__user__last_name", "student__user__first_name"]
+        verbose_name = "baho qaydi"
+        verbose_name_plural = "Baholar"
 
     def clean(self):
         score = getattr(self, "score", None)
@@ -159,6 +175,8 @@ class Attendance(models.Model):
 
     class Meta:
         constraints = [models.UniqueConstraint(fields=["lesson", "student"], name="one_attendance_per_student_per_lesson")]
+        verbose_name = "davomat qaydi"
+        verbose_name_plural = "Davomat"
     def clean(self):
         if self.lesson_id and self.student_id and self.lesson.group_id != self.student.group_id:
             raise ValidationError("O‘quvchi ushbu dars guruhiga tegishli emas.")
@@ -186,6 +204,10 @@ class SMSLog(models.Model):
     status = models.CharField(max_length=10, choices=Status.choices)
     provider_response = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "SMS jurnali"
+        verbose_name_plural = "SMS jurnali"
 
 
 class PhoneOTP(models.Model):

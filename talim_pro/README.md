@@ -63,7 +63,8 @@ Demo loginlar: `admin_demo`, `teacher_demo`, `student_demo`, `parent_demo`. Buyr
 - O‘rtacha/jami ball reytingi
 - Dars jadvali
 - Ota-onaga SMS adapteri va SMS yuborish jurnali
-- Telefon OTP orqali parol tiklash va akkauntni yopish
+- Telefon OTP orqali parol tiklash; akkaunt yopishda OTP’dan keyin login va joriy parolni qayta tasdiqlash
+- Uzbek tilidagi boshqaruv markazi; boshqaruv havolalari bir xil admin bosh sahifasiga olib boradi
 
 ## SMS integratsiyasi
 `.env` da quyidagilarni to‘ldiring:
@@ -74,7 +75,7 @@ SMS_SENDER=TalimPro
 ```
 Bu umumiy JSON adapteri (`to`, `message`, `sender`) va Bearer token ishlatadi. SMS provayderingizning hujjatiga qarab `school/sms.py` dagi request qismini moslang. Haqiqiy provayderdan test raqamiga sinov yubormasdan turib, SMS ishlashini tasdiqlamang.
 
-Parol tiklash va akkauntni yopish ham shu `SMS_API_URL`, `SMS_API_TOKEN`, `SMS_SENDER` sozlamalaridan foydalanadi. SMS adapteri `to`, `message`, `sender` maydonlarini yuboradi; provayderning haqiqiy API formatiga moslab tekshirilmaguncha OTP SMS ishlaydi deb bo‘lmaydi. OTP 10 daqiqa amal qiladi, 5 ta noto‘g‘ri urinishdan keyin bekor bo‘ladi; kod SMS jurnalida saqlanmaydi.
+Parol tiklash va akkauntni yopish ham shu `SMS_API_URL`, `SMS_API_TOKEN`, `SMS_SENDER` sozlamalaridan foydalanadi. SMS adapteri `to`, `message`, `sender` maydonlarini yuboradi; provayderning haqiqiy API formatiga moslab tekshirilmaguncha OTP SMS ishlaydi deb bo‘lmaydi. OTP 10 daqiqa amal qiladi, 5 ta noto‘g‘ri urinishdan keyin bekor bo‘ladi; kod SMS jurnalida saqlanmaydi. Akkaunt yopishda SMS kodi bilan birga ayni hisob login va paroli ham tekshiriladi; ta’lim tarixi o‘chirilmaydi.
 
 ### Render’da administrator va tizimga kirish
 

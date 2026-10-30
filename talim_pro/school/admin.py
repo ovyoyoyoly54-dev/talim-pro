@@ -1,7 +1,14 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
+from django.contrib.auth.models import Group
 from django import forms
 from .models import User, StudyGroup, StudentProfile, Lesson, GradeReason, GradeRecord, Attendance, SMSLog
+
+admin.site.site_header = "TA’LIM PRO — Boshqaruv"
+admin.site.site_title = "TA’LIM PRO"
+admin.site.index_title = "Markaz boshqaruv paneli"
+admin.site.index_template = "admin/index.html"
+admin.site.unregister(Group)
 
 @admin.register(User)
 class CustomUserAdmin(UserAdmin):
@@ -9,6 +16,8 @@ class CustomUserAdmin(UserAdmin):
     add_fieldsets = UserAdmin.add_fieldsets + (("Ta'lim PRO", {"fields": ("role", "phone")}),)
     list_display = ("username", "first_name", "last_name", "role", "phone", "is_active")
     list_filter = ("role", "is_active")
+    search_fields = ("username", "first_name", "last_name", "phone")
+    ordering = ("last_name", "first_name", "username")
 
 @admin.register(StudyGroup)
 class StudyGroupAdmin(admin.ModelAdmin):

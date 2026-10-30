@@ -79,6 +79,35 @@ class PhoneOTPForm(forms.Form):
         return code
 
 
+class AccountClosureConfirmForm(forms.Form):
+    username = forms.CharField(
+        label="Login",
+        widget=forms.TextInput(attrs={"class": "input", "autocomplete": "username"}),
+    )
+    password = forms.CharField(
+        label="Joriy parol",
+        widget=forms.PasswordInput(attrs={"class": "input", "autocomplete": "current-password"}),
+    )
+
+    def __init__(self, *args, user, **kwargs):
+        self.user = user
+        super().__init__(*args, **kwargs)
+        if not self.is_bound:
+            self.initial["username"] = user.get_username()
+
+    def clean_username(self):
+        username = self.cleaned_data["username"]
+        if username != self.user.get_username():
+            raise ValidationError("Login noto‘g‘ri.")
+        return username
+
+    def clean_password(self):
+        password = self.cleaned_data["password"]
+        if not self.user.check_password(password):
+            raise ValidationError("Login parolingiz noto‘g‘ri.")
+        return password
+
+
 class SignupCompleteForm(PhoneOTPForm):
     new_password = forms.CharField(min_length=8, label="Parol", widget=forms.PasswordInput(attrs={"class": "input", "autocomplete": "new-password"}))
     confirm_password = forms.CharField(label="Parolni takrorlang", widget=forms.PasswordInput(attrs={"class": "input", "autocomplete": "new-password"}))

@@ -1,0 +1,27 @@
+{% extends "admin/base_site.html" %}
+{% load i18n %}
+{% block content_title %}<h1>Markaz boshqaruv paneli</h1>{% endblock %}
+{% block content %}
+<div id="content-main">
+  {% if app_list %}
+    {% for app in app_list %}
+      <div class="module app-{{ app.app_label }}">
+        <table>
+          <caption><a href="{{ app.app_url }}" class="section">{{ app.name }}</a></caption>
+          {% for model in app.models %}
+            <tr class="model-{{ model.object_name|lower }}">
+              <th scope="row">
+                {% if model.admin_url %}<a href="{{ model.admin_url }}">{{ model.name }}</a>{% else %}{{ model.name }}{% endif %}
+              </th>
+              {% if model.add_url and model.perms.add %}<td><a href="{{ model.add_url }}" class="addlink">Qo‘shish</a></td>{% else %}<td>&nbsp;</td>{% endif %}
+              {% if model.admin_url and model.perms.change %}<td><a href="{{ model.admin_url }}" class="changelink">Boshqarish</a>{% elif model.admin_url and model.perms.view %}<td><a href="{{ model.admin_url }}">Ko‘rish</a>{% else %}<td>&nbsp;</td>{% endif %}
+            </tr>
+          {% endfor %}
+        </table>
+      </div>
+    {% endfor %}
+  {% else %}
+    <p>Akkauntingizga boshqaruv uchun ruxsat berilmagan.</p>
+  {% endif %}
+</div>
+{% endblock %}
