@@ -135,7 +135,9 @@ class AdminNavigationTests(TestCase):
     def test_management_index_is_localized_and_hides_recent_actions(self):
         response = self.client.get(reverse("admin:index"))
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "Markaz boshqaruv paneli")
+        self.assertContains(response, "Markaz boshqaruvi")
+        self.assertContains(response, "tp-admin-hero")
+        self.assertContains(response, "school/admin.css")
         self.assertContains(response, "Foydalanuvchilar")
         self.assertContains(response, "O‘quv guruhlari")
         self.assertNotContains(response, "So‘nggi harakatlar")
