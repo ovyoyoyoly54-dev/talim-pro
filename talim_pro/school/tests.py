@@ -10,7 +10,7 @@ from django.test import RequestFactory
 from datetime import timedelta
 from unittest.mock import patch
 import requests
-from .models import User, StudyGroup, StudentProfile, Lesson, GradeReason, GradeRecord, Attendance, PhoneOTP
+from .models import User, StudyGroup, StudentProfile, Lesson, GradeReason, GradeRecord, Attendance, PhoneOTP, PlatformSettings
 from .forms import GradeRecordForm
 from .admin import GradeRecordAdmin, GradeRecordAdminForm
 from .sms import send_parent_sms
@@ -143,9 +143,57 @@ class AdminNavigationTests(TestCase):
         self.assertNotContains(response, "So‘nggi harakatlar")
         self.assertNotContains(response, "Groups")
 
-    def test_dashboard_management_link_targets_same_admin_home(self):
+    def test_dashboard_group_management_link_targets_groups(self):
         response = self.client.get(reverse("dashboard"))
+        self.assertContains(response, f'href="{reverse("admin:school_studygroup_changelist")}"')
+        self.assertContains(response, "Guruhlarni boshqarish")
+
+    def test_settings_panel_separates_site_and_account_settings(self):
+        response = self.client.get(reverse("settings_panel"))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Sayt sozlamalari")
+        self.assertContains(response, "Akkaunt ma’lumotlari")
+        self.assertContains(response, "Parolni almashtirish")
         self.assertContains(response, f'href="{reverse("admin:index")}"')
+
+    def test_settings_panel_is_admin_only(self):
+        teacher = User.objects.create_user("settings_teacher", password="StrongPassword123!", role=User.Role.TEACHER)
+        self.client.force_login(teacher)
+        self.assertEqual(self.client.get(reverse("settings_panel")).status_code, 403)
+
+    def test_site_settings_update_public_home(self):
+        response = self.client.post(reverse("settings_panel"), {
+            "action": "site_settings", "site_name": "TA’LIM PRO Markaz",
+            "home_heading": "Yangi sarlavha", "home_description": "Yangilangan tavsif",
+            "contact_phone": "+998901112233", "contact_email": "hello@example.invalid",
+        })
+        self.assertRedirects(response, reverse("settings_panel"))
+        settings_obj = PlatformSettings.objects.get(pk=1)
+        self.assertEqual(settings_obj.site_name, "TA’LIM PRO Markaz")
+        self.client.logout()
+        public = self.client.get(reverse("home"))
+        self.assertContains(public, "Yangi sarlavha")
+        self.assertContains(public, "Yangilangan tavsif")
+        self.assertContains(public, "TA’LIM PRO Markaz")
+
+    def test_admin_can_change_account_and_password_without_logout(self):
+        response = self.client.post(reverse("settings_panel"), {
+            "action": "account_settings", "username": self.admin.username,
+            "first_name": "Markaz", "last_name": "Admin", "email": "new@example.invalid", "phone": "+998901234567",
+        })
+        self.assertRedirects(response, reverse("settings_panel"))
+        self.admin.refresh_from_db()
+        self.assertEqual(self.admin.first_name, "Markaz")
+
+        response = self.client.post(reverse("settings_panel"), {
+            "action": "password_change", "old_password": "StrongNavigationPass!2026",
+            "new_password1": "AnotherStrongNavigationPass!2027",
+            "new_password2": "AnotherStrongNavigationPass!2027",
+        })
+        self.assertRedirects(response, reverse("settings_panel"))
+        self.admin.refresh_from_db()
+        self.assertTrue(self.admin.check_password("AnotherStrongNavigationPass!2027"))
+        self.assertEqual(self.client.get(reverse("settings_panel")).status_code, 200)
 
 class PlatformRulesTests(TestCase):
     def setUp(self):

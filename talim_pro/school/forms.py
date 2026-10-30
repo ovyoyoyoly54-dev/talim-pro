@@ -1,8 +1,43 @@
 from django import forms
 from django.core.exceptions import ValidationError
 from django.contrib.auth.password_validation import validate_password
-from .models import GradeRecord, GradeReason, Attendance, Lesson, StudentProfile, StudyGroup, User
+from django.contrib.auth.forms import PasswordChangeForm
+from .models import GradeRecord, GradeReason, Attendance, Lesson, StudentProfile, StudyGroup, User, PlatformSettings
 from .phone_auth import normalize_phone
+
+
+class PlatformSettingsForm(forms.ModelForm):
+    class Meta:
+        model = PlatformSettings
+        fields = ("site_name", "home_heading", "home_description", "contact_phone", "contact_email")
+        widgets = {
+            "site_name": forms.TextInput(attrs={"class": "input"}),
+            "home_heading": forms.TextInput(attrs={"class": "input"}),
+            "home_description": forms.Textarea(attrs={"class": "input", "rows": 3}),
+            "contact_phone": forms.TextInput(attrs={"class": "input", "type": "tel"}),
+            "contact_email": forms.EmailInput(attrs={"class": "input"}),
+        }
+
+
+class AdminAccountSettingsForm(forms.ModelForm):
+    class Meta:
+        model = User
+        fields = ("username", "first_name", "last_name", "email", "phone")
+        widgets = {
+            "username": forms.TextInput(attrs={"class": "input", "autocomplete": "username"}),
+            "first_name": forms.TextInput(attrs={"class": "input", "autocomplete": "given-name"}),
+            "last_name": forms.TextInput(attrs={"class": "input", "autocomplete": "family-name"}),
+            "email": forms.EmailInput(attrs={"class": "input", "autocomplete": "email"}),
+            "phone": forms.TextInput(attrs={"class": "input", "type": "tel", "autocomplete": "tel"}),
+        }
+
+
+class StyledPasswordChangeForm(PasswordChangeForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for name, field in self.fields.items():
+            field.widget.attrs["class"] = "input"
+            field.widget.attrs["autocomplete"] = "current-password" if name == "old_password" else "new-password"
 
 class GradeRecordForm(forms.Form):
     lesson = forms.ModelChoiceField(queryset=Lesson.objects.none(), widget=forms.Select(attrs={"class": "input"}))

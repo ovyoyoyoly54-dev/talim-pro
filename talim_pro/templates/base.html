@@ -26,7 +26,8 @@
       <a href="{% url 'ranking' %}">↗ <span>Reyting</span></a>
       <a href="{% url 'schedule' %}">▦ <span>Dars jadvali</span></a>
       {% if user.role != 'admin' and not user.is_staff and not user.is_superuser %}<a href="{% url 'close_account' %}">⌁ <span>Akkauntni yopish</span></a>{% endif %}
-      {% if user.is_staff or user.is_superuser %}<a href="{% url 'admin:index' %}">⚙ <span>Boshqaruv</span></a>{% endif %}
+      {% if user.role == 'admin' or user.is_staff or user.is_superuser %}<a href="{% url 'settings_panel' %}">⚙ <span>Boshqaruv</span></a>{% endif %}
+      {% if user.is_staff or user.is_superuser %}<a href="{% url 'admin:index' %}">▦ <span>Ma’lumotlarni boshqarish</span></a>{% endif %}
     </nav>
     <div class="sidebar-bottom"><div class="avatar">{{ user.first_name|first|default:user.username|first|upper }}</div><div class="user-meta"><b>{{ user.get_full_name|default:user.username }}</b><small>{{ user.get_role_display|default:"Administrator" }}</small></div><form method="post" action="{% url 'logout' %}">{% csrf_token %}<button class="icon-button" type="submit" aria-label="Tizimdan chiqish" title="Tizimdan chiqish">↗</button></form></div>
   </aside>

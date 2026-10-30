@@ -1,5 +1,5 @@
 from django.contrib import messages
-from django.contrib.auth import logout, login as auth_login
+from django.contrib.auth import logout, login as auth_login, update_session_auth_hash
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
 from django.db import transaction
@@ -12,8 +12,8 @@ from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.http import require_GET
 from xml.sax.saxutils import escape
-from .forms import GradeRecordForm, PhoneResetRequestForm, PhoneOTPForm, PhonePasswordResetForm, SignupRequestForm, SignupCompleteForm, AccountClosureConfirmForm
-from .models import User, StudyGroup, StudentProfile, Lesson, GradeRecord, Attendance, SMSLog, PhoneOTP
+from .forms import GradeRecordForm, PhoneResetRequestForm, PhoneOTPForm, PhonePasswordResetForm, SignupRequestForm, SignupCompleteForm, AccountClosureConfirmForm, PlatformSettingsForm, AdminAccountSettingsForm, StyledPasswordChangeForm
+from .models import User, StudyGroup, StudentProfile, Lesson, GradeRecord, Attendance, SMSLog, PhoneOTP, PlatformSettings
 from .phone_auth import consume_phone_otp, issue_phone_otp, normalize_phone
 from .sms import send_parent_sms
 
@@ -293,6 +293,47 @@ def close_account(request):
     })
 
 def is_admin(user): return user.is_authenticated and (user.is_superuser or user.role == User.Role.ADMIN)
+
+
+@login_required
+def settings_panel(request):
+    if not is_admin(request.user):
+        raise PermissionDenied
+
+    site_settings = PlatformSettings.get_solo()
+    site_form = PlatformSettingsForm(instance=site_settings)
+    account_form = AdminAccountSettingsForm(instance=request.user)
+    password_form = StyledPasswordChangeForm(request.user)
+
+    if request.method == "POST":
+        action = request.POST.get("action")
+        if action == "site_settings":
+            site_form = PlatformSettingsForm(request.POST, instance=site_settings)
+            if site_form.is_valid():
+                site_form.save()
+                messages.success(request, "Sayt sozlamalari saqlandi.")
+                return redirect("settings_panel")
+        elif action == "account_settings":
+            account_form = AdminAccountSettingsForm(request.POST, instance=request.user)
+            if account_form.is_valid():
+                account_form.save()
+                messages.success(request, "Akkaunt ma’lumotlari saqlandi.")
+                return redirect("settings_panel")
+        elif action == "password_change":
+            password_form = StyledPasswordChangeForm(request.user, request.POST)
+            if password_form.is_valid():
+                user = password_form.save()
+                update_session_auth_hash(request, user)
+                messages.success(request, "Parol yangilandi.")
+                return redirect("settings_panel")
+        else:
+            messages.error(request, "So‘rov turi aniqlanmadi.")
+
+    return render(request, "school/settings.html", {
+        "site_form": site_form,
+        "account_form": account_form,
+        "password_form": password_form,
+    })
 
 def teacher_lessons(user):
     return Lesson.objects.filter(group__teachers=user, teacher=user).select_related("group", "teacher")

@@ -21,6 +21,34 @@ class User(AbstractUser):
     def __str__(self):
         return self.get_full_name() or self.username
 
+
+class PlatformSettings(models.Model):
+    site_name = models.CharField("Sayt nomi", max_length=80, default="TA’LIM PRO")
+    home_heading = models.CharField("Bosh sahifa sarlavhasi", max_length=160, default="Ta’lim jarayoni bitta joyda.")
+    home_description = models.CharField(
+        "Bosh sahifa tavsifi", max_length=300,
+        default="Dars jadvali, baholar va davomatni tartibli boshqaring.",
+    )
+    contact_phone = models.CharField("Aloqa telefoni", max_length=24, blank=True)
+    contact_email = models.EmailField("Aloqa emaili", blank=True)
+    updated_at = models.DateTimeField("Yangilangan vaqt", auto_now=True)
+
+    class Meta:
+        verbose_name = "sayt sozlamasi"
+        verbose_name_plural = "Sayt sozlamalari"
+
+    @classmethod
+    def get_solo(cls):
+        settings_obj, _ = cls.objects.get_or_create(pk=1)
+        return settings_obj
+
+    def save(self, *args, **kwargs):
+        self.pk = 1
+        return super().save(*args, **kwargs)
+
+    def __str__(self):
+        return self.site_name
+
 class StudyGroup(models.Model):
     name = models.CharField(max_length=80, unique=True)
     subject = models.CharField(max_length=100)

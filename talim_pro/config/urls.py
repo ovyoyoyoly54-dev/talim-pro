@@ -48,6 +48,7 @@ urlpatterns = [
     path("manifest.webmanifest", views.web_manifest, name="web_manifest"),
     path("offline/", views.offline_page, name="offline_page"),
     path("dashboard/", views.dashboard, name="dashboard"),
+    path("sozlamalar/", views.settings_panel, name="settings_panel"),
     path("", views.public_home, name="home"),
     path("baholash/", views.grade_lesson, name="grade_lesson"),
     path("jadval/", views.schedule, name="schedule"),
