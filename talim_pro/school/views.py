@@ -3,7 +3,7 @@ from django.contrib.auth import logout, login as auth_login, update_session_auth
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
 from django.db import transaction
-from django.db.models import Avg, Sum, Count
+from django.db.models import Avg, Sum, Count, Q
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import FileResponse, JsonResponse, HttpResponse
 from django.conf import settings
@@ -12,7 +12,7 @@ from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.http import require_GET
 from xml.sax.saxutils import escape
-from .forms import GradeRecordForm, PhoneResetRequestForm, PhoneOTPForm, PhonePasswordResetForm, SignupRequestForm, SignupCompleteForm, AccountClosureConfirmForm, PlatformSettingsForm, AccountSettingsForm, StyledPasswordChangeForm
+from .forms import GradeRecordForm, PhoneResetRequestForm, PhoneOTPForm, PhonePasswordResetForm, SignupRequestForm, SignupCompleteForm, AccountClosureConfirmForm, PlatformSettingsForm, AccountSettingsForm, StyledPasswordChangeForm, AddStudentToGroupForm
 from .models import User, StudyGroup, StudentProfile, Lesson, GradeRecord, Attendance, SMSLog, PhoneOTP, PlatformSettings
 from .phone_auth import consume_phone_otp, issue_phone_otp, normalize_phone
 from .sms import send_parent_sms
@@ -378,9 +378,6 @@ def grade_lesson(request):
         raise PermissionDenied
     if request.method == "POST":
         form = GradeRecordForm(request.POST, teacher=request.user if not is_admin(request.user) else None)
-        if is_admin(request.user):
-            form.fields["lesson"].queryset = Lesson.objects.all()
-            form.fields["student"].queryset = StudentProfile.objects.all()
         if form.is_valid():
             lesson, student = form.cleaned_data["lesson"], form.cleaned_data["student"]
             if not is_admin(request.user) and (lesson.teacher_id != request.user.id or not lesson.group.teachers.filter(id=request.user.id).exists()):
@@ -393,12 +390,10 @@ def grade_lesson(request):
                         lesson=lesson, student=student,
                         defaults={"score": 8, "note": form.cleaned_data["note"], "teacher": request.user}
                     )
-                    grade.score = 8
                     grade.note = form.cleaned_data["note"]
                     grade.teacher = request.user
-                    grade.save()
-                    grade.reasons.set(form.cleaned_data["reasons"])
                     grade.score = form.cleaned_data["score"]
+                    grade.reasons.set(form.cleaned_data["reasons"])
                     grade.save()
                     attendance, _ = Attendance.objects.update_or_create(
                         lesson=lesson, student=student,
@@ -421,9 +416,12 @@ def grade_lesson(request):
                 return redirect("dashboard")
     else:
         form = GradeRecordForm(teacher=request.user if not is_admin(request.user) else None)
-        if is_admin(request.user):
-            form.fields["lesson"].queryset = Lesson.objects.all()
-            form.fields["student"].queryset = StudentProfile.objects.all()
+
+    # Administrator sees all lessons and students; teachers are limited by the form's teacher filter.
+    if is_admin(request.user):
+        form.fields["lesson"].queryset = Lesson.objects.all()
+        form.fields["student"].queryset = StudentProfile.objects.all()
+
     return render(request, "school/grade_form.html", {"form": form})
 
 @login_required
@@ -470,4 +468,51 @@ def student_detail(request, student_id):
         "profile": profile,
         "grades": profile.grades.select_related("lesson").prefetch_related("reasons").order_by("-lesson__starts_at"),
         "attendance_records": profile.attendance.select_related("lesson").order_by("-lesson__starts_at"),
+    })
+
+
+@login_required
+def add_student_to_group(request, group_id):
+    """O'quvchini o'qituvchiga biriktirilgan guruhga qo'shish.
+    Har bir so'rovda serverda o'qituvchi va guruh ruxsati tekshiradi."""
+    user = request.user
+    # Ruxsat: faqat o'qituvchi yoki administrator
+    if user.role != User.Role.TEACHER and not is_admin(user):
+        raise PermissionDenied
+
+    group = get_object_or_404(StudyGroup, pk=group_id)
+
+    # O'qituvchi bu guruhga biriktirilganligini tekshirish (admin barcha guruhlarga qo'sha oladi)
+    if user.role == User.Role.TEACHER and not group.teachers.filter(id=user.id).exists():
+        raise PermissionDenied
+
+    if request.method == "POST":
+        form = AddStudentToGroupForm(request.POST, teacher=user, group=group)
+        if form.is_valid():
+            student = form.cleaned_data["student"]
+            with transaction.atomic():
+                StudentProfile.objects.create(user=student, group=group)
+            messages.success(
+                request,
+                f"{student.get_full_name() or student.username} o'quvchisi \"{group.name}\" guruhiga qo'shildi.",
+            )
+            return redirect("add_student_to_group", group_id=group.pk)
+    else:
+        form = AddStudentToGroupForm(teacher=user, group=group)
+
+    # Qidiruv bo'yicha filtr (GET parametri)
+    search_query = request.GET.get("search", "").strip()
+    if search_query:
+        form.fields["student"].queryset = form.fields["student"].queryset.filter(
+            Q(first_name__icontains=search_query) | Q(last_name__icontains=search_query)
+        )
+
+    # Ro'yxat bo'shmi
+    available_students = form.fields["student"].queryset
+
+    return render(request, "school/add_student_to_group.html", {
+        "group": group,
+        "form": form,
+        "available_students": available_students,
+        "search_query": search_query,
     })

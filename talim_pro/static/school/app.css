@@ -56,13 +56,6 @@ button,a,input,select,textarea{-webkit-tap-highlight-color:transparent}
 .settings-form-grid .form-actions{grid-column:1/-1}
 .form-actions{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-top:2px}
 .form-actions .muted{margin:0}
-.settings-tool-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-bottom:16px}
-.settings-tool{display:flex;align-items:center;gap:11px;padding:13px;border:1px solid var(--line);border-radius:11px;min-width:0;transition:background .18s,border-color .18s,transform .18s}
-.settings-tool:hover{background:#fafcff;border-color:#cfdcef;transform:translateY(-1px)}
-.settings-tool-icon{width:35px;height:35px;flex:none;display:grid;place-items:center;border-radius:10px;background:#edf3ff;color:#356ce0;font-size:15px}
-.settings-tool>span:last-child{display:grid;gap:2px;min-width:0}
-.settings-tool b{font-size:11px;color:#253951}
-.settings-tool small{font-size:10px;color:#8b99aa}
 .settings-actions{display:flex;gap:10px;flex-wrap:wrap}
 .settings-actions form{margin:0}
 .button-outline{border:1px solid #dfe6ef;background:#fff;color:#344a66;box-shadow:none}
@@ -77,6 +70,6 @@ button,a,input,select,textarea{-webkit-tap-highlight-color:transparent}
   .settings-role{display:none}
   .settings-content{gap:12px}
   .settings-card{scroll-margin-top:12px}
-  .settings-form-grid,.settings-tool-grid{grid-template-columns:1fr}
+  .settings-form-grid{grid-template-columns:1fr}
   .form-actions .button,.settings-actions .button,.settings-actions form{width:100%}
 }

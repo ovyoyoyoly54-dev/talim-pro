@@ -15,7 +15,6 @@
       <a href="#parol">⌘ <span>Parolni almashtirish</span></a>
       {% if is_admin_user %}
       <a href="#sayt">⚙ <span>Sayt sozlamalari</span></a>
-      <a href="#boshqaruv">▦ <span>Boshqaruv vositalari</span></a>
       {% endif %}
       <a href="#xavfsizlik">⎋ <span>Xavfsizlik va chiqish</span></a>
     </nav>
@@ -50,17 +49,6 @@
         <p class="muted tiny">Hosting manzili va maxfiy server kalitlari bu sahifada saqlanmaydi.</p>
         <div class="form-actions"><button class="button button-primary" type="submit">Sayt sozlamalarini saqlash</button></div>
       </form>
-    </section>
-
-    <section class="panel settings-card" id="boshqaruv">
-      <div class="panel-heading"><div><h3>Boshqaruv vositalari</h3><p class="muted">Administrator uchun markaz ma’lumotlarini boshqarish havolalari</p></div></div>
-      <div class="settings-tool-grid">
-        <a class="settings-tool" href="{% url 'admin:school_user_changelist' %}"><span class="settings-tool-icon">♙</span><span><b>Foydalanuvchilar</b><small>Rollar va akkauntlar</small></span></a>
-        <a class="settings-tool" href="{% url 'admin:school_studygroup_changelist' %}"><span class="settings-tool-icon">▦</span><span><b>Guruhlarni boshqarish</b><small>Guruhlar va o‘qituvchilar</small></span></a>
-        <a class="settings-tool" href="{% url 'admin:school_gradereason_changelist' %}"><span class="settings-tool-icon">✓</span><span><b>Baho sabablari</b><small>Past baholar uchun sabablar</small></span></a>
-        <a class="settings-tool" href="{% url 'admin:school_smslog_changelist' %}"><span class="settings-tool-icon">✉</span><span><b>SMS jurnali</b><small>Yuborilgan xabarlar tarixi</small></span></a>
-      </div>
-      <div class="form-actions"><a class="button button-primary" href="{% url 'admin:index' %}">Boshqaruv panelini ochish →</a></div>
     </section>
     {% endif %}
 

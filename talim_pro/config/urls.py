@@ -54,4 +54,5 @@ urlpatterns = [
     path("jadval/", views.schedule, name="schedule"),
     path("reyting/", views.ranking, name="ranking"),
     path("oquvchi/<int:student_id>/", views.student_detail, name="student_detail"),
+    path("guruh/<int:group_id>/oquvchi-qoshish/", views.add_student_to_group, name="add_student_to_group"),
 ]

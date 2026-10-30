@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}{{ group.name }} — o'quvchi qo'shish {% endblock %}
+{% block page_heading %}{{ group.name }} — o'quvchi qo'shish{% endblock %}
+{% block content %}
+<div class="welcome-row">
+  <div>
+    <h2>{{ group.name }} — o'quvchi qo'shish</h2>
+    <p class="muted">{{ group.subject }} guruhiga yangi o'quvchini ro'yxatdan o'tganlardan tanlang.</p>
+  </div>
+  <a class="button button-outline" href="{% url 'dashboard' %}">↰ Bosh sahifaga qaytish</a>
+</div>
+
+<div class="panel">
+  <div class="panel-heading">
+    <div>
+      <h3>O'quvchini tanlash</h3>
+      <p class="muted">Faqat STUDENT roli bilan ro'yxatdan o'tgan va hali hech bir guruhga biriktirilmagan foydalanuvchilar ko'rinadi.</p>
+    </div>
+  </div>
+
+  {% for message in messages %}
+    <div class="message {{ message.tags }}">{{ message }}</div>
+  {% endfor %}
+
+  {% if form.errors %}
+    <div class="message error">
+      {% for field_errors in form.errors.values %}
+        {% for error in field_errors %}
+          {{ error }}<br>
+        {% endfor %}
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  <form method="get" class="stack-form" style="display:flex; gap:8px; align-items:flex-end; margin-bottom:16px; flex-wrap:wrap;">
+    {{ form.search }}
+    <button class="button button-primary" type="submit">Qidirish</button>
+    {% if search_query %}
+      <a class="button button-outline" href="{% url 'add_student_to_group' group_id=group.pk %}">Bekor qilish</a>
+    {% endif %}
+  </form>
+
+  {% if available_students %}
+    <div class="student-list">
+      {% for student in available_students %}
+        <div class="student-row">
+          <div class="student-info">
+            <span class="student-badge">{{ student.first_name|first|upper|default:student.username|first|upper }}</span>
+            <div class="student-meta">
+              <b>{{ student.get_full_name|default:student.username }}</b>
+              <small>{{ student.username }}</small>
+            </div>
+          </div>
+          <form method="post" action="{% url 'add_student_to_group' group_id=group.pk %}" class="inline" style="margin:0; display:inline;">
+            {% csrf_token %}
+            <input type="hidden" name="student" value="{{ student.pk }}">
+            <button class="button button-primary button-small" type="submit">Qo'shish</button>
+          </form>
+        </div>
+      {% empty %}
+        <p class="empty">Qidiruv bo'yicha mos o'quvchi topilmadi yoki hali qo'shish uchun o'quvchilar yo'q.</p>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p class="empty">Hozircha guruhga qo'shish uchun o'quvchi yo'q.</p>
+  {% endif %}
+</div>
+{% endblock %}

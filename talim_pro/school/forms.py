@@ -189,3 +189,44 @@ class PhonePasswordResetForm(PhoneOTPForm):
         if password and data.get("confirm_password") and password != data["confirm_password"]:
             self.add_error("confirm_password", "Parollar bir xil emas.")
         return data
+
+
+class AddStudentToGroupForm(forms.Form):
+    """O'quvchini guruhga qo'shish forme. Faqat hali hech bir guruhga biriktirilmagan
+    STUDENT rolldagi foydalanuvchilarni ko'rsatadi."""
+    student = forms.ModelChoiceField(
+        queryset=User.objects.none(),
+        widget=forms.Select(attrs={"class": "input"}),
+        label="O'quvchi",
+    )
+    search = forms.CharField(
+        required=False,
+        widget=forms.TextInput(attrs={"class": "input", "placeholder": "Ism yoki familiay bo'yicha qidirish...", "autocomplete": "off"}),
+        label="Qidirish",
+    )
+
+    def __init__(self, *args, teacher=None, group=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.teacher = teacher
+        self.group = group
+        # Faqat STUDENT ro'li va hali StudentProfile'i yo'q foydalanuvchilar
+        queryset = User.objects.filter(
+            role=User.Role.STUDENT,
+            student_profile__isnull=True,
+        ).order_by("last_name", "first_name", "username")
+        self.fields["student"].queryset = queryset
+
+    def clean_student(self):
+        student = self.cleaned_data.get("student")
+        if not student:
+            raise ValidationError("O'quvchini tanlang.")
+        # Server tomondan ro'yxatdan o'tganligini tekshirish
+        if student.role != User.Role.STUDENT:
+            raise ValidationError("Faqat o'quvchi ro'ligiga ega hisob qo'shilishi mumkin.")
+        # Allaqachon guruhga biriktirilganligini tekshirish
+        if hasattr(student, "student_profile") and student.student_profile_id:
+            raise ValidationError("Ushbu foydalanuvchi allaqachon boshqa guruhga biriktirilgan.")
+        # Ko'paytma qo'shishni bloklash (bu guruhda allaqachon bo'lsa)
+        if self.group and self.group.students.filter(user_id=student.pk).exists():
+            raise ValidationError("Ushbu o'quvchi allaqachon sizning guruhingizda bor.")
+        return student

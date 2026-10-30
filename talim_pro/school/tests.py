@@ -155,6 +155,7 @@ class AdminNavigationTests(TestCase):
         self.assertContains(response, "Akkaunt ma’lumotlari")
         self.assertContains(response, "Parolni almashtirish")
         self.assertContains(response, f'href="{reverse("admin:index")}"')
+        self.assertNotContains(response, f'href="{reverse("admin:school_studygroup_changelist")}"')
 
     def test_non_admin_settings_show_common_sections_only(self):
         teacher = User.objects.create_user("settings_teacher", password="StrongPassword123!", role=User.Role.TEACHER)
@@ -168,12 +169,13 @@ class AdminNavigationTests(TestCase):
         self.assertNotContains(response, "Boshqaruv vositalari")
         self.assertNotContains(response, reverse("admin:index"))
 
-    def test_admin_settings_expose_site_and_management_tools(self):
+    def test_admin_settings_show_site_settings_without_data_management_links(self):
         response = self.client.get(reverse("settings_panel"))
-        self.assertContains(response, f'href="{reverse("admin:school_user_changelist")}"')
-        self.assertContains(response, f'href="{reverse("admin:school_studygroup_changelist")}"')
-        self.assertContains(response, "Guruhlarni boshqarish")
-        self.assertContains(response, "Boshqaruv vositalari")
+        self.assertContains(response, "Sayt sozlamalari")
+        self.assertNotContains(response, f'href="{reverse("admin:school_user_changelist")}"')
+        self.assertNotContains(response, f'href="{reverse("admin:school_studygroup_changelist")}"')
+        self.assertNotContains(response, "Guruhlarni boshqarish")
+        self.assertNotContains(response, "Boshqaruv vositalari")
 
     def test_site_settings_update_public_home(self):
         response = self.client.post(reverse("settings_panel"), {
@@ -243,7 +245,7 @@ class SettingsRoleAccessTests(TestCase):
             self.assertContains(response, f'href="{reverse("settings_panel")}"')
             self.client.logout()
 
-    def test_only_admin_sees_site_settings_and_management_tools(self):
+    def test_only_admin_sees_site_settings(self):
         for user in (self.teacher, self.student, self.parent):
             self.client.force_login(user)
             response = self.client.get(reverse("settings_panel"))
@@ -256,9 +258,11 @@ class SettingsRoleAccessTests(TestCase):
         self.client.force_login(self.admin)
         response = self.client.get(reverse("settings_panel"))
         self.assertContains(response, "Sayt sozlamalari")
-        self.assertContains(response, "Boshqaruv vositalari")
-        self.assertContains(response, f'href="{reverse("admin:school_studygroup_changelist")}"')
         self.assertContains(response, f'href="{reverse("admin:index")}"')
+        self.assertNotContains(response, "Boshqaruv vositalari")
+        self.assertNotContains(response, f'href="{reverse("admin:school_user_changelist")}"')
+        self.assertNotContains(response, f'href="{reverse("admin:school_studygroup_changelist")}"')
+        self.assertNotContains(response, "Guruhlarni boshqarish")
 
     def test_non_admin_cannot_post_site_settings(self):
         original_name = PlatformSettings.get_solo().site_name
@@ -269,6 +273,45 @@ class SettingsRoleAccessTests(TestCase):
             "contact_phone": "", "contact_email": "",
         })
         self.assertEqual(response.status_code, 403)
+        self.assertEqual(PlatformSettings.get_solo().site_name, original_name)
+
+    def test_settings_posts_require_csrf_token(self):
+        client = Client(enforce_csrf_checks=True)
+        client.force_login(self.admin)
+        account_response = client.post(reverse("settings_panel"), {
+            "action": "account_settings", "username": self.admin.username,
+            "first_name": "CSRF", "last_name": "Admin", "email": "csrf@example.invalid", "phone": "",
+        })
+        self.assertEqual(account_response.status_code, 403)
+        site_response = client.post(reverse("settings_panel"), {
+            "action": "site_settings", "site_name": "CSRF o‘zgarishi",
+            "home_heading": "CSRF", "home_description": "CSRF",
+            "contact_phone": "", "contact_email": "",
+        })
+        self.assertEqual(site_response.status_code, 403)
+        self.admin.refresh_from_db()
+        self.assertNotEqual(self.admin.first_name, "CSRF")
+        self.assertNotEqual(PlatformSettings.get_solo().site_name, "CSRF o‘zgarishi")
+
+    def test_invalid_profile_and_site_data_are_rejected_server_side(self):
+        self.client.force_login(self.student)
+        response = self.client.post(reverse("settings_panel"), {
+            "action": "account_settings", "username": self.student.username,
+            "first_name": "Saqlanmasligi kerak", "last_name": "Foydalanuvchi",
+            "email": "not-an-email", "phone": self.student.phone,
+        })
+        self.assertEqual(response.status_code, 200)
+        self.student.refresh_from_db()
+        self.assertNotEqual(self.student.first_name, "Saqlanmasligi kerak")
+
+        original_name = PlatformSettings.get_solo().site_name
+        self.client.force_login(self.admin)
+        response = self.client.post(reverse("settings_panel"), {
+            "action": "site_settings", "site_name": "",
+            "home_heading": "Sarlavha", "home_description": "Tavsif",
+            "contact_phone": "", "contact_email": "",
+        })
+        self.assertEqual(response.status_code, 200)
         self.assertEqual(PlatformSettings.get_solo().site_name, original_name)
 
     def test_each_role_can_save_own_profile_without_changing_role(self):
@@ -500,3 +543,118 @@ class PlatformRulesTests(TestCase):
             log = send_parent_sms(parent=parent, student=self.profile, body="Baholash xabari")
         self.assertEqual(log.status, "failed")
         self.assertNotIn("private-marker", log.provider_response)
+class AddStudentToGroupTests(TestCase):
+    """O'quvchini guruhga qo'shish funksiyasi uchun testlar."""
+
+    def setUp(self):
+        self.teacher = User.objects.create_user(
+            "add_teacher", password="StrongPassword123!", role=User.Role.TEACHER,
+            first_name="Teacher", last_name="One",
+        )
+        self.other_teacher = User.objects.create_user(
+            "other_teacher", password="StrongPassword123!", role=User.Role.TEACHER,
+            first_name="Other", last_name="Teacher",
+        )
+        self.student_user = User.objects.create_user(
+            "add_student", password="StrongPassword123!", role=User.Role.STUDENT,
+            first_name="Ali", last_name="Valiyev",
+        )
+        self.non_student = User.objects.create_user(
+            "not_student", password="StrongPassword123!", role=User.Role.PARENT,
+            first_name="Not", last_name="Student",
+        )
+        self.already_in_group = User.objects.create_user(
+            "in_group", password="StrongPassword123!", role=User.Role.STUDENT,
+            first_name="In", last_name="Group",
+        )
+        self.group = StudyGroup.objects.create(name="A1", subject="Ingliz tili")
+        self.group.teachers.add(self.teacher)
+        # already_in_group is already in the group
+        StudentProfile.objects.create(user=self.already_in_group, group=self.group)
+        # Non-student already has a profile too (should not appear)
+        StudentProfile.objects.create(user=self.non_student, group=self.group)
+
+    def test_teacher_can_access_add_student_page(self):
+        self.client.force_login(self.teacher)
+        response = self.client.get(reverse("add_student_to_group", kwargs={"group_id": self.group.pk}))
+        self.assertEqual(response.status_code, 200)
+
+    def test_other_teacher_cannot_access(self):
+        self.client.force_login(self.other_teacher)
+        response = self.client.get(reverse("add_student_to_group", kwargs={"group_id": self.group.pk}))
+        self.assertEqual(response.status_code, 403)
+
+    def test_student_cannot_access(self):
+        self.client.force_login(self.student_user)
+        response = self.client.get(reverse("add_student_to_group", kwargs={"group_id": self.group.pk}))
+        self.assertEqual(response.status_code, 403)
+
+    def test_unassigned_student_appears_in_list(self):
+        self.client.force_login(self.teacher)
+        response = self.client.get(reverse("add_student_to_group", kwargs={"group_id": self.group.pk}))
+        self.assertContains(response, "Ali Valiyev")
+
+    def test_already_assigned_student_does_not_appear(self):
+        self.client.force_login(self.teacher)
+        response = self.client.get(reverse("add_student_to_group", kwargs={"group_id": self.group.pk}))
+        self.assertNotContains(response, "In Group")
+
+    def test_non_student_does_not_appear(self):
+        self.client.force_login(self.teacher)
+        response = self.client.get(reverse("add_student_to_group", kwargs={"group_id": self.group.pk}))
+        self.assertNotContains(response, "Not Student")
+
+    def test_search_filters_by_first_name(self):
+        self.client.force_login(self.teacher)
+        response = self.client.get(
+            reverse("add_student_to_group", kwargs={"group_id": self.group.pk}) + "?search=Ali"
+        )
+        self.assertContains(response, "Ali Valiyev")
+
+    def test_search_filters_by_last_name(self):
+        self.client.force_login(self.teacher)
+        response = self.client.get(
+            reverse("add_student_to_group", kwargs={"group_id": self.group.pk}) + "?search=Valiyev"
+        )
+        self.assertContains(response, "Ali Valiyev")
+
+    def test_successful_add_creates_student_profile(self):
+        self.client.force_login(self.teacher)
+        self.assertFalse(StudentProfile.objects.filter(user=self.student_user).exists())
+        response = self.client.post(
+            reverse("add_student_to_group", kwargs={"group_id": self.group.pk}),
+            {"student": self.student_user.pk},
+        )
+        self.assertRedirects(response, reverse("add_student_to_group", kwargs={"group_id": self.group.pk}))
+        self.student_user.refresh_from_db()
+        self.assertTrue(hasattr(self.student_user, "student_profile"))
+        profile = StudentProfile.objects.get(user=self.student_user)
+        self.assertEqual(profile.group, self.group)
+
+    def test_cannot_add_student_already_in_group(self):
+        # already_in_group has a profile in this group, so not in queryset
+        self.client.force_login(self.teacher)
+        response = self.client.post(
+            reverse("add_student_to_group", kwargs={"group_id": self.group.pk}),
+            {"student": self.already_in_group.pk},
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "mavjud tanlovlardan biri emas")
+
+    def test_cannot_add_non_student_account(self):
+        # non_student is PARENT role (not STUDENT), not in queryset
+        self.client.force_login(self.teacher)
+        response = self.client.post(
+            reverse("add_student_to_group", kwargs={"group_id": self.group.pk}),
+            {"student": self.non_student.pk},
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "mavjud tanlovlardan biri emas")
+
+    def test_empty_list_when_no_unassigned_students(self):
+        # Assign the only unassigned student
+        StudentProfile.objects.create(user=self.student_user, group=self.group)
+        self.client.force_login(self.teacher)
+        response = self.client.get(reverse("add_student_to_group", kwargs={"group_id": self.group.pk}))
+        self.assertContains(response, "yo'q")
+

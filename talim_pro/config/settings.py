@@ -29,6 +29,7 @@ if not DEBUG and not STATIC_BUILD and (not os.getenv("DJANGO_SECRET_KEY") or SEC
     "build-collectstatic-only-placeholder",
     "collectstatic-build-key-only",
     "generate-before-use",
+    "change-this-to-a-long-random-secret-before-production",
 }):
     from django.core.exceptions import ImproperlyConfigured
     raise ImproperlyConfigured("Production muhitida DJANGO_SECRET_KEY sozlanishi shart.")
