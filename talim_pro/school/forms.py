@@ -1,7 +1,7 @@
 from django import forms
 from django.core.exceptions import ValidationError
 from django.contrib.auth.password_validation import validate_password
-from .models import GradeRecord, GradeReason, Attendance, Lesson, StudentProfile
+from .models import GradeRecord, GradeReason, Attendance, Lesson, StudentProfile, StudyGroup, User
 from .phone_auth import normalize_phone
 
 class GradeRecordForm(forms.Form):
@@ -43,6 +43,47 @@ class PhoneResetRequestForm(forms.Form):
         if not phone:
             raise ValidationError("Telefon raqamini xalqaro formatda kiriting.")
         return phone
+
+
+class SignupRequestForm(forms.Form):
+    username = forms.CharField(max_length=150, label="Foydalanuvchi nomi", widget=forms.TextInput(attrs={"class": "input", "autocomplete": "username"}))
+    first_name = forms.CharField(max_length=150, label="Ism", widget=forms.TextInput(attrs={"class": "input", "autocomplete": "given-name"}))
+    last_name = forms.CharField(max_length=150, label="Familiya", widget=forms.TextInput(attrs={"class": "input", "autocomplete": "family-name"}))
+    phone = forms.CharField(max_length=24, label="Telefon raqami", widget=forms.TextInput(attrs={"class": "input", "type": "tel", "autocomplete": "tel", "placeholder": "+998 90 123 45 67"}))
+    group = forms.ModelChoiceField(queryset=StudyGroup.objects.none(), label="O‘quv guruhi", widget=forms.Select(attrs={"class": "input"}))
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["group"].queryset = StudyGroup.objects.all()
+
+    def clean_username(self):
+        username = self.cleaned_data["username"].strip()
+        if User.objects.filter(username__iexact=username).exists():
+            raise ValidationError("Bu foydalanuvchi nomi band. Boshqasini tanlang.")
+        return username
+
+    def clean_phone(self):
+        phone = normalize_phone(self.cleaned_data["phone"])
+        if not phone:
+            raise ValidationError("Telefon raqamini xalqaro formatda kiriting.")
+        return phone
+
+
+class SignupCompleteForm(PhoneOTPForm):
+    new_password = forms.CharField(min_length=8, label="Parol", widget=forms.PasswordInput(attrs={"class": "input", "autocomplete": "new-password"}))
+    confirm_password = forms.CharField(label="Parolni takrorlang", widget=forms.PasswordInput(attrs={"class": "input", "autocomplete": "new-password"}))
+
+    def clean(self):
+        data = super().clean()
+        password = data.get("new_password")
+        if password:
+            try:
+                validate_password(password)
+            except ValidationError as exc:
+                self.add_error("new_password", exc)
+        if password and data.get("confirm_password") and password != data["confirm_password"]:
+            self.add_error("confirm_password", "Parollar bir xil emas.")
+        return data
 
 
 class PhoneOTPForm(forms.Form):

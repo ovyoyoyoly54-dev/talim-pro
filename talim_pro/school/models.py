@@ -190,6 +190,7 @@ class SMSLog(models.Model):
 
 class PhoneOTP(models.Model):
     class Purpose(models.TextChoices):
+        SIGNUP = "signup", "Yangi akkaunt"
         RESET_PASSWORD = "reset_password", "Parolni tiklash"
         CLOSE_ACCOUNT = "close_account", "Akkauntni yopish"
 
