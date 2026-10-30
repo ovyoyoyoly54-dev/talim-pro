@@ -78,7 +78,18 @@ Parol tiklash va akkauntni yopish ham shu `SMS_API_URL`, `SMS_API_TOKEN`, `SMS_S
 
 ### Render’da administrator va tizimga kirish
 
-Foydalanuvchilar dashboard’i `/dashboard/`, kirish sahifasi `/login/`. Dastlabki administratorni Render Dashboard → Web Service → **Shell** orqali `python manage.py createsuperuser` buyrug‘i bilan interaktiv yarating. O‘ziga xos login va kuchli parol tanlang; parolni environment variable, kod yoki GitHub’da saqlamang. Buyruq tugagach, `/login/` sahifasida shu hisob bilan kiring. Butun ilova uchun umumiy administrator paroli yoki yashirin backdoor bo‘lmasligi kerak.
+Foydalanuvchilar dashboard’i `/dashboard/`, kirish sahifasi `/login/`. Render Shell obunada mavjud bo‘lmasa, dastlabki administratorni bir martalik server environment sozlamalari orqali yarating:
+
+1. Render Dashboard → Web Service → **Environment** bo‘limiga `DJANGO_ADMIN_USERNAME`, `DJANGO_ADMIN_PASSWORD` va ixtiyoriy `DJANGO_ADMIN_EMAIL` kiriting. Parol uzun va taxmin qilish qiyin bo‘lsin; uni faqat Render Environment’da saqlang.
+2. Loyiha Dockerfile orqali deploy qilinsa, start command avval migratsiyani, keyin `ensure_admin` buyrug‘ini bajaradi. Agar native Python service ishlatilsa, **Start Command**’ni quyidagicha sozlang:
+
+```sh
+python manage.py migrate --noinput && python manage.py ensure_admin && gunicorn config.wsgi:application --bind 0.0.0.0:$PORT --workers ${WEB_CONCURRENCY:-3}
+```
+
+3. Deploy muvaffaqiyatli bo‘lib, `/login/` orqali kirganingizdan so‘ng Render Environment’dan `DJANGO_ADMIN_PASSWORD` (shuningdek `DJANGO_ADMIN_USERNAME`, `DJANGO_ADMIN_EMAIL`) qiymatlarini o‘chirib, service’ni qayta deploy qiling. Yaratilgan admin hisobi bazada saqlanadi; keyingi restart’da parol qayta o‘rnatilmaydi.
+
+`ensure_admin` buyrug‘i `DEBUG=False` bo‘lganda ishlaydi. Username allaqachon superuser bo‘lsa, parol o‘zgartirilmaydi; username band bo‘lib, superuser bo‘lmasa, buyruq xato bilan to‘xtaydi. Shuning uchun yangi, noyob username tanlang. Parolni kod yoki GitHub’ga yozmang; umumiy admin paroli yoki yashirin backdoor yo‘q.
 
 Render’dagi ma’lumotlar bazasi PostgreSQL bo‘lsin: shu hududdagi Render PostgreSQL bazasining internal URL manzilini `DATABASE_URL` qilib Environment bo‘limiga kiriting. `DJANGO_DEBUG=False`, `DJANGO_ALLOWED_HOSTS` va `DJANGO_CSRF_TRUSTED_ORIGINS` qiymatlarini service’ning haqiqiy `onrender.com` manzili yoki bog‘langan domeniga moslang; `PUBLIC_SITE_URL` uchun HTTPS public root manzilini kiriting. Barcha maxfiy qiymatlarni Render Environment’da saqlang.
 

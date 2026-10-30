@@ -78,6 +78,28 @@ class PhoneAccountSecurityTests(TestCase):
         self.client.force_login(admin_user)
         self.assertEqual(self.client.get(reverse("close_account")).status_code, 403)
 
+
+class AdminBootstrapCommandTests(TestCase):
+    @override_settings(DEBUG=False)
+    @patch.dict("os.environ", {
+        "DJANGO_ADMIN_USERNAME": "render_admin_test",
+        "DJANGO_ADMIN_PASSWORD": "A-Long-Unique-Admin-Pass!2026",
+        "DJANGO_ADMIN_EMAIL": "admin@example.invalid",
+    })
+    def test_command_creates_admin_once_without_rotating_existing_password(self):
+        call_command("ensure_admin", stdout=None)
+        admin_user = User.objects.get(username="render_admin_test")
+        self.assertTrue(admin_user.is_superuser)
+        self.assertTrue(admin_user.is_staff)
+        self.assertEqual(admin_user.role, User.Role.ADMIN)
+        self.assertTrue(admin_user.check_password("A-Long-Unique-Admin-Pass!2026"))
+
+        with patch.dict("os.environ", {"DJANGO_ADMIN_PASSWORD": "Another-Long-Admin-Pass!2026"}):
+            call_command("ensure_admin", stdout=None)
+        admin_user.refresh_from_db()
+        self.assertTrue(admin_user.check_password("A-Long-Unique-Admin-Pass!2026"))
+        self.assertFalse(admin_user.check_password("Another-Long-Admin-Pass!2026"))
+
 class PlatformRulesTests(TestCase):
     def setUp(self):
         self.admin = User.objects.create_user("admin1", password="StrongPassword123!", role=User.Role.ADMIN)
