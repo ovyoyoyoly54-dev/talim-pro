@@ -156,10 +156,24 @@ class AdminNavigationTests(TestCase):
         self.assertContains(response, "Parolni almashtirish")
         self.assertContains(response, f'href="{reverse("admin:index")}"')
 
-    def test_settings_panel_is_admin_only(self):
+    def test_non_admin_settings_show_common_sections_only(self):
         teacher = User.objects.create_user("settings_teacher", password="StrongPassword123!", role=User.Role.TEACHER)
         self.client.force_login(teacher)
-        self.assertEqual(self.client.get(reverse("settings_panel")).status_code, 403)
+        response = self.client.get(reverse("settings_panel"))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Akkaunt ma’lumotlari")
+        self.assertContains(response, "Parolni almashtirish")
+        self.assertContains(response, "Tizimdan chiqish")
+        self.assertNotContains(response, "Sayt sozlamalari")
+        self.assertNotContains(response, "Boshqaruv vositalari")
+        self.assertNotContains(response, reverse("admin:index"))
+
+    def test_admin_settings_expose_site_and_management_tools(self):
+        response = self.client.get(reverse("settings_panel"))
+        self.assertContains(response, f'href="{reverse("admin:school_user_changelist")}"')
+        self.assertContains(response, f'href="{reverse("admin:school_studygroup_changelist")}"')
+        self.assertContains(response, "Guruhlarni boshqarish")
+        self.assertContains(response, "Boshqaruv vositalari")
 
     def test_site_settings_update_public_home(self):
         response = self.client.post(reverse("settings_panel"), {
@@ -194,6 +208,118 @@ class AdminNavigationTests(TestCase):
         self.admin.refresh_from_db()
         self.assertTrue(self.admin.check_password("AnotherStrongNavigationPass!2027"))
         self.assertEqual(self.client.get(reverse("settings_panel")).status_code, 200)
+
+class SettingsRoleAccessTests(TestCase):
+    def setUp(self):
+        self.group = StudyGroup.objects.create(name="Settings A1", subject="Ingliz tili")
+        self.teacher = User.objects.create_user(
+            "settings_teacher_role", password="StrongPassword123!", role=User.Role.TEACHER,
+            first_name="Teacher", phone="+998901111111",
+        )
+        self.student = User.objects.create_user(
+            "settings_student_role", password="StrongPassword123!", role=User.Role.STUDENT,
+            first_name="Student", phone="+998902222222",
+        )
+        self.parent = User.objects.create_user(
+            "settings_parent_role", password="StrongPassword123!", role=User.Role.PARENT,
+            first_name="Parent", phone="+998903333333",
+        )
+        self.admin = User.objects.create_superuser(
+            "settings_admin_role", "settings-admin@example.invalid", "StrongPassword123!",
+            role=User.Role.ADMIN, phone="+998904444444",
+        )
+        StudentProfile.objects.create(user=self.student, group=self.group, parent=self.parent)
+
+    def test_all_roles_see_the_same_common_settings_sections(self):
+        for user in (self.teacher, self.student, self.parent, self.admin):
+            self.client.force_login(user)
+            response = self.client.get(reverse("settings_panel"))
+            self.assertEqual(response.status_code, 200, user.role)
+            self.assertContains(response, "Akkaunt ma’lumotlari")
+            self.assertContains(response, "Parolni almashtirish")
+            self.assertContains(response, "Xavfsizlik va chiqish")
+            self.assertContains(response, "Tizimdan chiqish")
+            self.assertContains(response, "csrfmiddlewaretoken")
+            self.assertContains(response, f'href="{reverse("settings_panel")}"')
+            self.client.logout()
+
+    def test_only_admin_sees_site_settings_and_management_tools(self):
+        for user in (self.teacher, self.student, self.parent):
+            self.client.force_login(user)
+            response = self.client.get(reverse("settings_panel"))
+            self.assertNotContains(response, "Sayt sozlamalari")
+            self.assertNotContains(response, "Boshqaruv vositalari")
+            self.assertNotContains(response, "Guruhlarni boshqarish")
+            self.assertNotContains(response, reverse("admin:index"))
+            self.client.logout()
+
+        self.client.force_login(self.admin)
+        response = self.client.get(reverse("settings_panel"))
+        self.assertContains(response, "Sayt sozlamalari")
+        self.assertContains(response, "Boshqaruv vositalari")
+        self.assertContains(response, f'href="{reverse("admin:school_studygroup_changelist")}"')
+        self.assertContains(response, f'href="{reverse("admin:index")}"')
+
+    def test_non_admin_cannot_post_site_settings(self):
+        original_name = PlatformSettings.get_solo().site_name
+        self.client.force_login(self.teacher)
+        response = self.client.post(reverse("settings_panel"), {
+            "action": "site_settings", "site_name": "Ruxsatsiz o‘zgarish",
+            "home_heading": "Ruxsatsiz", "home_description": "Ruxsatsiz",
+            "contact_phone": "", "contact_email": "",
+        })
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(PlatformSettings.get_solo().site_name, original_name)
+
+    def test_each_role_can_save_own_profile_without_changing_role(self):
+        for user in (self.teacher, self.student, self.parent, self.admin):
+            self.client.force_login(user)
+            original_role = user.role
+            new_first_name = f"{user.username} ism"
+            response = self.client.post(reverse("settings_panel"), {
+                "action": "account_settings", "username": user.username,
+                "first_name": new_first_name, "last_name": "Foydalanuvchi",
+                "email": f"{user.username}@example.invalid", "phone": user.phone,
+                "role": User.Role.ADMIN,
+            })
+            self.assertRedirects(response, reverse("settings_panel"))
+            user.refresh_from_db()
+            self.assertEqual(user.first_name, new_first_name)
+            self.assertEqual(user.role, original_role)
+            self.client.logout()
+
+    def test_password_change_requires_current_password_and_preserves_session(self):
+        self.client.force_login(self.student)
+        response = self.client.post(reverse("settings_panel"), {
+            "action": "password_change", "old_password": "WrongPassword!2026",
+            "new_password1": "AnotherStrongPass!2027", "new_password2": "AnotherStrongPass!2027",
+        })
+        self.assertEqual(response.status_code, 200)
+        self.student.refresh_from_db()
+        self.assertTrue(self.student.check_password("StrongPassword123!"))
+
+        response = self.client.post(reverse("settings_panel"), {
+            "action": "password_change", "old_password": "StrongPassword123!",
+            "new_password1": "AnotherStrongPass!2027", "new_password2": "AnotherStrongPass!2027",
+        })
+        self.assertRedirects(response, reverse("settings_panel"))
+        self.student.refresh_from_db()
+        self.assertTrue(self.student.check_password("AnotherStrongPass!2027"))
+        self.assertEqual(self.client.get(reverse("dashboard")).status_code, 200)
+
+    def test_public_pages_do_not_expose_user_phone_or_account_data(self):
+        phone = self.student.phone
+        response = self.client.get(reverse("home"))
+        self.assertNotContains(response, phone)
+        self.assertNotContains(response, self.student.username)
+        response = self.client.get(reverse("login"))
+        self.assertNotContains(response, phone)
+        self.assertNotContains(response, self.student.username)
+
+    def test_settings_requires_authentication(self):
+        response = self.client.get(reverse("settings_panel"))
+        self.assertRedirects(response, f"{reverse('login')}?next={reverse('settings_panel')}")
+
 
 class PlatformRulesTests(TestCase):
     def setUp(self):

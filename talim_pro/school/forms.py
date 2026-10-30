@@ -19,17 +19,27 @@ class PlatformSettingsForm(forms.ModelForm):
         }
 
 
-class AdminAccountSettingsForm(forms.ModelForm):
+class AccountSettingsForm(forms.ModelForm):
     class Meta:
         model = User
         fields = ("username", "first_name", "last_name", "email", "phone")
+        labels = {
+            "username": "Foydalanuvchi nomi",
+            "first_name": "Ism",
+            "last_name": "Familiya",
+            "email": "Email",
+            "phone": "Telefon raqami",
+        }
         widgets = {
             "username": forms.TextInput(attrs={"class": "input", "autocomplete": "username"}),
             "first_name": forms.TextInput(attrs={"class": "input", "autocomplete": "given-name"}),
             "last_name": forms.TextInput(attrs={"class": "input", "autocomplete": "family-name"}),
             "email": forms.EmailInput(attrs={"class": "input", "autocomplete": "email"}),
-            "phone": forms.TextInput(attrs={"class": "input", "type": "tel", "autocomplete": "tel"}),
+            "phone": forms.TextInput(attrs={"class": "input", "type": "tel", "autocomplete": "tel", "placeholder": "+998 90 123 45 67"}),
         }
+
+
+AdminAccountSettingsForm = AccountSettingsForm
 
 
 class StyledPasswordChangeForm(PasswordChangeForm):
