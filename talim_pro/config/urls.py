@@ -40,6 +40,7 @@ urlpatterns = [
     path("robots.txt", views.robots_txt, name="robots_txt"),
     path("sitemap.xml", views.sitemap_xml, name="sitemap_xml"),
     path("login/", RateLimitedLoginView.as_view(template_name="school/login.html"), name="login"),
+    path("royxatdan-otish/", views.signup, name="signup"),
     path("parolni-tiklash/", views.password_reset, name="password_reset"),
     path("akkauntni-yopish/", views.close_account, name="close_account"),
     path("logout/", auth_views.LogoutView.as_view(), name="logout"),

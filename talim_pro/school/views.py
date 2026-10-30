@@ -1,5 +1,5 @@
 from django.contrib import messages
-from django.contrib.auth import logout
+from django.contrib.auth import logout, login as auth_login
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
 from django.db import transaction
@@ -12,7 +12,7 @@ from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.http import require_GET
 from xml.sax.saxutils import escape
-from .forms import GradeRecordForm, PhoneResetRequestForm, PhoneOTPForm, PhonePasswordResetForm
+from .forms import GradeRecordForm, PhoneResetRequestForm, PhoneOTPForm, PhonePasswordResetForm, SignupRequestForm, SignupCompleteForm
 from .models import User, StudyGroup, StudentProfile, Lesson, GradeRecord, Attendance, SMSLog, PhoneOTP
 from .phone_auth import consume_phone_otp, issue_phone_otp, normalize_phone
 from .sms import send_parent_sms
@@ -85,6 +85,76 @@ def offline_page(request):
     )
     response["X-Robots-Tag"] = "noindex, nofollow"
     return response
+
+
+def signup(request):
+    if request.user.is_authenticated:
+        return redirect("dashboard")
+    pending_id = request.session.get("signup_user_id")
+    pending_user = User.objects.filter(pk=pending_id, is_active=False).first() if pending_id else None
+    challenge_id = request.session.get("signup_otp_id")
+    challenge = PhoneOTP.objects.filter(
+        pk=challenge_id, user=pending_user, purpose=PhoneOTP.Purpose.SIGNUP,
+        consumed_at__isnull=True,
+    ).first() if pending_user and challenge_id else None
+
+    if request.method == "POST" and request.POST.get("action") == "send_code":
+        if pending_user:
+            pending_user.delete()
+            for key in ("signup_user_id", "signup_otp_id", "signup_group_id", "signup_started_at"):
+                request.session.pop(key, None)
+            pending_user = None
+            challenge = None
+        form = SignupRequestForm(request.POST)
+        if form.is_valid():
+            data = form.cleaned_data
+            user = User(
+                username=data["username"], first_name=data["first_name"], last_name=data["last_name"],
+                phone=data["phone"], role=User.Role.STUDENT, is_active=False,
+            )
+            user.set_unusable_password()
+            user.save()
+            issued = issue_phone_otp(user=user, purpose=PhoneOTP.Purpose.SIGNUP, request=request)
+            if issued:
+                request.session["signup_user_id"] = user.pk
+                request.session["signup_otp_id"] = issued.pk
+                request.session["signup_group_id"] = data["group"].pk
+                request.session["signup_started_at"] = timezone.now().timestamp()
+                messages.info(request, "Telefoningizga tasdiqlash kodi yuborildi.")
+                return redirect("signup")
+            user.delete()
+            messages.error(request, "SMS kod yuborilmadi. Raqamni tekshiring yoki keyinroq urinib ko‘ring.")
+        return render(request, "school/signup.html", {"request_form": form, "has_challenge": bool(challenge)})
+
+    complete_form = SignupCompleteForm()
+    if request.method == "POST" and request.POST.get("action") == "complete_signup":
+        complete_form = SignupCompleteForm(request.POST)
+        started = request.session.get("signup_started_at", 0)
+        fresh = timezone.now().timestamp() - started < 3600
+        if challenge and pending_user and fresh and complete_form.is_valid():
+            if consume_phone_otp(challenge_id=challenge.pk, user=pending_user,
+                                 purpose=PhoneOTP.Purpose.SIGNUP, code=complete_form.cleaned_data["code"]):
+                group = StudyGroup.objects.filter(pk=request.session.get("signup_group_id")).first()
+                if group:
+                    with transaction.atomic():
+                        pending_user.set_password(complete_form.cleaned_data["new_password"])
+                        pending_user.is_active = True
+                        pending_user.save(update_fields=["password", "is_active"])
+                        StudentProfile.objects.create(user=pending_user, group=group)
+                    auth_login(request, pending_user)
+                    for key in ("signup_user_id", "signup_otp_id", "signup_group_id", "signup_started_at"):
+                        request.session.pop(key, None)
+                    return redirect("dashboard")
+                complete_form.add_error(None, "Guruh topilmadi. Ro‘yxatdan o‘tishni qaytadan boshlang.")
+            else:
+                complete_form.add_error("code", "Kod noto‘g‘ri yoki muddati tugagan.")
+        elif not challenge or not fresh:
+            complete_form.add_error(None, "Tasdiqlash so‘rovi muddati tugagan. Yangi kod so‘rang.")
+
+    return render(request, "school/signup.html", {
+        "request_form": SignupRequestForm(), "complete_form": complete_form,
+        "has_challenge": bool(challenge),
+    })
 
 
 def password_reset(request):

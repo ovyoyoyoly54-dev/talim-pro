@@ -69,6 +69,16 @@ class SignupRequestForm(forms.Form):
         return phone
 
 
+class PhoneOTPForm(forms.Form):
+    code = forms.CharField(min_length=6, max_length=6, widget=forms.TextInput(attrs={"class": "input", "inputmode": "numeric", "autocomplete": "one-time-code", "pattern": "[0-9]{6}", "placeholder": "000000"}))
+
+    def clean_code(self):
+        code = self.cleaned_data["code"]
+        if not code.isdigit():
+            raise ValidationError("Tasdiqlash kodi 6 ta raqamdan iborat bo‘lishi kerak.")
+        return code
+
+
 class SignupCompleteForm(PhoneOTPForm):
     new_password = forms.CharField(min_length=8, label="Parol", widget=forms.PasswordInput(attrs={"class": "input", "autocomplete": "new-password"}))
     confirm_password = forms.CharField(label="Parolni takrorlang", widget=forms.PasswordInput(attrs={"class": "input", "autocomplete": "new-password"}))
@@ -84,16 +94,6 @@ class SignupCompleteForm(PhoneOTPForm):
         if password and data.get("confirm_password") and password != data["confirm_password"]:
             self.add_error("confirm_password", "Parollar bir xil emas.")
         return data
-
-
-class PhoneOTPForm(forms.Form):
-    code = forms.CharField(min_length=6, max_length=6, widget=forms.TextInput(attrs={"class": "input", "inputmode": "numeric", "autocomplete": "one-time-code", "pattern": "[0-9]{6}", "placeholder": "000000"}))
-
-    def clean_code(self):
-        code = self.cleaned_data["code"]
-        if not code.isdigit():
-            raise ValidationError("Tasdiqlash kodi 6 ta raqamdan iborat bo‘lishi kerak.")
-        return code
 
 
 class PhonePasswordResetForm(PhoneOTPForm):

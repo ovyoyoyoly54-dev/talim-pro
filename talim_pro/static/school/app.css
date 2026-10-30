@@ -15,6 +15,10 @@ button,a,input,select,textarea{-webkit-tap-highlight-color:transparent}
 .sidebar nav::-webkit-scrollbar{display:none}
 .sidebar nav a{min-height:44px;scroll-snap-align:start}
 .button,.icon-button{min-height:44px}
+.auth-switch{display:grid;grid-template-columns:1fr 1fr;gap:5px;padding:5px;margin:18px 0 20px;border-radius:11px;background:#f1f4f9}
+.auth-switch a{display:grid;place-items:center;min-height:42px;padding:8px;border-radius:8px;color:#718198;text-align:center;font-size:12px;font-weight:750}
+.auth-switch a.auth-switch-active{background:#fff;color:#18385e;box-shadow:0 2px 8px #10254412}
+.button:disabled{opacity:.5;cursor:not-allowed;transform:none;box-shadow:none}
 @media(max-width:760px){
   input,select,textarea{font-size:16px}
   body{padding-bottom:env(safe-area-inset-bottom)}

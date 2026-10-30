@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}Yangi akkaunt ochish — TA'LIM PRO{% endblock %}
+{% block content %}
+<div class="auth-card signup-card">
+  <span class="eyebrow">TA'LIM PRO</span>
+  <h1>Yangi akkaunt ochish</h1>
+  <div class="auth-switch"><a href="{% url 'login' %}">Hisobim bor</a><a class="auth-switch-active" href="{% url 'signup' %}">Yangi akkaunt</a></div>
+  {% if not has_challenge %}
+  <p class="muted">Telefon raqamingizni SMS orqali tasdiqlab, o‘quvchi akkauntini yarating.</p>
+  {% if not request_form.fields.group.queryset.exists %}<div class="message warning">Hozircha ro‘yxatdan o‘tish uchun guruh yo‘q. Markaz bilan bog‘laning.</div>{% endif %}
+  <form method="post" class="stack-form">
+    {% csrf_token %}<input type="hidden" name="action" value="send_code">
+    {% for field in request_form %}<label>{{ field.label }}{{ field }}{{ field.errors }}</label>{% endfor %}
+    <button class="button button-primary button-wide" type="submit" {% if not request_form.fields.group.queryset.exists %}disabled{% endif %}>SMS kod yuborish</button>
+  </form>
+  {% else %}
+  <p class="muted">Telefoningizga yuborilgan olti xonali kodni kiriting va akkaunt uchun parol belgilang.</p>
+  <form method="post" class="stack-form">
+    {% csrf_token %}<input type="hidden" name="action" value="complete_signup">
+    {{ complete_form.non_field_errors }}
+    <label>SMS tasdiqlash kodi {{ complete_form.code }}{{ complete_form.code.errors }}</label>
+    <label>Parol {{ complete_form.new_password }}{{ complete_form.new_password.errors }}</label>
+    <label>Parolni takrorlang {{ complete_form.confirm_password }}{{ complete_form.confirm_password.errors }}</label>
+    <button class="button button-primary button-wide" type="submit">Tasdiqlash va tizimga kirish</button>
+  </form>
+  {% endif %}
+  <p class="security-note"><a href="{% url 'login' %}">Kirish sahifasiga qaytish</a></p>
+</div>
+{% endblock %}
