@@ -90,5 +90,13 @@ class SMSLogAdmin(admin.ModelAdmin):
         return False
 
 
-admin.site.register(Lesson)
+@admin.register(Lesson)
+class LessonAdmin(admin.ModelAdmin):
+    list_display = ("title", "group", "teacher", "starts_at", "room")
+    list_filter = ("group", "teacher", "starts_at")
+    search_fields = ("title", "group__name", "teacher__username", "teacher__first_name", "teacher__last_name", "room")
+    date_hierarchy = "starts_at"
+    ordering = ("starts_at",)
+
+
 admin.site.register(Attendance)

@@ -1,5 +1,6 @@
 from django.test import TestCase, Client
 from django.core.exceptions import ValidationError
+from django.db import IntegrityError
 from django.urls import reverse
 from django.utils import timezone
 from django.test import override_settings
@@ -11,7 +12,7 @@ from datetime import timedelta
 from unittest.mock import patch
 import requests
 from .models import User, StudyGroup, StudentProfile, Lesson, GradeReason, GradeRecord, Attendance, PhoneOTP, PlatformSettings
-from .forms import GradeRecordForm
+from .forms import GradeRecordForm, LessonCreateForm
 from .admin import GradeRecordAdmin, GradeRecordAdminForm
 from .sms import send_parent_sms
 
@@ -140,6 +141,7 @@ class AdminNavigationTests(TestCase):
         self.assertContains(response, "school/admin.css")
         self.assertContains(response, "Foydalanuvchilar")
         self.assertContains(response, "O‘quv guruhlari")
+        self.assertContains(response, f'href="{reverse("lesson_create")}"')
         self.assertNotContains(response, "So‘nggi harakatlar")
         self.assertNotContains(response, "Groups")
 
@@ -364,6 +366,165 @@ class SettingsRoleAccessTests(TestCase):
         self.assertRedirects(response, f"{reverse('login')}?next={reverse('settings_panel')}")
 
 
+class LessonCreateTests(TestCase):
+    def setUp(self):
+        self.admin = User.objects.create_superuser(
+            "lesson_admin", "lesson@example.invalid", "StrongLessonPass!2026",
+            role=User.Role.ADMIN,
+        )
+        self.teacher = User.objects.create_user(
+            "lesson_teacher", password="StrongPassword123!", role=User.Role.TEACHER,
+            first_name="Dars", last_name="O‘qituvchi",
+        )
+        self.other_teacher = User.objects.create_user(
+            "other_lesson_teacher", password="StrongPassword123!", role=User.Role.TEACHER,
+            first_name="Boshqa", last_name="O‘qituvchi",
+        )
+        self.student = User.objects.create_user(
+            "lesson_student", password="StrongPassword123!", role=User.Role.STUDENT,
+        )
+        self.parent = User.objects.create_user(
+            "lesson_parent", password="StrongPassword123!", role=User.Role.PARENT,
+        )
+        self.group = StudyGroup.objects.create(name="Lesson A1", subject="Ingliz tili")
+        self.group.teachers.add(self.teacher)
+        self.other_group = StudyGroup.objects.create(name="Lesson B1", subject="Matematika")
+        self.other_group.teachers.add(self.other_teacher)
+        self.starts_at = (timezone.localtime() + timedelta(days=1)).replace(second=0, microsecond=0)
+        self.starts_value = self.starts_at.strftime("%Y-%m-%dT%H:%M")
+
+    def payload(self, **overrides):
+        data = {
+            "title": "Present Simple",
+            "group": self.group.pk,
+            "teacher": self.teacher.pk,
+            "starts_at": self.starts_value,
+            "room": "201-xona",
+        }
+        data.update(overrides)
+        return data
+
+    def test_admin_can_open_clear_lesson_create_form(self):
+        self.client.force_login(self.admin)
+        response = self.client.get(reverse("lesson_create"))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Dars mavzusi")
+        self.assertContains(response, "O‘quv guruhi")
+        self.assertContains(response, "O‘qituvchi")
+        self.assertContains(response, "Sana va vaqt")
+        self.assertContains(response, "Xona")
+        self.assertContains(response, 'type="datetime-local"')
+
+    def test_admin_can_create_lesson_and_redirect_to_schedule(self):
+        self.client.force_login(self.admin)
+        response = self.client.post(reverse("lesson_create"), self.payload())
+        self.assertRedirects(response, reverse("schedule"))
+        lesson = Lesson.objects.get(title="Present Simple")
+        self.assertEqual(lesson.group, self.group)
+        self.assertEqual(lesson.teacher, self.teacher)
+        self.assertEqual(lesson.starts_at, self.starts_at)
+        self.assertEqual(lesson.room, "201-xona")
+
+    def test_only_admin_can_open_and_submit_lesson_create(self):
+        for user in (self.teacher, self.student, self.parent):
+            self.client.force_login(user)
+            self.assertEqual(self.client.get(reverse("lesson_create")).status_code, 403)
+            self.assertEqual(self.client.post(reverse("lesson_create"), self.payload()).status_code, 403)
+            self.client.logout()
+        self.assertFalse(Lesson.objects.exists())
+
+    def test_lesson_create_requires_login(self):
+        response = self.client.get(reverse("lesson_create"))
+        self.assertRedirects(response, f"{reverse('login')}?next={reverse('lesson_create')}")
+
+    def test_lesson_create_requires_csrf_token(self):
+        client = Client(enforce_csrf_checks=True)
+        client.force_login(self.admin)
+        response = client.post(reverse("lesson_create"), self.payload())
+        self.assertEqual(response.status_code, 403)
+        self.assertFalse(Lesson.objects.exists())
+
+    def test_teacher_queryset_contains_only_active_teachers(self):
+        inactive = User.objects.create_user(
+            "inactive_lesson_teacher", password="StrongPassword123!",
+            role=User.Role.TEACHER, is_active=False,
+        )
+        form = LessonCreateForm()
+        self.assertIn(self.teacher, form.fields["teacher"].queryset)
+        self.assertIn(self.other_teacher, form.fields["teacher"].queryset)
+        self.assertNotIn(self.admin, form.fields["teacher"].queryset)
+        self.assertNotIn(self.student, form.fields["teacher"].queryset)
+        self.assertNotIn(inactive, form.fields["teacher"].queryset)
+
+    def test_teacher_must_be_assigned_to_selected_group(self):
+        self.client.force_login(self.admin)
+        response = self.client.post(reverse("lesson_create"), self.payload(teacher=self.other_teacher.pk))
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("teacher", response.context["form"].errors)
+        self.assertContains(response, "guruhga biriktirilmagan")
+        self.assertFalse(Lesson.objects.exists())
+
+    def test_past_lesson_time_is_rejected(self):
+        past = (timezone.localtime() - timedelta(hours=1)).strftime("%Y-%m-%dT%H:%M")
+        self.client.force_login(self.admin)
+        response = self.client.post(reverse("lesson_create"), self.payload(starts_at=past))
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("starts_at", response.context["form"].errors)
+        self.assertContains(response, "kelajakda bo‘lishi kerak")
+        self.assertFalse(Lesson.objects.exists())
+
+    def test_duplicate_group_time_is_rejected(self):
+        self.client.force_login(self.admin)
+        self.client.post(reverse("lesson_create"), self.payload())
+        response = self.client.post(reverse("lesson_create"), self.payload(title="Takroriy dars"))
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("group", response.context["form"].errors)
+        self.assertContains(response, "aynan shu vaqtda dars mavjud")
+        self.assertEqual(Lesson.objects.count(), 1)
+
+    def test_teacher_double_booking_is_rejected(self):
+        self.other_group.teachers.add(self.teacher)
+        Lesson.objects.create(
+            group=self.other_group, teacher=self.teacher, title="Boshqa guruh darsi",
+            starts_at=self.starts_at, room="101-xona",
+        )
+        self.client.force_login(self.admin)
+        response = self.client.post(reverse("lesson_create"), self.payload(room="202-xona"))
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("teacher", response.context["form"].errors)
+        self.assertContains(response, "boshqa darsi bor")
+        self.assertEqual(Lesson.objects.count(), 1)
+
+    def test_room_double_booking_is_rejected(self):
+        Lesson.objects.create(
+            group=self.other_group, teacher=self.other_teacher, title="Boshqa dars",
+            starts_at=self.starts_at, room="201-xona",
+        )
+        self.client.force_login(self.admin)
+        response = self.client.post(reverse("lesson_create"), self.payload())
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("room", response.context["form"].errors)
+        self.assertContains(response, "xona aynan shu vaqtda band")
+        self.assertEqual(Lesson.objects.count(), 1)
+
+    def test_model_rejects_teacher_not_assigned_to_group(self):
+        with self.assertRaises(ValidationError):
+            Lesson.objects.create(
+                group=self.group, teacher=self.other_teacher, title="Noto‘g‘ri bog‘lanish",
+                starts_at=self.starts_at, room="",
+            )
+
+    def test_lesson_create_links_are_visible_only_to_admin(self):
+        self.client.force_login(self.admin)
+        for url_name in ("dashboard", "schedule"):
+            response = self.client.get(reverse(url_name))
+            self.assertContains(response, f'href="{reverse("lesson_create")}"')
+        self.client.force_login(self.teacher)
+        for url_name in ("dashboard", "schedule"):
+            response = self.client.get(reverse(url_name))
+            self.assertNotContains(response, f'href="{reverse("lesson_create")}"')
+
+
 class PlatformRulesTests(TestCase):
     def setUp(self):
         self.admin = User.objects.create_user("admin1", password="StrongPassword123!", role=User.Role.ADMIN)
@@ -525,6 +686,7 @@ class PlatformRulesTests(TestCase):
         self.assertIn(b"<loc>http://testserver/</loc>", sitemap.content)
         robots = client.get(reverse("robots_txt"))
         self.assertContains(robots, "Disallow: /oquvchi/")
+        self.assertContains(robots, "Disallow: /dars-qoshish/")
         self.assertContains(robots, "Disallow: /dashboard/")
         self.assertContains(robots, "Disallow: /parolni-tiklash/")
         self.assertContains(robots, "Sitemap: http://testserver/sitemap.xml")
@@ -559,6 +721,10 @@ class AddStudentToGroupTests(TestCase):
             "add_student", password="StrongPassword123!", role=User.Role.STUDENT,
             first_name="Ali", last_name="Valiyev",
         )
+        self.inactive_student = User.objects.create_user(
+            "inactive_student", password="StrongPassword123!", role=User.Role.STUDENT,
+            first_name="Inactive", last_name="Learner", is_active=False,
+        )
         self.non_student = User.objects.create_user(
             "not_student", password="StrongPassword123!", role=User.Role.PARENT,
             first_name="Not", last_name="Student",
@@ -569,6 +735,10 @@ class AddStudentToGroupTests(TestCase):
         )
         self.group = StudyGroup.objects.create(name="A1", subject="Ingliz tili")
         self.group.teachers.add(self.teacher)
+        Lesson.objects.create(
+            group=self.group, teacher=self.teacher, title="O‘qituvchi darsi",
+            starts_at=timezone.now() + timedelta(days=1), room="",
+        )
         # already_in_group is already in the group
         StudentProfile.objects.create(user=self.already_in_group, group=self.group)
         # Non-student already has a profile too (should not appear)
@@ -582,6 +752,13 @@ class AddStudentToGroupTests(TestCase):
     def test_other_teacher_cannot_access(self):
         self.client.force_login(self.other_teacher)
         response = self.client.get(reverse("add_student_to_group", kwargs={"group_id": self.group.pk}))
+        self.assertEqual(response.status_code, 403)
+
+    def test_assigned_teacher_without_a_lesson_cannot_add_students(self):
+        group_without_lesson = StudyGroup.objects.create(name="A2", subject="Matematika")
+        group_without_lesson.teachers.add(self.teacher)
+        self.client.force_login(self.teacher)
+        response = self.client.get(reverse("add_student_to_group", kwargs={"group_id": group_without_lesson.pk}))
         self.assertEqual(response.status_code, 403)
 
     def test_student_cannot_access(self):
@@ -603,6 +780,17 @@ class AddStudentToGroupTests(TestCase):
         self.client.force_login(self.teacher)
         response = self.client.get(reverse("add_student_to_group", kwargs={"group_id": self.group.pk}))
         self.assertNotContains(response, "Not Student")
+
+    def test_inactive_student_does_not_appear(self):
+        self.client.force_login(self.teacher)
+        response = self.client.get(reverse("add_student_to_group", kwargs={"group_id": self.group.pk}))
+        self.assertNotContains(response, "Inactive Learner")
+
+    def test_student_username_is_not_shown_in_candidate_list(self):
+        self.client.force_login(self.teacher)
+        response = self.client.get(reverse("add_student_to_group", kwargs={"group_id": self.group.pk}))
+        self.assertContains(response, "Ali Valiyev")
+        self.assertNotContains(response, self.student_user.username)
 
     def test_search_filters_by_first_name(self):
         self.client.force_login(self.teacher)
@@ -650,6 +838,25 @@ class AddStudentToGroupTests(TestCase):
         )
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "mavjud tanlovlardan biri emas")
+
+    def test_cannot_add_inactive_student_account(self):
+        self.client.force_login(self.teacher)
+        response = self.client.post(
+            reverse("add_student_to_group", kwargs={"group_id": self.group.pk}),
+            {"student": self.inactive_student.pk},
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(StudentProfile.objects.filter(user=self.inactive_student).exists())
+
+    @patch("school.views.StudentProfile.objects.create", side_effect=IntegrityError("duplicate profile"))
+    def test_concurrent_duplicate_add_returns_a_safe_message(self, create_profile):
+        self.client.force_login(self.teacher)
+        response = self.client.post(
+            reverse("add_student_to_group", kwargs={"group_id": self.group.pk}),
+            {"student": self.student_user.pk},
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "boshqa so‘rovda")
 
     def test_empty_list_when_no_unassigned_students(self):
         # Assign the only unassigned student

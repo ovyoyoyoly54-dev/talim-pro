@@ -59,7 +59,8 @@
           <div class="tp-admin-actions">
             {% if model.admin_url and model.perms.change %}<a class="tp-admin-manage" href="{{ model.admin_url }}">Boshqarish <span>→</span></a>
             {% elif model.admin_url and model.perms.view %}<a class="tp-admin-manage" href="{{ model.admin_url }}">Ko‘rish <span>→</span></a>{% endif %}
-            {% if model.add_url and model.perms.add %}<a class="tp-admin-add" href="{{ model.add_url }}" aria-label="{{ model.name }} qo‘shish">+</a>{% endif %}
+            {% if model.object_name == "Lesson" and model.perms.add %}<a class="tp-admin-add" href="{% url 'lesson_create' %}" aria-label="{{ model.name }} qo‘shish">+</a>
+            {% elif model.add_url and model.perms.add %}<a class="tp-admin-add" href="{{ model.add_url }}" aria-label="{{ model.name }} qo‘shish">+</a>{% endif %}
           </div>
         </article>
         {% endfor %}

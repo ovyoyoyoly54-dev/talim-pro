@@ -97,8 +97,27 @@ class Lesson(models.Model):
         verbose_name_plural = "Darslar"
 
     def clean(self):
-        if self.teacher_id and not (self.teacher.is_superuser or self.teacher.role in (User.Role.TEACHER, User.Role.ADMIN)):
-            raise ValidationError({"teacher": "Darsga faqat o‘qituvchi biriktirilishi mumkin."})
+        errors = {}
+        teacher = self.teacher if self.teacher_id else None
+        if teacher and not (teacher.is_superuser or teacher.role in (User.Role.TEACHER, User.Role.ADMIN)):
+            errors["teacher"] = "Darsga faqat o‘qituvchi biriktirilishi mumkin."
+        elif teacher and self.group_id and teacher.role == User.Role.TEACHER:
+            if not self.group.teachers.filter(pk=teacher.pk).exists():
+                errors["teacher"] = "Tanlangan o‘qituvchi bu guruhga biriktirilmagan."
+
+        if self.starts_at:
+            conflicts = Lesson.objects.filter(starts_at=self.starts_at)
+            if self.pk:
+                conflicts = conflicts.exclude(pk=self.pk)
+            if self.group_id and conflicts.filter(group_id=self.group_id).exists():
+                errors["group"] = "Bu guruhda aynan shu vaqtda dars mavjud."
+            if self.teacher_id and conflicts.filter(teacher_id=self.teacher_id).exists():
+                errors["teacher"] = "O‘qituvchining aynan shu vaqtda boshqa darsi bor."
+            if self.room.strip() and conflicts.filter(room__iexact=self.room.strip()).exists():
+                errors["room"] = "Bu xona aynan shu vaqtda band."
+
+        if errors:
+            raise ValidationError(errors)
 
     def save(self, *args, **kwargs):
         self.full_clean()

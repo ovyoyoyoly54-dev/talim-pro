@@ -2,6 +2,7 @@ from django import forms
 from django.core.exceptions import ValidationError
 from django.contrib.auth.password_validation import validate_password
 from django.contrib.auth.forms import PasswordChangeForm
+from django.utils import timezone
 from .models import GradeRecord, GradeReason, Attendance, Lesson, StudentProfile, StudyGroup, User, PlatformSettings
 from .phone_auth import normalize_phone
 
@@ -48,6 +49,58 @@ class StyledPasswordChangeForm(PasswordChangeForm):
         for name, field in self.fields.items():
             field.widget.attrs["class"] = "input"
             field.widget.attrs["autocomplete"] = "current-password" if name == "old_password" else "new-password"
+
+class LessonCreateForm(forms.ModelForm):
+    starts_at = forms.DateTimeField(
+        label="Sana va vaqt",
+        input_formats=["%Y-%m-%dT%H:%M", "%Y-%m-%d %H:%M", "%Y-%m-%d %H:%M:%S"],
+        widget=forms.DateTimeInput(
+            format="%Y-%m-%dT%H:%M",
+            attrs={"class": "input", "type": "datetime-local"},
+        ),
+        help_text="Dars boshlanish sanasi va vaqtini tanlang.",
+    )
+
+    class Meta:
+        model = Lesson
+        fields = ("title", "group", "teacher", "starts_at", "room")
+        labels = {
+            "title": "Dars mavzusi",
+            "group": "O‘quv guruhi",
+            "teacher": "O‘qituvchi",
+            "room": "Xona",
+        }
+        widgets = {
+            "title": forms.TextInput(attrs={"class": "input", "placeholder": "Masalan: Present Simple", "autocomplete": "off"}),
+            "group": forms.Select(attrs={"class": "input"}),
+            "teacher": forms.Select(attrs={"class": "input"}),
+            "room": forms.TextInput(attrs={"class": "input", "placeholder": "Masalan: 201-xona", "autocomplete": "off"}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["group"].queryset = StudyGroup.objects.order_by("name")
+        self.fields["teacher"].queryset = User.objects.filter(
+            role=User.Role.TEACHER, is_active=True,
+        ).order_by("last_name", "first_name", "username")
+        self.fields["starts_at"].widget.attrs["min"] = timezone.localtime().strftime("%Y-%m-%dT%H:%M")
+
+    def clean_title(self):
+        title = self.cleaned_data["title"].strip()
+        if not title:
+            raise ValidationError("Dars mavzusini kiriting.")
+        return title
+
+    def clean_room(self):
+        return self.cleaned_data["room"].strip()
+
+    def clean(self):
+        data = super().clean()
+        starts_at = data.get("starts_at")
+        if starts_at and starts_at <= timezone.now():
+            self.add_error("starts_at", "Dars vaqti kelajakda bo‘lishi kerak.")
+        return data
+
 
 class GradeRecordForm(forms.Form):
     lesson = forms.ModelChoiceField(queryset=Lesson.objects.none(), widget=forms.Select(attrs={"class": "input"}))
@@ -212,6 +265,7 @@ class AddStudentToGroupForm(forms.Form):
         # Faqat STUDENT ro'li va hali StudentProfile'i yo'q foydalanuvchilar
         queryset = User.objects.filter(
             role=User.Role.STUDENT,
+            is_active=True,
             student_profile__isnull=True,
         ).order_by("last_name", "first_name", "username")
         self.fields["student"].queryset = queryset
@@ -221,8 +275,8 @@ class AddStudentToGroupForm(forms.Form):
         if not student:
             raise ValidationError("O'quvchini tanlang.")
         # Server tomondan ro'yxatdan o'tganligini tekshirish
-        if student.role != User.Role.STUDENT:
-            raise ValidationError("Faqat o'quvchi ro'ligiga ega hisob qo'shilishi mumkin.")
+        if student.role != User.Role.STUDENT or not student.is_active:
+            raise ValidationError("Faqat faol o'quvchi hisobini guruhga qo'shish mumkin.")
         # Allaqachon guruhga biriktirilganligini tekshirish
         if hasattr(student, "student_profile") and student.student_profile_id:
             raise ValidationError("Ushbu foydalanuvchi allaqachon boshqa guruhga biriktirilgan.")

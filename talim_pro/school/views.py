@@ -2,7 +2,7 @@ from django.contrib import messages
 from django.contrib.auth import logout, login as auth_login, update_session_auth_hash
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
-from django.db import transaction
+from django.db import IntegrityError, transaction
 from django.db.models import Avg, Sum, Count, Q
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import FileResponse, JsonResponse, HttpResponse
@@ -12,7 +12,7 @@ from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.http import require_GET
 from xml.sax.saxutils import escape
-from .forms import GradeRecordForm, PhoneResetRequestForm, PhoneOTPForm, PhonePasswordResetForm, SignupRequestForm, SignupCompleteForm, AccountClosureConfirmForm, PlatformSettingsForm, AccountSettingsForm, StyledPasswordChangeForm, AddStudentToGroupForm
+from .forms import GradeRecordForm, PhoneResetRequestForm, PhoneOTPForm, PhonePasswordResetForm, SignupRequestForm, SignupCompleteForm, AccountClosureConfirmForm, PlatformSettingsForm, AccountSettingsForm, StyledPasswordChangeForm, AddStudentToGroupForm, LessonCreateForm
 from .models import User, StudyGroup, StudentProfile, Lesson, GradeRecord, Attendance, SMSLog, PhoneOTP, PlatformSettings
 from .phone_auth import consume_phone_otp, issue_phone_otp, normalize_phone
 from .sms import send_parent_sms
@@ -30,7 +30,7 @@ def robots_txt(request):
     body = "\n".join([
         "User-agent: *", "Allow: /", "Disallow: /admin/", "Disallow: /login/",
         "Disallow: /logout/", "Disallow: /dashboard/", "Disallow: /baholash/",
-        "Disallow: /jadval/", "Disallow: /reyting/", "Disallow: /oquvchi/",
+        "Disallow: /dars-qoshish/", "Disallow: /jadval/", "Disallow: /reyting/", "Disallow: /oquvchi/",
         "Disallow: /parolni-tiklash/", "Disallow: /akkauntni-yopish/",
         "Disallow: /offline/", "Disallow: /service-worker.js", "Disallow: /manifest.webmanifest",
         f"Sitemap: {site_url}{reverse('sitemap_xml')}", "",
@@ -355,8 +355,9 @@ def dashboard(request):
         })
     elif user.role == User.Role.TEACHER:
         lessons = teacher_lessons(user)
+        teaching_groups = StudyGroup.objects.filter(teachers=user, lessons__teacher=user).distinct()
         context.update({"lessons": lessons.filter(starts_at__date__gte=timezone.localdate())[:8],
-                        "groups": StudyGroup.objects.filter(teachers=user),
+                        "groups": teaching_groups,
                         "student_count": StudentProfile.objects.filter(group__teachers=user).count(),
                         "recent_grades": GradeRecord.objects.filter(teacher=user).select_related("student__user", "lesson").order_by("-updated_at")[:8]})
     elif user.role == User.Role.STUDENT:
@@ -440,6 +441,33 @@ def schedule(request):
     return render(request, "school/schedule.html", {"lessons": lessons.order_by("starts_at")})
 
 @login_required
+def lesson_create(request):
+    if not is_admin(request.user):
+        raise PermissionDenied
+
+    if request.method == "POST":
+        form = LessonCreateForm(request.POST)
+        if form.is_valid():
+            lesson = form.save()
+            messages.success(
+                request,
+                f"“{lesson.title}” darsi {timezone.localtime(lesson.starts_at):%d.%m.%Y %H:%M} da jadvalga qo‘shildi.",
+            )
+            return redirect("schedule")
+    else:
+        form = LessonCreateForm()
+
+    teacher_group_map = {
+        str(teacher.pk): [str(group.pk) for group in teacher.teaching_groups.all()]
+        for teacher in form.fields["teacher"].queryset.prefetch_related("teaching_groups")
+    }
+    return render(request, "school/lesson_form.html", {
+        "form": form,
+        "teacher_group_map": teacher_group_map,
+    })
+
+
+@login_required
 def ranking(request):
     if not (is_admin(request.user) or request.user.role in [User.Role.TEACHER, User.Role.STUDENT, User.Role.PARENT]):
         raise PermissionDenied
@@ -483,20 +511,39 @@ def add_student_to_group(request, group_id):
     group = get_object_or_404(StudyGroup, pk=group_id)
 
     # O'qituvchi bu guruhga biriktirilganligini tekshirish (admin barcha guruhlarga qo'sha oladi)
-    if user.role == User.Role.TEACHER and not group.teachers.filter(id=user.id).exists():
+    if user.role == User.Role.TEACHER and (
+        not group.teachers.filter(id=user.id).exists()
+        or not group.lessons.filter(teacher=user).exists()
+    ):
         raise PermissionDenied
 
     if request.method == "POST":
         form = AddStudentToGroupForm(request.POST, teacher=user, group=group)
         if form.is_valid():
             student = form.cleaned_data["student"]
-            with transaction.atomic():
-                StudentProfile.objects.create(user=student, group=group)
-            messages.success(
-                request,
-                f"{student.get_full_name() or student.username} o'quvchisi \"{group.name}\" guruhiga qo'shildi.",
-            )
-            return redirect("add_student_to_group", group_id=group.pk)
+            add_error = None
+            try:
+                with transaction.atomic():
+                    locked_student = User.objects.select_for_update().get(
+                        pk=student.pk,
+                        role=User.Role.STUDENT,
+                        is_active=True,
+                    )
+                    if StudentProfile.objects.filter(user=locked_student).exists():
+                        add_error = "Bu o‘quvchi boshqa so‘rovda guruhga biriktirildi. Ro‘yxatni yangilang."
+                    else:
+                        StudentProfile.objects.create(user=locked_student, group=group)
+            except (IntegrityError, User.DoesNotExist):
+                add_error = "O‘quvchini qo‘shib bo‘lmadi: akkaunt yoki guruh bir vaqtda o‘zgargan. Ro‘yxatni yangilang."
+
+            if add_error:
+                form.add_error("student", add_error)
+            else:
+                messages.success(
+                    request,
+                    f"{student.get_full_name() or student.username} o'quvchisi \"{group.name}\" guruhiga qo'shildi.",
+                )
+                return redirect("add_student_to_group", group_id=group.pk)
     else:
         form = AddStudentToGroupForm(teacher=user, group=group)
 

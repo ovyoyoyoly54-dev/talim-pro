@@ -49,7 +49,6 @@
             <span class="student-badge">{{ student.first_name|first|upper|default:student.username|first|upper }}</span>
             <div class="student-meta">
               <b>{{ student.get_full_name|default:student.username }}</b>
-              <small>{{ student.username }}</small>
             </div>
           </div>
           <form method="post" action="{% url 'add_student_to_group' group_id=group.pk %}" class="inline" style="margin:0; display:inline;">

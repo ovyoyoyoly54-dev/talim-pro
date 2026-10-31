@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+{% block title %}Dars qo‘shish — TA'LIM PRO{% endblock %}
+{% block page_heading %}Dars qo‘shish{% endblock %}
+{% block content %}
+<div class="page-intro">
+  <div>
+    <span class="eyebrow">ADMINISTRATOR</span>
+    <h2>Yangi dars yarating</h2>
+    <p class="muted">Guruh, o‘qituvchi va vaqtni tekshirib, darsni jadvalga qo‘shing.</p>
+  </div>
+  <a class="button button-outline" href="{% url 'schedule' %}">Dars jadvaliga qaytish</a>
+</div>
+
+<form method="post" class="lesson-layout" novalidate>
+  {% csrf_token %}
+  <div class="panel lesson-form-panel">
+    <div class="panel-heading">
+      <div><h3>Dars ma’lumotlari</h3><p class="muted">Barcha majburiy maydonlarni to‘ldiring</p></div>
+      <span class="step-number">01</span>
+    </div>
+
+    {% if form.non_field_errors %}<div class="message error">{{ form.non_field_errors }}</div>{% endif %}
+
+    <div class="lesson-form-grid">
+      <label class="lesson-field lesson-field-full" for="{{ form.title.id_for_label }}">
+        {{ form.title.label }} <span class="required">*</span>
+        {{ form.title }}
+        {% if form.title.errors %}<small class="field-error">{{ form.title.errors|striptags }}</small>{% endif %}
+      </label>
+
+      <label class="lesson-field" for="{{ form.group.id_for_label }}">
+        {{ form.group.label }} <span class="required">*</span>
+        {{ form.group }}
+        <small class="field-help">Dars qo‘shiladigan guruhni tanlang.</small>
+        {% if form.group.errors %}<small class="field-error">{{ form.group.errors|striptags }}</small>{% endif %}
+      </label>
+
+      <label class="lesson-field" for="{{ form.teacher.id_for_label }}">
+        {{ form.teacher.label }} <span class="required">*</span>
+        {{ form.teacher }}
+        <small class="field-help" id="teacher-filter-note">Guruh tanlanganda mos o‘qituvchilar ko‘rsatiladi.</small>
+        {% if form.teacher.errors %}<small class="field-error">{{ form.teacher.errors|striptags }}</small>{% endif %}
+      </label>
+
+      <label class="lesson-field" for="{{ form.starts_at.id_for_label }}">
+        {{ form.starts_at.label }} <span class="required">*</span>
+        {{ form.starts_at }}
+        <small class="field-help">{{ form.starts_at.help_text }}</small>
+        {% if form.starts_at.errors %}<small class="field-error">{{ form.starts_at.errors|striptags }}</small>{% endif %}
+      </label>
+
+      <label class="lesson-field" for="{{ form.room.id_for_label }}">
+        {{ form.room.label }} <span class="muted">(ixtiyoriy)</span>
+        {{ form.room }}
+        <small class="field-help">Xona bir vaqtda faqat bitta dars uchun band bo‘lishi mumkin.</small>
+        {% if form.room.errors %}<small class="field-error">{{ form.room.errors|striptags }}</small>{% endif %}
+      </label>
+    </div>
+
+    <div class="lesson-note">
+      <span class="lesson-note-icon">i</span>
+      <p>O‘qituvchi faqat guruhga biriktirilgan bo‘lsa tanlanadi. Takroriy vaqt, o‘qituvchi yoki xona bandligi serverda tekshiriladi.</p>
+    </div>
+  </div>
+
+  <aside class="panel lesson-aside">
+    <span class="eyebrow">TEKSHIRUV</span>
+    <h3>Saqlashdan oldin</h3>
+    <ul class="lesson-checklist">
+      <li>Guruh va o‘qituvchi bir-biriga mos</li>
+      <li>Dars vaqti kelajakda</li>
+      <li>O‘qituvchida boshqa dars yo‘q</li>
+      <li>Xona aynan shu vaqtda bo‘sh</li>
+    </ul>
+    <button class="button button-primary button-wide" type="submit">Darsni saqlash <span>→</span></button>
+    <a class="button button-outline button-wide" href="{% url 'schedule' %}">Bekor qilish</a>
+    <p class="muted tiny center">Dars jadvalga qo‘shilgach, jadval sahifasida ko‘rinadi.</p>
+  </aside>
+</form>
+
+{{ teacher_group_map|json_script:"teacher-group-map" }}
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const groupSelect = document.getElementById("id_group");
+  const teacherSelect = document.getElementById("id_teacher");
+  const mapElement = document.getElementById("teacher-group-map");
+  const note = document.getElementById("teacher-filter-note");
+  if (!groupSelect || !teacherSelect || !mapElement) return;
+
+  const teacherGroups = JSON.parse(mapElement.textContent || "{}");
+  const options = Array.from(teacherSelect.options);
+
+  function filterTeachers() {
+    const groupId = groupSelect.value;
+    let selectedIsHidden = false;
+    let available = 0;
+
+    options.forEach((option) => {
+      if (!option.value) return;
+      const assigned = (teacherGroups[option.value] || []).includes(groupId);
+      const visible = !groupId || assigned;
+      option.hidden = !visible;
+      option.disabled = !visible;
+      if (visible) available += 1;
+      if (option.selected && !visible) selectedIsHidden = true;
+    });
+
+    if (selectedIsHidden) teacherSelect.value = "";
+    if (note) {
+      note.textContent = !groupId
+        ? "Guruh tanlanganda mos o‘qituvchilar ko‘rsatiladi."
+        : available
+          ? `${available} nafar o‘qituvchi shu guruhga biriktirilgan.`
+          : "Bu guruhga o‘qituvchi biriktirilmagan. Avval guruh sozlamasini yangilang.";
+    }
+  }
+
+  groupSelect.addEventListener("change", filterTeachers);
+  filterTeachers();
+});
+</script>
+{% endblock %}
