@@ -3,10 +3,10 @@
 
 {% block title %}{% if subtitle %}{{ subtitle }} | {% endif %}{{ title }} | {{ site_title|default:_("Django site admin") }}{% endblock %}
 
-{% block extrastyle %}
+{# Tema barcha admin CSS fayllaridan keyin yuklanadi (changelists, widgets, login...). #}
+{% block responsive %}
   {{ block.super }}
   <link rel="stylesheet" href="{% static 'school/admin-theme.css' %}">
-
   <link rel="stylesheet" href="{% static 'school/admin.css' %}">
 {% endblock %}
 
@@ -17,4 +17,12 @@
 {% endif %}
 {% endblock %}
 
+{% block welcome-msg %}
+<span class="tp-user-chip">
+  <span class="tp-user-initial" aria-hidden="true">{{ user.get_short_name|default:user.get_username|slice:":1"|upper }}</span>
+  <span class="tp-user-name">{% firstof user.get_short_name user.get_username %}</span>
+</span>
+{% endblock %}
+
 {% block nav-global %}{% endblock %}
+

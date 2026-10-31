@@ -1,0 +1,23 @@
+{% load i18n %}
+<button class="sticky toggle-nav-sidebar" id="toggle-nav-sidebar" aria-label="{% translate 'Toggle navigation' %}"></button>
+<nav class="sticky" id="nav-sidebar" aria-label="{% translate 'Sidebar' %}">
+  <div class="tp-nav-top">
+    <a class="tp-nav-brand" href="{% url 'admin:index' %}">
+      <span class="tp-nav-brand-mark" aria-hidden="true">T</span>
+      <span class="tp-nav-brand-copy">TA’LIM <b>PRO</b><small>Boshqaruv paneli</small></span>
+    </a>
+    <label class="tp-nav-search">
+      <span class="tp-nav-search-icon" aria-hidden="true">⌕</span>
+      <input type="search" id="nav-filter"
+             placeholder="{% translate 'Start typing to filter…' %}"
+             aria-label="{% translate 'Filter navigation items' %}">
+    </label>
+  </div>
+  <div class="tp-nav-body">
+    {% include 'admin/app_list.html' with app_list=available_apps show_changelinks=False %}
+  </div>
+  <div class="tp-nav-foot">
+    <span class="tp-nav-foot-user" title="{{ user.get_username }}">{{ user.get_short_name|default:user.get_username }}</span>
+    <a class="tp-nav-foot-link" href="{% url 'home' %}">Saytni ko‘rish ↗</a>
+  </div>
+</nav>

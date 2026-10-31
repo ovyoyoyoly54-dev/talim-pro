@@ -3,48 +3,46 @@
 {% block bodyclass %}{{ block.super }} dashboard{% endblock %}
 {% block content_title %}{% endblock %}
 {% block content %}
-<div class="tp-admin-shell">
-  <section class="tp-admin-hero" aria-label="TA’LIM PRO boshqaruv tanishtiruvi">
-    <a class="tp-admin-brand" href="{% url 'home' %}">
-      <span class="tp-admin-brand-mark">T</span>
-      <span>TA’LIM <b>PRO</b><small>O‘quv markazi platformasi</small></span>
+<div class="tp-shell">
+  <aside class="tp-hero" aria-label="TA’LIM PRO boshqaruv tanishtiruvi">
+    <div class="tp-hero-orbit tp-hero-orbit-one" aria-hidden="true"></div>
+    <div class="tp-hero-orbit tp-hero-orbit-two" aria-hidden="true"></div>
+    <a class="tp-hero-brand" href="{% url 'home' %}">
+      <span class="tp-hero-mark">T</span>
+      <span class="tp-hero-brand-copy">TA’LIM <b>PRO</b><small>O‘quv markazi platformasi</small></span>
     </a>
-    <div class="tp-admin-pitch">
-      <span class="tp-admin-pill">YANGI AVLOD TA’LIMI</span>
+    <div class="tp-hero-body">
+      <span class="tp-hero-pill">YANGI AVLOD TA’LIMI</span>
       <h1>Har bir jarayon.<br><em>Bir joyda.</em></h1>
-      <p>O‘quv markazining hisoblari, darslari va natijalarini qulay boshqaring.</p>
+      <p>O‘quv markazining hisoblari, darslari va natijalarini yagona panelda boshqaring.</p>
     </div>
-    <div class="tp-admin-orbit tp-admin-orbit-one"></div>
-    <div class="tp-admin-orbit tp-admin-orbit-two"></div>
-    <div class="tp-admin-foot">Samarali ta’lim uchun yaratilgan.</div>
-  </section>
+    <div class="tp-hero-actions">
+      <a class="tp-hero-btn" href="{% url 'dashboard' %}">Ish paneli <span aria-hidden="true">→</span></a>
+      <a class="tp-hero-btn tp-hero-btn-ghost" href="{% url 'home' %}">Saytni ko‘rish <span aria-hidden="true">↗</span></a>
+    </div>
+    <div class="tp-hero-foot">Samarali ta’lim uchun yaratilgan.</div>
+  </aside>
 
-  <section class="tp-admin-content">
-    <div class="tp-admin-heading">
-      <span class="tp-admin-eyebrow">TA’LIM PRO</span>
-      <h2>Markaz boshqaruvi</h2>
-      <p>Kerakli bo‘limni tanlab, ma’lumotlarni boshqaring.</p>
-    </div>
+  <section class="tp-panel">
+    <header class="tp-panel-head">
+      <div>
+        <span class="tp-eyebrow">TA’LIM PRO</span>
+        <h2>Markaz boshqaruvi</h2>
+        <p>Kerakli bo‘limni tanlab, ma’lumotlarni boshqaring.</p>
+      </div>
+    </header>
+
     {% if app_list %}
-    <div class="tp-admin-grid">
+    <div class="tp-cards">
       {% for app in app_list %}
         {% for model in app.models %}
-        <article class="tp-admin-card">
-          <div class="tp-admin-card-top">
-            <span class="tp-admin-icon">
-              {% if model.object_name == "User" or model.object_name == "StudentProfile" %}♙
-              {% elif model.object_name == "StudyGroup" %}▦
-              {% elif model.object_name == "Lesson" %}▣
-              {% elif model.object_name == "GradeRecord" %}↗
-              {% elif model.object_name == "GradeReason" %}✎
-              {% elif model.object_name == "Attendance" %}✓
-              {% elif model.object_name == "SMSLog" %}✉
-              {% else %}◈{% endif %}
-            </span>
-            <span class="tp-admin-section">{{ app.name }}</span>
+        <article class="tp-card">
+          <div class="tp-card-top">
+            <span class="tp-card-icon" aria-hidden="true">{% include "admin/includes/tp_model_icon.html" with model_name=model.object_name %}</span>
+            <span class="tp-card-tag">{{ app.name }}</span>
           </div>
           <h3>{% if model.admin_url %}<a href="{{ model.admin_url }}">{{ model.name }}</a>{% else %}{{ model.name }}{% endif %}</h3>
-          <p class="tp-admin-description">
+          <p class="tp-card-desc">
             {% if model.object_name == "User" %}Foydalanuvchi hisoblari va rollar.
             {% elif model.object_name == "StudentProfile" %}O‘quvchilar, guruhlar va ota-onalar.
             {% elif model.object_name == "StudyGroup" %}O‘quv guruhlari va fanlar.
@@ -53,20 +51,22 @@
             {% elif model.object_name == "GradeReason" %}Past baholar uchun sabablar.
             {% elif model.object_name == "Attendance" %}Darslardagi davomat yozuvlari.
             {% elif model.object_name == "SMSLog" %}Ota-onalarga yuborilgan xabarlar holati.
+            {% elif model.object_name == "PlatformSettings" %}Sayt nomi, sarlavhasi va aloqa ma’lumotlari.
             {% else %}Bo‘lim ma’lumotlarini boshqarish.{% endif %}
           </p>
-          <div class="tp-admin-actions">
-            {% if model.admin_url and model.perms.change %}<a class="tp-admin-manage" href="{{ model.admin_url }}">Boshqarish <span>→</span></a>
-            {% elif model.admin_url and model.perms.view %}<a class="tp-admin-manage" href="{{ model.admin_url }}">Ko‘rish <span>→</span></a>{% endif %}
-            {% if model.object_name == "Lesson" and model.perms.add %}<a class="tp-admin-add" href="{% url 'lesson_create' %}" aria-label="{{ model.name }} qo‘shish">+</a>
-            {% elif model.add_url and model.perms.add %}<a class="tp-admin-add" href="{{ model.add_url }}" aria-label="{{ model.name }} qo‘shish">+</a>{% endif %}
+          <div class="tp-card-actions">
+            {% if model.admin_url and model.perms.change %}<a class="tp-card-link" href="{{ model.admin_url }}">Boshqarish <span aria-hidden="true">→</span></a>
+            {% elif model.admin_url and model.perms.view %}<a class="tp-card-link" href="{{ model.admin_url }}">Ko‘rish <span aria-hidden="true">→</span></a>
+            {% else %}<span class="tp-card-link tp-card-link-muted">Ruxsat yo‘q</span>{% endif %}
+            {% if model.object_name == "Lesson" and model.perms.add %}<a class="tp-card-add" href="{% url 'lesson_create' %}" aria-label="{{ model.name }} qo‘shish" title="{{ model.name }} qo‘shish">+</a>
+            {% elif model.add_url and model.perms.add %}<a class="tp-card-add" href="{{ model.add_url }}" aria-label="{{ model.name }} qo‘shish" title="{{ model.name }} qo‘shish">+</a>{% endif %}
           </div>
         </article>
         {% endfor %}
       {% endfor %}
     </div>
     {% else %}
-      <div class="tp-admin-empty">Akkauntingizga boshqaruv uchun ruxsat berilmagan.</div>
+      <div class="tp-card-empty">Akkauntingizga boshqaruv uchun ruxsat berilmagan.</div>
     {% endif %}
   </section>
 </div>
