@@ -66,6 +66,21 @@ Demo loginlar: `admin_demo`, `teacher_demo`, `student_demo`, `parent_demo`. Buyr
 - Telefon OTP orqali parol tiklash; akkaunt yopishda OTP’dan keyin login va joriy parolni qayta tasdiqlash
 - Uzbek tilidagi boshqaruv markazi; boshqaruv havolalari bir xil admin bosh sahifasiga olib boradi
 
+## Tarjimalar (o‘zbekcha interfeys)
+
+Boshqaruv paneli, forma yorliqlari va xato xabarlari to‘liq o‘zbekcha ko‘rinishi uchun loyihada o‘z tarjima katalogi mavjud:
+
+- `locale/uz/LC_MESSAGES/django.po` — tarjimalar manbasi. Django bilan keladigan `uz` katalogi to‘liq emas (ko‘p matn inglizcha qoladi), shuning uchun bu fayl `settings.LOCALE_PATHS` orqali uning ustidan yoziladi.
+- `locale/uz/LC_MESSAGES/django.mo` — Django o‘qiydigan yig‘ilgan katalog.
+
+`django.po` ni tahrirlagandan so‘ng `.mo` faylni qayta yig‘ing (gettext/`msgfmt` talab qilinmaydi):
+```powershell
+python tools\po2mo.py locale\uz\LC_MESSAGES\django.po
+```
+Linux/macOS’da: `python tools/po2mo.py locale/uz/LC_MESSAGES/django.po`.
+
+Model maydonlarining yorliqlari (`verbose_name`) kod ichida o‘zbekcha berilgan. Ruxsat (permission) nomlari esa Django ularni yaratgandan keyin `school/signals.py` dagi `post_migrate` signali orqali o‘zbekchaga o‘giriladi — `python manage.py migrate` dan keyin avtomatik ishlaydi.
+
 ## SMS integratsiyasi
 `.env` da quyidagilarni to‘ldiring:
 ```env

@@ -5,6 +5,7 @@
   <div><h2>Rejalashtirilgan darslar</h2><p class="muted">Dars vaqti, guruh va o‘qituvchi ma'lumotlari.</p></div>
   {% if user.role == 'admin' or user.is_superuser %}<a class="button button-primary" href="{% url 'lesson_create' %}">+ Dars qo‘shish</a>{% endif %}
 </div>
+{% if missing_profile %}<div class="message warning">Sizga hali o‘quv guruhi biriktirilmagan. Guruh biriktirilgach, dars jadvali shu yerda ko‘rinadi. Markaz administratoriga murojaat qiling.</div>{% endif %}
 <div class="panel"><div class="table-wrap"><table>
   <thead><tr><th>Dars</th><th>Guruh</th><th>O‘qituvchi</th><th>Sana</th><th>Vaqt</th><th>Xona</th>{% if user.role == 'teacher' or user.role == 'admin' or user.is_superuser %}<th>Amal</th>{% endif %}</tr></thead>
   <tbody>{% for lesson in lessons %}<tr>

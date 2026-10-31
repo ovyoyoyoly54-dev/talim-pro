@@ -1,4 +1,5 @@
 from django.test import TestCase, Client
+from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError
 from django.urls import reverse
@@ -7,6 +8,7 @@ from django.test import override_settings
 from django.core.management import call_command
 from django.core.management.base import CommandError
 from django.contrib import admin
+from django.contrib.auth.models import Permission
 from django.test import RequestFactory
 from datetime import timedelta
 from unittest.mock import patch
@@ -929,4 +931,101 @@ class AddStudentToGroupTests(TestCase):
         self.client.force_login(self.teacher)
         response = self.client.get(reverse("add_student_to_group", kwargs={"group_id": self.group.pk}))
         self.assertContains(response, "yo'q")
+
+class MissingStudentProfileTests(TestCase):
+    """Guruhga biriktirilmagan o'quvchi uchun sahifalar 404 bermasligi kerak."""
+
+    def setUp(self):
+        self.group = StudyGroup.objects.create(name="Profil A1", subject="Ingliz tili")
+        self.student_without_group = User.objects.create_user(
+            "no_group_student", password="StrongPassword123!", role=User.Role.STUDENT,
+            first_name="Guruhsiz", last_name="O‘quvchi",
+        )
+        self.student_with_group = User.objects.create_user(
+            "with_group_student", password="StrongPassword123!", role=User.Role.STUDENT,
+            first_name="Guruhli", last_name="O‘quvchi",
+        )
+        StudentProfile.objects.create(user=self.student_with_group, group=self.group)
+
+    def test_dashboard_without_profile_renders_friendly_message(self):
+        self.client.force_login(self.student_without_group)
+        response = self.client.get(reverse("dashboard"))
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.context["missing_profile"])
+        self.assertContains(response, "o‘quv guruhi biriktirilmagan")
+
+    def test_schedule_without_profile_renders_empty_timetable(self):
+        self.client.force_login(self.student_without_group)
+        response = self.client.get(reverse("schedule"))
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.context["missing_profile"])
+        self.assertEqual(len(response.context["lessons"]), 0)
+        self.assertContains(response, "o‘quv guruhi biriktirilmagan")
+
+    def test_student_with_profile_still_sees_group_data(self):
+        self.client.force_login(self.student_with_group)
+        dashboard = self.client.get(reverse("dashboard"))
+        self.assertEqual(dashboard.status_code, 200)
+        self.assertFalse(dashboard.context.get("missing_profile", False))
+        self.assertContains(dashboard, "Profil A1")
+        schedule = self.client.get(reverse("schedule"))
+        self.assertEqual(schedule.status_code, 200)
+        self.assertFalse(schedule.context["missing_profile"])
+
+
+class LocalizationTests(TestCase):
+    """Admin panel va ruxsat nomlari o‘zbekcha bo‘lishi kerak."""
+
+    def setUp(self):
+        self.admin = User.objects.create_superuser(
+            "locale_admin", "locale@example.invalid", "StrongPassword123!", role=User.Role.ADMIN,
+        )
+        self.group = StudyGroup.objects.create(name="Lokalizatsiya A1", subject="Ingliz tili")
+
+    def test_translation_catalog_is_compiled(self):
+        mo_path = settings.BASE_DIR / "locale" / "uz" / "LC_MESSAGES" / "django.mo"
+        self.assertTrue(mo_path.exists(), f"{mo_path} topilmadi; `python tools/po2mo.py` ishlatilsin.")
+
+    def test_admin_changelist_has_no_english_leftovers(self):
+        self.client.force_login(self.admin)
+        response = self.client.get(reverse("admin:school_studygroup_changelist"))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "O‘zgartirish uchun o‘quv guruhi ni tanlang")
+        self.assertContains(response, "Nomi")
+        self.assertContains(response, "Fan")
+        self.assertNotContains(response, "Select ")
+        self.assertNotContains(response, "to change")
+        self.assertNotContains(response, "Start typing")
+
+    def test_admin_add_link_has_spaces_around_model_name(self):
+        self.client.force_login(self.admin)
+        response = self.client.get(reverse("admin:school_studygroup_changelist"))
+        self.assertContains(response, "o‘quv guruhi qo‘shish")
+        self.assertNotContains(response, "guruhioqo‘shish")
+
+    def test_admin_change_form_labels_are_uzbek(self):
+        self.client.force_login(self.admin)
+        response = self.client.get(
+            reverse("admin:school_studygroup_change", args=[self.group.pk])
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Saqlash")
+        self.assertNotContains(response, "Save")
+
+    def test_permission_names_are_uzbek(self):
+        permission = Permission.objects.get(codename="add_studygroup")
+        self.assertEqual(permission.name, "Qo‘shish o‘quv guruhi")
+        log_permission = Permission.objects.get(codename="add_logentry")
+        self.assertEqual(log_permission.name, "Qo‘shish jurnal yozuvi")
+
+
+class LoginRedirectTests(TestCase):
+    def test_authenticated_user_is_redirected_away_from_login_page(self):
+        user = User.objects.create_user(
+            "login_redirect_user", password="StrongPassword123!", role=User.Role.STUDENT,
+        )
+        StudentProfile.objects.create(user=user, group=StudyGroup.objects.create(name="Login A1", subject="Matematika"))
+        self.client.force_login(user)
+        response = self.client.get(reverse("login"))
+        self.assertRedirects(response, reverse("dashboard"))
 

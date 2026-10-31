@@ -84,6 +84,8 @@ AUTH_PASSWORD_VALIDATORS = [
 LANGUAGE_CODE = "uz"
 TIME_ZONE = "Asia/Tashkent"
 USE_I18N = True
+# Django'ning "uz" tarjimasi to'liq emas; loyiha tarjimalari ustidan yoziladi.
+LOCALE_PATHS = [BASE_DIR / "locale"]
 USE_TZ = True
 STATIC_URL = "/static/"
 STATICFILES_DIRS = [BASE_DIR / "static"]
