@@ -534,7 +534,7 @@ def add_student_to_group(request, group_id):
                     else:
                         StudentProfile.objects.create(user=locked_student, group=group)
             except (IntegrityError, User.DoesNotExist):
-                add_error = "O‘quvchini qo‘shib bo‘lmadi: akkaunt yoki guruh bir vaqtda o‘zgargan. Ro‘yxatni yangilang."
+                add_error = "Bu o‘quvchi boshqa so‘rovda guruhga biriktirildi. Ro‘yxatni yangilang."
 
             if add_error:
                 form.add_error("student", add_error)
