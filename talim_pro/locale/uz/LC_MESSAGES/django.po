@@ -364,11 +364,11 @@ msgstr "Yangi sifatida saqlash"
 
 #: django/contrib/admin/views/main.py:150
 msgid "Select %s to change"
-msgstr "%s — o‘zgartirish uchun tanlang"
+msgstr "O‘zgartirish uchun %s ni tanlang"
 
 #: django/contrib/admin/views/main.py:238
 msgid "Select %s to view"
-msgstr "%s — ko‘rish uchun tanlang"
+msgstr "Ko‘rish uchun %s ni tanlang"
 
 #: django/contrib/admin/templates/admin/actions.html:15
 msgid "Select all %(total_count)s %(module_name)s"

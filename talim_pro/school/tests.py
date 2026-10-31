@@ -990,7 +990,7 @@ class LocalizationTests(TestCase):
         self.client.force_login(self.admin)
         response = self.client.get(reverse("admin:school_studygroup_changelist"))
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "o‘zgartirish uchun tanlang")
+        self.assertContains(response, "O‘zgartirish uchun o‘quv guruhi ni tanlang")
         self.assertContains(response, "Nomi")
         self.assertContains(response, "Fan")
         self.assertNotContains(response, "Select ")
