@@ -145,6 +145,12 @@ class AdminNavigationTests(TestCase):
         self.assertNotContains(response, "So‘nggi harakatlar")
         self.assertNotContains(response, "Groups")
 
+    def test_management_lists_load_the_shared_admin_stylesheet(self):
+        response = self.client.get(reverse("admin:school_studygroup_changelist"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "school/admin.css")
+
     def test_dashboard_group_management_link_targets_groups(self):
         response = self.client.get(reverse("dashboard"))
         self.assertContains(response, f'href="{reverse("admin:school_studygroup_changelist")}"')
