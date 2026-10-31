@@ -156,6 +156,23 @@ class AdminNavigationTests(TestCase):
         self.assertContains(response, f'href="{reverse("admin:school_studygroup_changelist")}"')
         self.assertContains(response, "Guruhlarni boshqarish")
 
+    def test_dashboard_shows_admins_lessons_and_recent_grades(self):
+        teacher = User.objects.create_user("dashboard_teacher", password="StrongPassword123!", role=User.Role.TEACHER)
+        parent = User.objects.create_user("dashboard_parent", password="StrongPassword123!", role=User.Role.PARENT)
+        student_user = User.objects.create_user("dashboard_student", password="StrongPassword123!", role=User.Role.STUDENT)
+        group = StudyGroup.objects.create(name="Dashboard A1", subject="Ingliz tili")
+        group.teachers.add(teacher)
+        student = StudentProfile.objects.create(user=student_user, group=group, parent=parent)
+        lesson = Lesson.objects.create(group=group, teacher=teacher, title="Dashboard darsi", starts_at=timezone.now() + timedelta(days=1))
+        GradeRecord.objects.create(lesson=lesson, student=student, teacher=teacher, score=9)
+
+        response = self.client.get(reverse("dashboard"))
+
+        self.assertContains(response, "Yaqin darslar")
+        self.assertContains(response, "Dashboard darsi")
+        self.assertContains(response, "So‘nggi baholar")
+        self.assertContains(response, "9/10")
+
     def test_settings_panel_separates_site_and_account_settings(self):
         response = self.client.get(reverse("settings_panel"))
         self.assertEqual(response.status_code, 200)

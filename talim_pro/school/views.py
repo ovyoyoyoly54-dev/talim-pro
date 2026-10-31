@@ -351,6 +351,7 @@ def dashboard(request):
             "student_count": StudentProfile.objects.count(),
             "lesson_count": Lesson.objects.count(),
             "recent_grades": GradeRecord.objects.select_related("student__user", "lesson").order_by("-updated_at")[:8],
+            "upcoming_lessons": Lesson.objects.select_related("group", "teacher").filter(starts_at__gte=timezone.now()).order_by("starts_at")[:8],
             "groups": StudyGroup.objects.all(),
         })
     elif user.role == User.Role.TEACHER:
