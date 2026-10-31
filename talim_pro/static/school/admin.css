@@ -62,11 +62,6 @@
 .tp-eyebrow{display:block;color:var(--tp-blue-600);font-size:9.5px;font-weight:800;letter-spacing:1.4px}
 .tp-panel-head h2{margin:5px 0;font-size:24px;font-weight:800;letter-spacing:-.7px;color:var(--tp-navy-800)}
 .tp-panel-head p{margin:0;color:var(--tp-muted);font-size:12px;line-height:1.6}
-.tp-panel-badge{
-  flex:none;padding:8px 14px;border-radius:999px;
-  background:#eaf1ff;color:var(--tp-blue-600);
-  font-size:10.5px;font-weight:800;letter-spacing:.5px;
-}
 .tp-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px}
 .tp-card{
   display:flex;flex-direction:column;min-width:0;padding:18px;

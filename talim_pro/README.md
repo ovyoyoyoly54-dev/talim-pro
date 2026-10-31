@@ -79,7 +79,36 @@ python tools\po2mo.py locale\uz\LC_MESSAGES\django.po
 ```
 Linux/macOS’da: `python tools/po2mo.py locale/uz/LC_MESSAGES/django.po`.
 
+`locale/uz/LC_MESSAGES/djangojs.po` / `djangojs.mo` — boshqaruv panelining JavaScript
+matnlari (masalan, o‘qituvchilarni tanlash vidjetidagi “Tanlash”, “Barcha … ni tanlash”,
+ro‘yxat filtri). Bu katalog ham xuddi shunday yig‘iladi:
+```powershell
+python tools\po2mo.py locale\uz\LC_MESSAGES\djangojs.po
+```
+
 Model maydonlarining yorliqlari (`verbose_name`) kod ichida o‘zbekcha berilgan. Ruxsat (permission) nomlari esa Django ularni yaratgandan keyin `school/signals.py` dagi `post_migrate` signali orqali o‘zbekchaga o‘giriladi — `python manage.py migrate` dan keyin avtomatik ishlaydi.
+
+## Boshqaruv paneli dizayni
+
+`/admin/` sahifalari TA’LIM PRO uslubida bezatilgan. Ko‘rinishni o‘zgartirish uchun quyidagi fayllarga qarang:
+
+- `templates/admin/base_site.html` — umumiy karkas. Tema CSS fayllari shu yerda, Django’ning
+  o‘z CSS’laridan (changelists, widgets, login, responsive) **keyin** yuklanadi; shuning uchun
+  uslublar ularning ustidan yoziladi.
+- `templates/admin/nav_sidebar.html` — chapdagi doimiy navigatsiya: brend, bo‘lim qidiruvi,
+  model ro‘yxati va foydalanuvchi bloki. Navigatsiya `position: sticky` bilan chapda qotib turadi.
+- `templates/admin/index.html` — boshqaruv paneli bosh sahifasi: tanishtiruv kartasi va
+  bo‘limlar to‘ri.
+- `templates/admin/change_list.html`, `change_form.html`, `search_form.html`,
+  `pagination.html` — ro‘yxat/forma sahifalarining sarlavhasi, qidiruv maydoni va
+  o‘zbekcha hisoblagichlari.
+- `static/school/admin-theme.css` — umumiy tema (tepa panel, non yo‘llari, jadval, filtr paneli,
+  forma elementlari, xabarlar, kirish sahifasi, mobil moslashuv).
+- `static/school/admin.css` — faqat bosh sahifa kompozitsiyasi (hero va kartalar).
+
+Yangi model qo‘shsangiz, uning ikonkasi `templates/admin/includes/tp_model_icon.html` da
+`model_name` bo‘yicha tanlanadi; ro‘yxatga yangi bo‘lim qo‘shilsa, shu faylga bitta shart qo‘shing.
+
 
 ## SMS integratsiyasi
 `.env` da quyidagilarni to‘ldiring:

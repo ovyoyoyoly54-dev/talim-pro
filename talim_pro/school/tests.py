@@ -139,8 +139,10 @@ class AdminNavigationTests(TestCase):
         response = self.client.get(reverse("admin:index"))
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Markaz boshqaruvi")
-        self.assertContains(response, "tp-admin-hero")
+        self.assertContains(response, "tp-hero")
+        self.assertContains(response, "tp-card")
         self.assertContains(response, "school/admin.css")
+        self.assertContains(response, "school/admin-theme.css")
         self.assertContains(response, "Foydalanuvchilar")
         self.assertContains(response, "O‘quv guruhlari")
         self.assertContains(response, f'href="{reverse("lesson_create")}"')
@@ -152,6 +154,18 @@ class AdminNavigationTests(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "school/admin.css")
+        self.assertContains(response, "school/admin-theme.css")
+        # Ro‘yxat sahifasi dizayni: chap navigatsiya va sahifa sarlavhasi.
+        self.assertContains(response, 'id="nav-sidebar"')
+        self.assertContains(response, "tp-page-head")
+
+    def test_change_form_uses_themed_page_header(self):
+        group = StudyGroup.objects.create(name="Tema A1", subject="Matematika")
+        response = self.client.get(reverse("admin:school_studygroup_change", args=[group.pk]))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "tp-page-head")
+        self.assertContains(response, "school/admin-theme.css")
 
     def test_dashboard_group_management_link_targets_groups(self):
         response = self.client.get(reverse("dashboard"))
