@@ -930,3 +930,54 @@ class AddStudentToGroupTests(TestCase):
         response = self.client.get(reverse("add_student_to_group", kwargs={"group_id": self.group.pk}))
         self.assertContains(response, "yo'q")
 
+class MissingStudentProfileTests(TestCase):
+    """Guruhga biriktirilmagan o'quvchi uchun sahifalar 404 bermasligi kerak."""
+
+    def setUp(self):
+        self.group = StudyGroup.objects.create(name="Profil A1", subject="Ingliz tili")
+        self.student_without_group = User.objects.create_user(
+            "no_group_student", password="StrongPassword123!", role=User.Role.STUDENT,
+            first_name="Guruhsiz", last_name="O‘quvchi",
+        )
+        self.student_with_group = User.objects.create_user(
+            "with_group_student", password="StrongPassword123!", role=User.Role.STUDENT,
+            first_name="Guruhli", last_name="O‘quvchi",
+        )
+        StudentProfile.objects.create(user=self.student_with_group, group=self.group)
+
+    def test_dashboard_without_profile_renders_friendly_message(self):
+        self.client.force_login(self.student_without_group)
+        response = self.client.get(reverse("dashboard"))
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.context["missing_profile"])
+        self.assertContains(response, "o‘quv guruhi biriktirilmagan")
+
+    def test_schedule_without_profile_renders_empty_timetable(self):
+        self.client.force_login(self.student_without_group)
+        response = self.client.get(reverse("schedule"))
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.context["missing_profile"])
+        self.assertEqual(len(response.context["lessons"]), 0)
+        self.assertContains(response, "o‘quv guruhi biriktirilmagan")
+
+    def test_student_with_profile_still_sees_group_data(self):
+        self.client.force_login(self.student_with_group)
+        dashboard = self.client.get(reverse("dashboard"))
+        self.assertEqual(dashboard.status_code, 200)
+        self.assertFalse(dashboard.context.get("missing_profile", False))
+        self.assertContains(dashboard, "Profil A1")
+        schedule = self.client.get(reverse("schedule"))
+        self.assertEqual(schedule.status_code, 200)
+        self.assertFalse(schedule.context["missing_profile"])
+
+
+class LoginRedirectTests(TestCase):
+    def test_authenticated_user_is_redirected_away_from_login_page(self):
+        user = User.objects.create_user(
+            "login_redirect_user", password="StrongPassword123!", role=User.Role.STUDENT,
+        )
+        StudentProfile.objects.create(user=user, group=StudyGroup.objects.create(name="Login A1", subject="Matematika"))
+        self.client.force_login(user)
+        response = self.client.get(reverse("login"))
+        self.assertRedirects(response, reverse("dashboard"))
+

@@ -10,6 +10,9 @@ from school import views
 class RateLimitedLoginView(auth_views.LoginView):
     """Throttle repeated password guesses by normalized username and source IP."""
 
+    # Tizimga kirgan foydalanuvchi login sahifasini emas, bosh sahifani ko'radi.
+    redirect_authenticated_user = True
+
     def post(self, request, *args, **kwargs):
         from django.core.cache import cache
         from django.conf import settings

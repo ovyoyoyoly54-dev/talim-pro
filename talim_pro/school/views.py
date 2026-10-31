@@ -362,11 +362,16 @@ def dashboard(request):
                         "student_count": StudentProfile.objects.filter(group__teachers=user).count(),
                         "recent_grades": GradeRecord.objects.filter(teacher=user).select_related("student__user", "lesson").order_by("-updated_at")[:8]})
     elif user.role == User.Role.STUDENT:
-        profile = get_object_or_404(StudentProfile, user=user)
-        context.update({"profile": profile, "average_score": profile.grades.aggregate(value=Avg("score"))["value"],
-                        "upcoming_lessons": Lesson.objects.filter(group=profile.group, starts_at__gte=timezone.now()).select_related("teacher").order_by("starts_at")[:5],
-                        "grades": profile.grades.select_related("lesson").prefetch_related("reasons").order_by("-updated_at")[:10],
-                        "attendance_records": profile.attendance.select_related("lesson").order_by("-lesson__starts_at")[:10]})
+        profile = StudentProfile.objects.select_related("group").filter(user=user).first()
+        if profile is None:
+            # O'quvchi akkaunti guruhga biriktirilmagan bo'lishi mumkin (masalan admin
+            # panelidan yaratilgan). Bunday holatda 404 emas, tushunarli xabar ko'rsatiladi.
+            context["missing_profile"] = True
+        else:
+            context.update({"profile": profile, "average_score": profile.grades.aggregate(value=Avg("score"))["value"],
+                            "upcoming_lessons": Lesson.objects.filter(group=profile.group, starts_at__gte=timezone.now()).select_related("teacher").order_by("starts_at")[:5],
+                            "grades": profile.grades.select_related("lesson").prefetch_related("reasons").order_by("-updated_at")[:10],
+                            "attendance_records": profile.attendance.select_related("lesson").order_by("-lesson__starts_at")[:10]})
     elif user.role == User.Role.PARENT:
         children = StudentProfile.objects.filter(parent=user).select_related("user", "group")
         context["children"] = children
@@ -430,16 +435,25 @@ def grade_lesson(request):
 def schedule(request):
     user = request.user
     lessons = Lesson.objects.select_related("group", "teacher")
+    missing_profile = False
     if user.role == User.Role.TEACHER:
         lessons = lessons.filter(teacher=user, group__teachers=user)
     elif user.role == User.Role.STUDENT:
-        profile = get_object_or_404(StudentProfile, user=user)
-        lessons = lessons.filter(group=profile.group)
+        profile = StudentProfile.objects.filter(user=user).first()
+        if profile is None:
+            # Guruhga biriktirilmagan o'quvchi uchun bo'sh jadval va tushunarli xabar.
+            missing_profile = True
+            lessons = Lesson.objects.none()
+        else:
+            lessons = lessons.filter(group=profile.group)
     elif user.role == User.Role.PARENT:
         lessons = lessons.filter(group__students__parent=user).distinct()
     elif not is_admin(user):
         raise PermissionDenied
-    return render(request, "school/schedule.html", {"lessons": lessons.order_by("starts_at")})
+    return render(request, "school/schedule.html", {
+        "lessons": lessons.order_by("starts_at"),
+        "missing_profile": missing_profile,
+    })
 
 @login_required
 def lesson_create(request):
