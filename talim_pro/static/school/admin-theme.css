@@ -1,0 +1,173 @@
+/* TA'LIM PRO — barcha admin sahifalar uchun premium tema */
+html,html[data-theme="light"],html[data-theme="dark"],html[data-theme="auto"]{
+  --primary:#356ce0;--secondary:#1b3d67;--accent:#8db0ff;--primary-fg:#fff;
+  --body-fg:#192b43;--body-bg:#fff;--body-quiet-color:#6b7a90;--body-medium-color:#34475f;--body-loud-color:#0b1a33;
+  --header-color:#dbe7f5;--header-branding-color:#fff;--header-bg:#102544;--header-link-color:#fff;
+  --breadcrumbs-fg:#a9bad0;--breadcrumbs-link-fg:#fff;--breadcrumbs-bg:#0c1d38;
+  --link-fg:#356ce0;--link-hover-color:#102544;--link-selected-fg:#102544;
+  --hairline-color:#e7edf4;--border-color:#d9e2ef;--error-fg:#c2414b;
+  --message-success-bg:#e8f8f0;--message-warning-bg:#fff7e0;--message-error-bg:#fff0f0;
+  --darkened-bg:#f6f9fe;--selected-bg:#e8f0ff;--selected-row:#eef4ff;
+  --button-fg:#fff;--button-bg:#1b3d67;--button-hover-bg:#102544;
+  --default-button-bg:#356ce0;--default-button-hover-bg:#2a58bd;
+  --close-button-bg:#6b7a90;--close-button-hover-bg:#34475f;
+  --delete-button-bg:#c2414b;--delete-button-hover-bg:#a8323c;
+  --object-tools-fg:#fff;--object-tools-bg:#102544;--object-tools-hover-bg:#356ce0;
+  --font-family-primary:Inter,"Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif;
+  color-scheme:light;
+}
+html{min-height:100%;background:#f3f6fc}
+body{min-height:100vh;background:
+  radial-gradient(900px 520px at 8% -4%,#dfe9ff 0,transparent 62%),
+  radial-gradient(760px 480px at 100% 0%,#e9f0ff 0,transparent 60%),
+  radial-gradient(820px 520px at 85% 105%,#e2ecff 0,transparent 62%),
+  linear-gradient(180deg,#f6f8fd,#eef3fb) fixed;
+  color:var(--body-fg);-webkit-font-smoothing:antialiased}
+.theme-toggle{display:none!important}
+#container{background:transparent;min-height:100vh}
+
+/* Sarlavha */
+#header{height:auto;padding:16px 34px;background:linear-gradient(120deg,#0b1a33,#16335c 55%,#24477c);box-shadow:0 8px 28px #0b1a3333;border-bottom:1px solid #ffffff14}
+#branding h1,#site-name,#site-name a:link,#site-name a:visited{margin:0;color:#fff;font-size:20px;font-weight:800;letter-spacing:.2px}
+#user-tools{font-size:11px;letter-spacing:.6px;color:#c4d3e6}
+#user-tools a{border-bottom:0!important;opacity:.85;transition:opacity .2s,color .2s}
+#user-tools a:hover,#user-tools a:focus{opacity:1;color:#fff;text-decoration:none}
+div.breadcrumbs{padding:12px 34px;background:#0c1d38cc;backdrop-filter:blur(8px);border:0;color:#a9bad0;font-size:12px;text-transform:none}
+div.breadcrumbs a{color:#fff;opacity:.9}div.breadcrumbs a:hover{opacity:1;text-decoration:none;color:#8db0ff}
+
+/* Asosiy joy */
+#main{background:transparent}
+.main>#nav-sidebar+.content,.main>.content{background:transparent}
+.content{padding:0}
+#content{padding:28px 34px 48px;background:transparent}
+.colM,.colMS{background:transparent}
+h1{margin:0 0 22px;color:#0b1a33;font-size:26px;font-weight:800;letter-spacing:-.6px}
+
+/* Panel va form elementlari */
+.field{background:#ffffffd9;border:1px solid #e3eaf4;border-radius:12px;box-shadow:0 8px 26px #0b1a3310;padding:12px;margin-bottom:8px}
+.field:last-child{margin-bottom:0}
+.field label{display:block;color:#34475f;font-weight:700;font-size:13px;margin-bottom:6px}
+.vHTMLField,textarea{width:100%}
+.clickable:hover{background:#eef4ff}
+
+/* Selector */
+.selector{padding:0 22px}
+.selector .selector-filter{padding:10px 14px;border:1px solid #e3eaf4;border-radius:12px;margin-bottom:14px;background:#f6f9fe}
+.selector .selector-available,.selector .selector-chosen{background:#ffffffd9;border:1px solid #e3eaf4;border-radius:12px;margin:0 0 14px;overflow:hidden}
+.selector .selector-available h2,.selector .selector-chosen h2{background:#f1f5fc;color:#34475f;padding:12px 16px;font-size:12px;letter-spacing:.4px;text-transform:uppercase}
+.selector .selector-available{border-radius:12px 12px 0 0}
+.selector .selector-chosen{border-radius:0 0 12px 12px}
+.selector select{width:100%;border-radius:12px;min-height:120px;padding:8px 12px}
+.selector .selector-add,.selector .selector-remove{color:#fff;background:#356ce0;border-radius:10px;padding:9px 14px}
+.selector .selector-add:hover,.selector .selector-remove:hover{background:#2a58bd}
+.selector .selector-move{background:#24477c;border-radius:10px;padding:9px 14px}
+.selector .stacked{border:1px solid #e3eaf4;border-radius:12px;height:120px}
+
+/* Object tools */
+.object-tools{padding:0 22px}
+
+/* Sidebar */
+#nav-sidebar{background:#ffffffb8;backdrop-filter:blur(14px) saturate(150%);border:0;border-right:1px solid #e3eaf4;box-shadow:6px 0 30px #0b1a3310}
+#nav-sidebar .module{background:transparent;border:0;box-shadow:none;margin:0}
+#nav-sidebar .module caption{background:linear-gradient(120deg,#102544,#1b3d67);color:#fff;font-size:11px;font-weight:800;letter-spacing:1.2px;padding:12px 16px;text-transform:uppercase}
+#nav-sidebar .module th,#nav-sidebar .module td{padding:11px 16px;border-bottom:1px solid #eef2f8;background:transparent;font-size:13px}
+#nav-sidebar .module tr:hover th,#nav-sidebar .module tr:hover td{background:#eef4ff}
+#nav-sidebar .module th a{color:#192b43;font-weight:600}
+#nav-sidebar .module tr.current-model{background:linear-gradient(90deg,#e3edff,#f1f6ff)}
+#nav-sidebar .module tr.current-model th a{color:#102544;font-weight:800}
+#nav-sidebar .addlink,#nav-sidebar .changelink{color:#356ce0;font-size:11px;font-weight:700}
+.toggle-nav-sidebar{background:#fff;border:0;border-right:1px solid #e3eaf4;color:#356ce0}
+
+/* Buttons */
+.button,input[type=submit],input[type=button],.submit-row input,a.button{border:0;border-radius:11px;padding:10px 18px;background:#1b3d67;color:#fff;font-weight:700;font-size:13px;box-shadow:0 5px 14px #1b3d6730;transition:transform .15s,box-shadow .2s;background:linear-gradient(135deg,#1b3d67,#102544);cursor:pointer}
+.button:hover,input[type=submit]:hover,input[type=button]:hover,a.button:hover{background:linear-gradient(135deg,#102544,#0b1a33);transform:translateY(-1px);box-shadow:0 8px 20px #1b3d6745}
+.button.default{background:linear-gradient(135deg,#4f8bff,#356ce0)}
+.button.default:hover{background:linear-gradient(135deg,#356ce0,#2a58bd)}
+.submit-row{padding:16px 20px;background:#ffffffd9;border:1px solid #e3eaf4;border-radius:16px;box-shadow:0 8px 26px #0b1a3310}
+.submit-row input.deletelink{background:#c2414b;border-radius:11px;color:#fff;font-weight:700;padding:10px 18px}
+.submit-row a.deletelink:hover{background:#a8323c}
+.object-tools a{background:linear-gradient(135deg,#102544,#1b3d67);color:#fff;font-size:11px;font-weight:800;padding:10px 18px;box-shadow:0 6px 16px #10254430}
+
+/* Jadvallar */
+#changelist table{width:100%}
+#changelist thead th,.results thead th{background:#f1f5fc;color:#34475f;font-size:11px;font-weight:800;letter-spacing:.9px;text-transform:uppercase;padding:14px 16px;border-bottom:1px solid #e3eaf4;border-top:0}
+#changelist thead th.sorted{background:#e8f0ff}
+#changelist tbody tr{transition:background .15s}
+#changelist tbody tr:hover{background:#f3f7ff}
+td,th{border-bottom:1px solid #eef2f8;padding:13px 16px;vertical-align:middle}
+tr:last-child td,tr:last-child th{border-bottom:0}
+tr.selected,tr.selected td,tr.selected th{background:#e8f0ff!important}
+tbody th a{color:#102544;font-weight:700}
+tbody th a:hover{color:#356ce0}
+.paginator{margin:0;padding:16px 20px;background:#fff;border:0;border-top:1px solid #eef2f8;color:#6b7a90;font-size:13px}
+.paginator a{background:#1b3d67;border-radius:8px;padding:5px 10px;color:#fff}
+.paginator .this-page{background:#356ce0;border-radius:8px;padding:5px 10px;color:#fff}
+#changelist .actions{padding:14px 20px;background:#fff;border:0;border-bottom:1px solid #eef2f8;border-radius:18px 18px 0 0;display:flex;align-items:center;gap:12px;flex-wrap:wrap;color:#6b7a90}
+#changelist .actions select{min-width:180px}
+.actions .action-counter{font-weight:700;color:#34475f}
+
+/* Modelich navigator & widget */
+.selector .selector-available h2,.selector .selector-chosen h2{padding:12px 16px;font-size:12px;text-transform:uppercase}
+.related-widget-wrapper-link{opacity:.8}
+a.related-widget-wrapper-link:hover{opacity:1}
+
+/* Calendar & clock */
+.calendarbox,.clockbox{border-radius:16px;box-shadow:0 18px 44px #0b1a3333;border:1px solid #e3eaf4;overflow:hidden}
+.calendar caption,.calendarbox h2{background:linear-gradient(120deg,#102544,#1b3d67);color:#fff}
+.calendar tbody tr.selected td,.calendar tbody tr.selected td a{color:#102544;font-weight:800}
+.calendarnav a,.calendar-cancel a{color:#102544;font-weight:800}
+.pickerinput input{padding:10px;border-radius:12px;border:1px solid #e3eaf4;background:#fff;color:#192b43}
+.pickadiorclear{display:inline-block;margin-right:10px}
+
+/* Deleted confirmation */
+.delete-confirmation .module{background:#fff0f0;border-color:#f6cfd2}
+
+div.object-tools{margin:14px 0 0}
+div.object-tools ul{list-style:none;margin:0;padding:0}
+div.object-tools li{display:inline-block;margin:0 4px}
+div.object-tools a:link,div.object-tools a:visited{color:#fff;background:linear-gradient(135deg,#102544,#1b3d67);border:0;border-radius:999px;padding:10px 18px;font-size:11px;font-weight:800;letter-spacing:.8px;text-decoration:none;box-shadow:0 6px 16px #10254430;transition:transform .15s,box-shadow .2s}
+div.object-tools a:hover,div.object-tools a:focus{background:linear-gradient(135deg,#356ce0,#4f8bff);transform:translateY(-1px)}
+
+/* Changelist jadvallar */
+#changelist .module,#changelist-form{background:transparent;border:0;box-shadow:none}
+#changelist-form{background:transparent;border:0}
+#changelist .results,.results{background:transparent;overflow:hidden}
+#changelist table{width:100%}
+#changelist-filter{background:transparent;border-radius:0;box-shadow:none;padding-bottom:0}
+#changelist-filter h2{padding:14px 20px;margin:0;background:#f1f5fc;color:#34475f;font-size:12px;letter-spacing:.9px;text-transform:uppercase;border-radius:12px 12px 0 0}
+#changelist-filter h3{padding:10px 20px 4px;color:#34475f;font-size:11px;letter-spacing:.7px;text-transform:uppercase;border-top:1px solid #eef2f8}
+#changelist-filter li{padding:0 8px}
+#changelist-filter a{display:block;padding:8px 12px;border-radius:9px;color:#34475f}
+#changelist-filter a:hover{background:#eef4ff;color:#356ce0}
+#changelist-filter li.selected a{background:#e3edff;color:#102544;font-weight:800}
+#changelist-actions{background:transparent;border:0;flex-wrap:wrap;gap:12px;padding:8px 16px 16px;border-radius:12px}
+#changelist .actions select{min-width:auto;padding:9px 12px}
+.created-at,.list-info{padding:16px 20px;background:#ffffffd9;border:1px solid #e3eaf4;border-radius:18px;margin:26px 0 0}
+.created-at a:hover{color:#356ce0}
+
+/* Xabarlar */
+ul.messagelist li{border-radius:14px;padding:14px 20px;margin:0 0 14px;font-size:13px;font-weight:700;background:#ffffffd9;border:1px solid #e3eaf4;box-shadow:0 6px 18px #0b1a3310}
+ul.messagelist li.success{color:#16865c;border-color:#c9ecd9}
+ul.messagelist li.warning{color:#946200;border-color:#f3e2b1}
+ul.messagelist li.error{color:#c2414b;border-color:#f6cfd2}
+.errornote{background:#fff0f0;color:#c2414b;padding:14px 18px;font-weight:700;border-radius:14px}
+ul.errorlist{padding-left:4px;margin:6px 0}
+ul.errorlist li{color:#c2414b;font-size:12px;margin-right:2px;font-weight:700}
+
+/* Kirish sahifasi */
+body.login{display:grid;place-items:center;min-height:100vh;background:
+  radial-gradient(700px 460px at 15% 10%,#c9dcff 0,transparent 60%),
+  radial-gradient(700px 460px at 90% 95%,#b9d0ff 0,transparent 60%),
+  linear-gradient(145deg,#0b1a33,#16335c 55%,#24477c) fixed}
+body.login #container{width:min(420px,92vw);background:#ffffffeb;backdrop-filter:blur(18px);border:1px solid #ffffff55;border-radius:24px;box-shadow:0 30px 70px #0b1a3366;margin:0}
+body.login #header{padding:26px 30px;box-shadow:none;border-radius:0;text-align:center;justify-content:center}
+body.login #content{padding:28px 30px 34px}
+form p{font-size:13px}
+form p label{display:block;margin-bottom:6px;font-weight:700}
+form p.help{font-weight:400}
+body.login .form-row{padding:0 0 16px;border:0}
+body.login input[type=text],body.login input[type=password]{width:100%}
+body.login .submit-row{padding:0;margin:8px 0 0;background:transparent;border:0;box-shadow:none}
+body.login .submit-row input{width:100%;padding:13px;background:linear-gradient(135deg,#4f8bff,#356ce0)}
+
+
