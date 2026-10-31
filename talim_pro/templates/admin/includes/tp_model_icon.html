@@ -1,0 +1,3 @@
+{% with key=model_name|lower %}
+{% if key == "user" %}♙{% elif key == "studentprofile" %}♙{% elif key == "studygroup" %}▦{% elif key == "lesson" %}▣{% elif key == "graderecord" %}↗{% elif key == "gradereason" %}✎{% elif key == "attendance" %}✓{% elif key == "smslog" %}✉{% elif key == "platformsettings" %}⚙{% else %}◈{% endif %}
+{% endwith %}

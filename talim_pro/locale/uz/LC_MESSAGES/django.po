@@ -838,3 +838,53 @@ msgstr "kontent turlari"
 
 msgid "user"
 msgstr "foydalanuvchi"
+
+# --- Filtrlash vidjeti (filtr_horizontal) va admin JS matnlari ---
+
+msgid "Filter"
+msgstr "Filtrlash"
+
+msgid "Search"
+msgstr "Izlash"
+
+msgid "Show all"
+msgstr "Barchasini ko‘rsatish"
+
+msgid "Available %s"
+msgstr "Mavjud %s"
+
+msgid "Chosen %s"
+msgstr "Tanlangan %s"
+
+msgid "Choose %s by selecting them and then select the \"Choose\" arrow button."
+msgstr "Kerakli %s ni belgilab, “Tanlash” tugmasini bosing."
+
+msgid "Remove %s by selecting them and then select the \"Remove\" arrow button."
+msgstr "Kerakli %s ni belgilab, “Olib tashlash” tugmasini bosing."
+
+msgid "Choose all %s"
+msgstr "Barcha %s ni tanlash"
+
+msgid "Choose selected %s"
+msgstr "Tanlangan %s ni qo‘shish"
+
+msgid "Remove selected %s"
+msgstr "Tanlangan %s ni olib tashlash"
+
+msgid "Remove all %s"
+msgstr "Barcha %s ni olib tashlash"
+
+msgid "Type into this box to filter down the list of available %s."
+msgstr "Mavjud %s ro‘yxatini filtrlash uchun shu yerga yozing."
+
+msgid "Type into this box to filter down the list of selected %s."
+msgstr "Tanlangan %s ro‘yxatini filtrlash uchun shu yerga yozing."
+
+msgid "(click to clear)"
+msgstr "(tozalash uchun bosing)"
+
+msgid "Your password must contain at least %(min_length)d character."
+msgid_plural "Your password must contain at least %(min_length)d characters."
+msgstr[0] "Parol kamida %(min_length)d belgidan iborat bo‘lishi kerak."
+
+

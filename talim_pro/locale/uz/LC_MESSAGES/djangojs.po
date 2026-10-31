@@ -1,0 +1,47 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: TA'LIM PRO (djangojs)\n"
+"Report-Msgid-Bugs-To: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: uz\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+# --- Filtrlash vidjeti (filtr_horizontal) JS matnlari ---
+
+msgid "Filter"
+msgstr "Filtrlash"
+
+msgid "Available %s"
+msgstr "Mavjud %s"
+
+msgid "Chosen %s"
+msgstr "Tanlangan %s"
+
+msgid "Choose %s by selecting them and then select the \"Choose\" arrow button."
+msgstr "Kerakli %s ni belgilab, “Tanlash” tugmasini bosing."
+
+msgid "Remove %s by selecting them and then select the \"Remove\" arrow button."
+msgstr "Kerakli %s ni belgilab, “Olib tashlash” tugmasini bosing."
+
+msgid "Choose all %s"
+msgstr "Barcha %s ni tanlash"
+
+msgid "Choose selected %s"
+msgstr "Tanlangan %s ni qo‘shish"
+
+msgid "Remove selected %s"
+msgstr "Tanlangan %s ni olib tashlash"
+
+msgid "Remove all %s"
+msgstr "Barcha %s ni olib tashlash"
+
+msgid "Type into this box to filter down the list of available %s."
+msgstr "Mavjud %s ro‘yxatini filtrlash uchun shu yerga yozing."
+
+msgid "Type into this box to filter down the list of selected %s."
+msgstr "Tanlangan %s ro‘yxatini filtrlash uchun shu yerga yozing."
+
+msgid "(click to clear)"
+msgstr "(tozalash uchun bosing)"
