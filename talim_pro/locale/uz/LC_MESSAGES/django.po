@@ -1,0 +1,840 @@
+# TA'LIM PRO — Django admin panel uchun o‘zbekcha tarjimalar.
+#
+# Django o‘zi bilan keladigan "uz" katalogi to‘liq emas: ko‘p matn inglizcha
+# qoladi (Home, History, "Select ... to change" va h.k.), "Add %(name)s" esa
+# probelsiz tarjima qilingan ("%(name)sqo'shish" -> "O'QUV GURUHIOQO'SHISH").
+# Bu fayl settings.LOCALE_PATHS orqali Django katalogining ustidan yoziladi.
+#
+# Tahrirlagandan so‘ng .mo faylni yangilang:
+#     python tools/po2mo.py locale/uz/LC_MESSAGES/django.po
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: TA'LIM PRO\n"
+"Report-Msgid-Bugs-To: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: uz\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: django/contrib/admin/options.py:1234
+msgid "%(app)s administration"
+msgstr "%(app)s boshqaruvi"
+
+#: django/contrib/admin/templates/admin/delete_confirmation.html:10
+msgid "%(class_name)s %(instance)s"
+msgstr "%(class_name)s %(instance)s"
+
+#: django/contrib/admin/views/main.py
+msgid "%(count)s %(name)s was changed successfully."
+msgid_plural "%(count)s %(name)s were changed successfully."
+msgstr[0] "%(count)s ta %(name)s muvaffaqiyatli o‘zgartirildi."
+
+#: django/contrib/admin/templates/admin/change_list_results.html
+msgid "%(counter)s result"
+msgid_plural "%(counter)s results"
+msgstr[0] "%(counter)s natija"
+
+#: django/contrib/admin/templates/admin/search_form.html:8
+msgid "%(full_result_count)s total"
+msgstr "jami %(full_result_count)s"
+
+#: django/contrib/admin/options.py
+msgid "%(name)s with ID “%(key)s” doesn’t exist. Perhaps it was deleted?"
+msgstr "ID “%(key)s” bo‘lgan %(name)s mavjud emas. Balki u o‘chirilgan."
+
+#: django/contrib/admin/templates/admin/actions.html:9
+msgid "%(total_count)s selected"
+msgid_plural "All %(total_count)s selected"
+msgstr[0] "%(total_count)s ta tanlandi"
+
+#: django/contrib/admin/templates/admin/actions.html:13
+msgid "0 of %(cnt)s selected"
+msgstr "%(cnt)s tadan 0 tasi tanlandi"
+
+#: django/contrib/admin/templates/admin/actions.html:4
+msgid "Action"
+msgstr "Amal"
+
+#: django/contrib/admin/options.py
+msgid "Add %(name)s"
+msgstr "%(name)s qo‘shish"
+
+#: django/contrib/admin/templates/admin/change_form_object_tools.html:8
+msgid "Add another %(model)s"
+msgstr "Yana %(model)s qo‘shish"
+
+#: django/contrib/admin/templates/admin/app_list.html:44
+msgid "Add link"
+msgstr "Havola qo‘shish"
+
+#: django/contrib/admin/models.py
+msgid "Added {name} “{object}”."
+msgstr "{name} “{object}” qo‘shildi."
+
+#: django/contrib/admin/models.py
+msgid "Added."
+msgstr "Qo‘shildi."
+
+#: django/contrib/admin/templates/admin/object_history.html:20
+msgid "Added:"
+msgstr "Qo‘shilgan:"
+
+#: django/contrib/admin/templates/admin/auth/user/add_form.html:12
+msgid "After you’ve created a user, you’ll be able to edit more user options."
+msgstr "Foydalanuvchi yaratilgandan so‘ng qo‘shimcha sozlamalarni tahrirlash mumkin bo‘ladi."
+
+#: django/contrib/admin/templates/admin/delete_confirmation.html:20
+msgid "Are you sure you want to delete the %(object_name)s \"%(escaped_object)s\"? All of the following related items will be deleted:"
+msgstr "“%(escaped_object)s” %(object_name)s ni o‘chirishga ishonchingiz komilmi? Quyidagi bog‘liq yozuvlar ham o‘chiriladi:"
+
+#: django/contrib/admin/templates/admin/delete_selected_confirmation.html:14
+msgid "Are you sure you want to delete the selected %(objects_name)s? All of the following objects and their related items will be deleted:"
+msgstr "Tanlangan %(objects_name)s ni o‘chirishga ishonchingiz komilmi? Quyidagi barcha yozuvlar va ularga bog‘liq ma’lumotlar o‘chiriladi:"
+
+#: django/contrib/admin/templates/admin/base.html:44
+msgid "Breadcrumbs"
+msgstr "Navigatsiya"
+
+#: django/contrib/admin/templates/admin/filters.html:4
+msgid "By %(filter_title)s"
+msgstr "%(filter_title)s bo‘yicha"
+
+#: django/contrib/admin/views/main.py
+msgid "Change history: %s"
+msgstr "O‘zgarishlar tarixi: %s"
+
+#: django/contrib/admin/templates/admin/base.html:58
+msgid "Change my password"
+msgstr "Parolimni o‘zgartirish"
+
+#: django/contrib/admin/templates/admin/app_list.html:54
+msgid "Change or view list link"
+msgstr "Ro‘yxatni o‘zgartirish yoki ko‘rish havolasi"
+
+#: django/contrib/admin/actions.py
+msgid "Change selected %(model)s"
+msgstr "Tanlangan %(model)s ni o‘zgartirish"
+
+#: django/contrib/admin/models.py
+msgid "Changed {fields} for {name} “{object}”."
+msgstr "{name} “{object}” uchun {fields} o‘zgartirildi."
+
+#: django/contrib/admin/models.py
+msgid "Changed {fields}."
+msgstr "{fields} o‘zgartirildi."
+
+#: django/contrib/admin/templates/admin/object_history.html:20
+msgid "Changed:"
+msgstr "O‘zgartirilgan:"
+
+#: django/contrib/admin/templates/admin/change_list.html:32
+msgid "Clear all filters"
+msgstr "Barcha filtrlarni tozalash"
+
+#: django/contrib/admin/templates/admin/actions.html:10
+msgid "Clear selection"
+msgstr "Tanlovni tozalash"
+
+#: django/contrib/admin/templates/admin/actions.html:16
+msgid "Click here to select the objects across all pages"
+msgstr "Barcha sahifalardagi yozuvlarni tanlash uchun bosing"
+
+#: django/contrib/admin/templates/admin/popup_response.html:3
+msgid "Close"
+msgstr "Yopish"
+
+#: django/contrib/admin/templates/admin/auth/user/set_password.html:17
+msgid "Confirm password:"
+msgstr "Parolni tasdiqlang:"
+
+#: django/contrib/admin/templates/admin/date_hierarchy.html:4
+msgid "Date/time"
+msgstr "Sana/vaqt"
+
+#: django/contrib/admin/templates/admin/delete_selected_confirmation.html:6
+msgid "Delete multiple objects"
+msgstr "Bir nechta yozuvni o‘chirish"
+
+#: django/contrib/admin/actions.py
+msgid "Delete selected %(model)s"
+msgstr "Tanlangan %(model)s ni o‘chirish"
+
+#: django/contrib/admin/models.py
+msgid "Deleted {name} “{object}”."
+msgstr "{name} “{object}” o‘chirildi."
+
+#: django/contrib/admin/templates/admin/object_history.html:20
+msgid "Deleted:"
+msgstr "O‘chirilgan:"
+
+#: django/contrib/admin/options.py
+msgid "Deleting %(class_name)s %(instance)s would require deleting the following protected related objects: %(related_objects)s"
+msgstr "%(class_name)s %(instance)s ni o‘chirish uchun quyidagi himoyalangan bog‘liq yozuvlar ham o‘chirilishi kerak: %(related_objects)s"
+
+#: django/contrib/admin/templates/admin/delete_confirmation.html:15
+msgid "Deleting the %(object_name)s '%(escaped_object)s' would require deleting the following protected related objects:"
+msgstr "'%(escaped_object)s' %(object_name)s ni o‘chirish uchun quyidagi himoyalangan bog‘liq yozuvlar ham o‘chirilishi kerak:"
+
+#: django/contrib/admin/templates/admin/delete_confirmation.html:26
+msgid "Deleting the %(object_name)s '%(escaped_object)s' would result in deleting related objects, but your account doesn't have permission to delete the following types of objects:"
+msgstr "'%(escaped_object)s' %(object_name)s ni o‘chirish bog‘liq yozuvlarni ham o‘chiradi, ammo akkauntingizda quyidagi turdagi yozuvlarni o‘chirishga ruxsat yo‘q:"
+
+#: django/contrib/admin/templates/admin/delete_selected_confirmation.html:26
+msgid "Deleting the selected %(objects_name)s would require deleting the following protected related objects:"
+msgstr "Tanlangan %(objects_name)s ni o‘chirish uchun quyidagi himoyalangan bog‘liq yozuvlar ham o‘chirilishi kerak:"
+
+#: django/contrib/admin/templates/admin/delete_selected_confirmation.html:37
+msgid "Deleting the selected %(objects_name)s would result in deleting related objects, but your account doesn't have permission to delete the following types of objects:"
+msgstr "Tanlangan %(objects_name)s ni o‘chirish bog‘liq yozuvlarni ham o‘chiradi, ammo akkauntingizda quyidagi turdagi yozuvlarni o‘chirishga ruxsat yo‘q:"
+
+#: django/contrib/admin/templates/admin/auth/user/change_form.html:48
+msgid "Disable password-based authentication"
+msgstr "Parol bilan kirishni o‘chirish"
+
+#: django/contrib/admin/sites.py
+msgid "Django administration"
+msgstr "Django boshqaruvi"
+
+#: django/contrib/admin/templates/admin/base_site.html:4
+msgid "Django site admin"
+msgstr "Django sayt boshqaruvi"
+
+#: django/contrib/admin/templates/admin/auth/user/set_password.html:9
+msgid "Email address:"
+msgstr "Email manzili:"
+
+#: django/contrib/admin/templates/admin/auth/user/change_form.html:52
+msgid "Enable password-based authentication"
+msgstr "Parol bilan kirishni yoqish"
+
+#: django/contrib/admin/templates/admin/auth/user/set_password.html:6
+msgid "Enter a new password for the user %(username)s."
+msgstr "%(username)s foydalanuvchisi uchun yangi parol kiriting."
+
+#: django/contrib/admin/templates/admin/change_list.html:5
+msgid "Error:"
+msgstr "Xatolik:"
+
+#: django/contrib/admin/templates/admin/nav_sidebar.html:21
+msgid "Filter navigation items"
+msgstr "Navigatsiya bo‘limlarini filtrlash"
+
+#: django/contrib/admin/templates/admin/login.html:36
+msgid "Forgotten your login credentials?"
+msgstr "Kirish ma’lumotlaringizni esdan chiqardingizmi?"
+
+#: django/contrib/admin/templates/registration/password_reset_form.html:14
+msgid "Forgotten your password? Enter your email address below, and we’ll email instructions for setting a new one."
+msgstr "Parolingizni esdan chiqardingizmi? Quyida email manzilingizni kiriting — yangi parol o‘rnatish bo‘yicha ko‘rsatmalarni yuboramiz."
+
+#: django/contrib/admin/templates/admin/change_list.html:30
+msgid "Go"
+msgstr "O‘tish"
+
+#: django/contrib/admin/templates/admin/actions.html:19
+msgid "Hide counts"
+msgstr "Sonlarni yashirish"
+
+#: django/contrib/admin/templates/admin/change_form_object_tools.html:11
+msgid "History"
+msgstr "Tarix"
+
+#: django/contrib/admin/templates/admin/widgets/split_datetime.html:9
+msgid "Hold down “Control”, or “Command” on a Mac, to select more than one."
+msgstr "Bir nechta variantni tanlash uchun “Ctrl” (Mac’da “Command”) tugmasini bosib turing."
+
+#: django/contrib/admin/templates/admin/base.html:38
+msgid "Home"
+msgstr "Bosh sahifa"
+
+#: django/contrib/admin/templates/registration/password_reset_done.html:10
+msgid "If you don’t receive an email, please make sure you’ve entered the address you registered with, and check your spam folder."
+msgstr "Agar xat kelmasa, ro‘yxatdan o‘tgan manzilni to‘g‘ri kiritganingizni tekshiring va spam papkasini ko‘rib chiqing."
+
+#: django/contrib/admin/templates/admin/login.html:40
+msgid "In case you’ve forgotten, you are:"
+msgstr "Eslatib o‘tamiz, siz:"
+
+#: django/contrib/admin/templates/admin/actions.html:6
+msgid "Items must be selected in order to perform actions on them. No items have been changed."
+msgstr "Amalni bajarish uchun avval yozuvlarni tanlang. Hech qanday yozuv o‘zgartirilmadi."
+
+#: django/contrib/admin/templates/admin/login.html:15
+msgid "Log in"
+msgstr "Kirish"
+
+#: django/contrib/admin/templates/admin/login.html:42
+msgid "Log in again"
+msgstr "Qayta kirish"
+
+#: django/contrib/admin/models.py
+msgid "LogEntry Object"
+msgstr "Jurnal yozuvi"
+
+#: django/contrib/admin/templates/admin/app_list.html:34
+msgid "Model name"
+msgstr "Model nomi"
+
+#: django/contrib/admin/templates/admin/app_index.html:12
+msgid "Models in the %(name)s application"
+msgstr "%(name)s ilovasidagi modellar"
+
+#: django/contrib/admin/templates/admin/auth/user/set_password.html:16
+msgid "New password:"
+msgstr "Yangi parol:"
+
+#: django/contrib/admin/templates/admin/actions.html:7
+msgid "No action selected."
+msgstr "Amal tanlanmagan."
+
+#: django/contrib/admin/models.py
+msgid "No fields changed."
+msgstr "Hech qanday maydon o‘zgartirilmadi."
+
+#: django/contrib/admin/templates/admin/delete_confirmation.html:34
+msgid "No, take me back"
+msgstr "Yo‘q, orqaga qaytarish"
+
+#: django/contrib/admin/templates/admin/app_list.html:46
+msgid "None available"
+msgstr "Mavjud emas"
+
+#: django/contrib/admin/templates/admin/search_form.html:10
+msgid "Objects"
+msgstr "Yozuvlar"
+
+#: django/contrib/admin/templates/admin/404.html:8
+msgid "Page not found"
+msgstr "Sahifa topilmadi"
+
+#: django/contrib/admin/templates/admin/base.html:59
+msgid "Password change"
+msgstr "Parolni o‘zgartirish"
+
+#: django/contrib/admin/templates/registration/password_reset_form.html:4
+msgid "Password reset"
+msgstr "Parolni tiklash"
+
+#: django/contrib/admin/templates/registration/password_reset_confirm.html:4
+msgid "Password reset confirmation"
+msgstr "Parolni tiklashni tasdiqlash"
+
+#: django/contrib/admin/options.py
+msgid "Please correct the error below."
+msgid_plural "Please correct the errors below."
+msgstr[0] "Quyidagi xatoni to‘g‘rilang."
+
+#: django/contrib/admin/templates/admin/login.html:32
+msgid "Please enter the correct %(username)s and password for a staff account. Note that both fields may be case-sensitive."
+msgstr "Xodim akkaunti uchun to‘g‘ri %(username)s va parolni kiriting. Ikkala maydon ham katta-kichik harflarga sezgir."
+
+#: django/contrib/admin/templates/registration/password_reset_confirm.html:12
+msgid "Please enter your new password twice so we can verify you typed it in correctly."
+msgstr "Yangi parolni ikki marta kiriting — to‘g‘ri terilganini tekshiramiz."
+
+#: django/contrib/admin/templates/registration/password_change_form.html:13
+msgid "Please enter your old password, for security’s sake, and then enter your new password twice so we can verify you typed it in correctly."
+msgstr "Xavfsizlik uchun avval joriy parolni, so‘ng yangi parolni ikki marta kiriting."
+
+#: django/contrib/admin/templates/registration/password_reset_email.html:4
+msgid "Please go to the following page and choose a new password:"
+msgstr "Quyidagi sahifaga o‘tib, yangi parolni tanlang:"
+
+#: django/contrib/admin/templates/admin/popup_response.html:4
+msgid "Popup closing…"
+msgstr "Oyna yopilmoqda…"
+
+#: django/contrib/admin/templates/admin/submit_line.html:6
+msgid "Save and add another"
+msgstr "Saqlash va yana qo‘shish"
+
+#: django/contrib/admin/templates/admin/submit_line.html:7
+msgid "Save and continue editing"
+msgstr "Saqlash va tahrirlashni davom ettirish"
+
+#: django/contrib/admin/templates/admin/submit_line.html:8
+msgid "Save and view"
+msgstr "Saqlash va ko‘rish"
+
+#: django/contrib/admin/templates/admin/submit_line.html:9
+msgid "Save as new"
+msgstr "Yangi sifatida saqlash"
+
+#: django/contrib/admin/views/main.py:150
+msgid "Select %s to change"
+msgstr "%s — o‘zgartirish uchun tanlang"
+
+#: django/contrib/admin/views/main.py:238
+msgid "Select %s to view"
+msgstr "%s — ko‘rish uchun tanlang"
+
+#: django/contrib/admin/templates/admin/actions.html:15
+msgid "Select all %(total_count)s %(module_name)s"
+msgstr "Barcha %(total_count)s ta %(module_name)s ni tanlash"
+
+#: django/contrib/admin/templates/admin/actions.html:4
+msgid "Select all objects on this page for an action"
+msgstr "Amal uchun ushbu sahifadagi barcha yozuvlarni tanlash"
+
+#: django/contrib/admin/templates/admin/actions.html:4
+msgid "Select this object for an action - {}"
+msgstr "Amal uchun ushbu yozuvni tanlash - {}"
+
+#: django/contrib/admin/templates/admin/auth/user/change_form.html:43
+msgid "Set password"
+msgstr "Parol o‘rnatish"
+
+#: django/contrib/admin/templates/admin/filters.html:5
+msgid "Show all"
+msgstr "Barchasini ko‘rsatish"
+
+#: django/contrib/admin/templates/admin/actions.html:18
+msgid "Show counts"
+msgstr "Sonlarni ko‘rsatish"
+
+#: django/contrib/admin/templates/admin/nav_sidebar.html:2
+msgid "Sidebar"
+msgstr "Yon panel"
+
+#: django/contrib/admin/templates/admin/index.html:11
+msgid "Site administration"
+msgstr "Sayt boshqaruvi"
+
+#: django/contrib/admin/templates/admin/base.html:32
+msgid "Skip to main content"
+msgstr "Asosiy qismga o‘tish"
+
+#: django/contrib/admin/templates/admin/invalid_setup.html:8
+msgid "Something’s wrong with your database installation. Make sure the appropriate database tables have been created, and make sure the database is readable by the appropriate user."
+msgstr "Ma’lumotlar bazasi bilan muammo bor. Kerakli jadvallar yaratilganini va baza tegishli foydalanuvchi uchun o‘qilishi mumkinligini tekshiring."
+
+#: django/contrib/admin/templates/admin/change_list_results.html:23
+msgid "Sorting priority: %(priority_number)s"
+msgstr "Saralash ustuvorligi: %(priority_number)s"
+
+#: django/contrib/admin/templates/admin/nav_sidebar.html:5
+msgid "Start typing to filter…"
+msgstr "Filtrlash uchun yozishni boshlang…"
+
+#: django/contrib/admin/templates/registration/logged_out.html:12
+msgid "Thanks for spending some quality time with the web site today."
+msgstr "Bugun saytimizda vaqt o‘tkazganingiz uchun rahmat."
+
+#: django/contrib/admin/templates/registration/password_reset_complete.html:10
+msgid "Thanks for using our site!"
+msgstr "Saytimizdan foydalanganingiz uchun rahmat!"
+
+#: django/contrib/admin/templates/registration/password_reset_email.html:16
+msgid "The %(site_name)s team"
+msgstr "%(site_name)s jamoasi"
+
+#: django/contrib/admin/templates/registration/password_reset_confirm.html:18
+msgid "The password reset link was invalid, possibly because it has already been used.  Please request a new password reset."
+msgstr "Parolni tiklash havolasi yaroqsiz — u allaqachon ishlatilgan bo‘lishi mumkin. Iltimos, yangi havola so‘rang."
+
+#: django/contrib/admin/models.py
+msgid "The {name} “{obj}” was added successfully."
+msgstr "{name} “{obj}” muvaffaqiyatli qo‘shildi."
+
+#: django/contrib/admin/models.py
+msgid "The {name} “{obj}” was added successfully. You may add another {name} below."
+msgstr "{name} “{obj}” muvaffaqiyatli qo‘shildi. Quyida yana {name} qo‘shishingiz mumkin."
+
+#: django/contrib/admin/models.py
+msgid "The {name} “{obj}” was changed successfully. You may add another {name} below."
+msgstr "{name} “{obj}” muvaffaqiyatli o‘zgartirildi. Quyida yana {name} qo‘shishingiz mumkin."
+
+#: django/contrib/admin/models.py
+msgid "The {name} “{obj}” was changed successfully. You may edit it again below."
+msgstr "{name} “{obj}” muvaffaqiyatli o‘zgartirildi. Quyida uni yana tahrirlashingiz mumkin."
+
+#: django/contrib/admin/templates/admin/500.html:10
+msgid "There’s been an error. It’s been reported to the site administrators via email and should be fixed shortly. Thanks for your patience."
+msgstr "Xatolik yuz berdi. U sayt administratorlariga email orqali yuborildi va tez orada tuzatiladi. Sabringiz uchun rahmat."
+
+#: django/contrib/admin/templates/admin/auth/user/change_form.html:54
+msgid "This action will enable password-based authentication for this user."
+msgstr "Bu amal foydalanuvchi uchun parol bilan kirishni yoqadi."
+
+#: django/contrib/admin/templates/admin/object_history.html:12
+msgid "This object doesn’t have a change history. It probably wasn’t added via this admin site."
+msgstr "Bu yozuvning o‘zgarishlar tarixi yo‘q. U bu panel orqali qo‘shilmagan bo‘lishi mumkin."
+
+#: django/contrib/admin/templates/admin/change_list_results.html:20
+msgid "Toggle sorting"
+msgstr "Saralashni almashtirish"
+
+#: django/contrib/admin/templates/admin/color_theme_toggle.html:20
+msgid "Toggle theme (current theme: auto)"
+msgstr "Mavzuni almashtirish (joriy: avtomatik)"
+
+#: django/contrib/admin/templates/admin/color_theme_toggle.html:27
+msgid "Toggle theme (current theme: dark)"
+msgstr "Mavzuni almashtirish (joriy: tungi)"
+
+#: django/contrib/admin/templates/admin/color_theme_toggle.html:34
+msgid "Toggle theme (current theme: light)"
+msgstr "Mavzuni almashtirish (joriy: kunduzgi)"
+
+#: django/contrib/admin/templates/admin/change_form.html:28
+msgid "Unknown content"
+msgstr "Noma’lum kontent"
+
+#: django/contrib/admin/templates/admin/auth/user/add_form.html:9
+msgid "User"
+msgstr "Foydalanuvchi"
+
+#: django/contrib/admin/actions.py
+msgid "View selected %(model)s"
+msgstr "Tanlangan %(model)s ni ko‘rish"
+
+#: django/contrib/admin/templates/admin/404.html:12
+msgid "We’re sorry, but the requested page could not be found."
+msgstr "Kechirasiz, so‘ralgan sahifa topilmadi."
+
+#: django/contrib/admin/templates/registration/password_reset_done.html:6
+msgid "We’ve emailed you instructions for setting your password, if an account exists with the email you entered. You should receive them shortly."
+msgstr "Agar kiritilgan email bilan akkaunt mavjud bo‘lsa, parol o‘rnatish bo‘yicha ko‘rsatmalarni emailingizga yubordik."
+
+#: django/contrib/admin/templates/admin/delete_confirmation.html:33
+msgid "Yes, I’m sure"
+msgstr "Ha, ishonchim komil"
+
+#: django/contrib/admin/templates/admin/login.html:24
+msgid "You are authenticated as %(username)s, but are not authorized to access this page. Would you like to login to a different account?"
+msgstr "Siz %(username)s sifatida kirgansiz, ammo bu sahifaga ruxsatingiz yo‘q. Boshqa akkaunt bilan kirishni xohlaysizmi?"
+
+#: django/contrib/admin/templates/admin/app_list.html:50
+msgid "You don’t have permission to view or edit anything."
+msgstr "Sizda hech narsani ko‘rish yoki tahrirlash huquqi yo‘q."
+
+#: django/contrib/admin/models.py
+msgid "You may edit it again below."
+msgstr "Quyida uni yana tahrirlashingiz mumkin."
+
+#: django/contrib/admin/templates/registration/password_reset_email.html:2
+msgid "You're receiving this email because you requested a password reset for your user account at %(site_name)s."
+msgstr "Bu xatni %(site_name)s dagi akkauntingiz uchun parolni tiklashni so‘raganingiz sababli oldingiz."
+
+#: django/contrib/admin/templates/registration/password_reset_complete.html:8
+msgid "Your password has been set.  You may go ahead and log in now."
+msgstr "Parolingiz o‘rnatildi. Endi tizimga kirishingiz mumkin."
+
+#: django/contrib/admin/templates/registration/password_change_done.html:8
+msgid "Your password was changed."
+msgstr "Parolingiz o‘zgartirildi."
+
+#: django/contrib/admin/models.py
+msgid "entry"
+msgid_plural "entries"
+msgstr[0] "yozuv"
+
+# --- django.contrib.auth modellari va formalari -----------------------------
+
+msgid "A user with that username already exists."
+msgstr "Bunday foydalanuvchi nomi allaqachon mavjud."
+
+msgid "Change password: %s"
+msgstr "Parolni o‘zgartirish: %s"
+
+msgid "Conflicting form data submitted. Please try again."
+msgstr "Forma ma’lumotlarida ziddiyat bor. Qayta urinib ko‘ring."
+
+msgid "Designates that this user has all permissions without explicitly assigning them."
+msgstr "Bu foydalanuvchida barcha ruxsatlar alohida berilmagan bo‘lsa ham mavjud bo‘lishini bildiradi."
+
+msgid "Designates whether the user can log into this admin site."
+msgstr "Foydalanuvchi bu boshqaruv paneliga kira olishini bildiradi."
+
+msgid "Designates whether this user should be treated as active. Unselect this instead of deleting accounts."
+msgstr "Foydalanuvchi faol hisoblanishini bildiradi. Akkauntni o‘chirish o‘rniga bu belgini olib tashlang."
+
+msgid "Disabled"
+msgstr "O‘chirilgan"
+
+msgid "Email"
+msgstr "Email"
+
+msgid "Enable password-based authentication for this user by setting a password."
+msgstr "Parol o‘rnatish orqali bu foydalanuvchi uchun parol bilan kirishni yoqing."
+
+msgid "Enabled"
+msgstr "Yoqilgan"
+
+msgid "Enter new password"
+msgstr "Yangi parolni kiriting"
+
+msgid "Enter the same password as before, for verification."
+msgstr "Tasdiqlash uchun parolni yana bir marta kiriting."
+
+msgid "Important dates"
+msgstr "Muhim sanalar"
+
+msgid "Invalid password format or unknown hashing algorithm."
+msgstr "Parol formati noto‘g‘ri yoki xeshlash algoritmi noma’lum."
+
+msgid "Logged out"
+msgstr "Tizimdan chiqdingiz"
+
+msgid "New password"
+msgstr "Yangi parol"
+
+msgid "New password confirmation"
+msgstr "Yangi parolni tasdiqlash"
+
+msgid "No password set."
+msgstr "Parol o‘rnatilmagan."
+
+msgid "Old password"
+msgstr "Joriy parol"
+
+msgid "Password"
+msgstr "Parol"
+
+msgid "Password change successful"
+msgstr "Parol muvaffaqiyatli o‘zgartirildi"
+
+msgid "Password changed successfully."
+msgstr "Parol muvaffaqiyatli o‘zgartirildi."
+
+msgid "Password confirmation"
+msgstr "Parolni tasdiqlash"
+
+msgid "Password reset complete"
+msgstr "Parolni tiklash yakunlandi"
+
+msgid "Password reset sent"
+msgstr "Parolni tiklash bo‘yicha xat yuborildi"
+
+msgid "Password reset unsuccessful"
+msgstr "Parolni tiklab bo‘lmadi"
+
+msgid "Password-based authentication"
+msgstr "Parol bilan kirish"
+
+msgid "Password-based authentication was disabled."
+msgstr "Parol bilan kirish o‘chirildi."
+
+msgid "Permissions"
+msgstr "Ruxsatlar"
+
+msgid "Personal info"
+msgstr "Shaxsiy ma’lumotlar"
+
+msgid "Please enter a correct %(username)s and password. Note that both fields may be case-sensitive."
+msgstr "To‘g‘ri %(username)s va parolni kiriting. Ikkala maydon katta-kichik harflarga sezgir bo‘lishi mumkin."
+
+msgid "Raw passwords are not stored, so there is no way to see the user’s password."
+msgstr "Parollar ochiq holda saqlanmaydi, shuning uchun foydalanuvchi parolini ko‘rish imkoni yo‘q."
+
+msgid "Required. 150 characters or fewer. Letters, digits and @/./+/-/_ only."
+msgstr "Majburiy. 150 belgidan oshmasin. Faqat harflar, raqamlar va @/./+/-/_ belgilari."
+
+msgid "Reset password"
+msgstr "Parolni tiklash"
+
+msgid "Set password: %s"
+msgstr "Parol o‘rnatish: %s"
+
+msgid "Specific permissions for this user."
+msgstr "Bu foydalanuvchi uchun alohida ruxsatlar."
+
+msgid "The groups this user belongs to. A user will get all permissions granted to each of their groups."
+msgstr "Foydalanuvchi a’zo bo‘lgan guruhlar. Foydalanuvchi har bir guruhga berilgan barcha ruxsatlarni oladi."
+
+msgid "The password is too similar to the %(verbose_name)s."
+msgstr "Parol %(verbose_name)s ga juda o‘xshash."
+
+msgid "The two password fields didn’t match."
+msgstr "Ikki parol maydoni mos kelmadi."
+
+msgid "This account is inactive."
+msgstr "Bu akkaunt faol emas."
+
+msgid "This password is entirely numeric."
+msgstr "Parol faqat raqamlardan iborat."
+
+msgid "This password is too common."
+msgstr "Bu parol juda keng tarqalgan."
+
+msgid "This password is too short. It must contain at least %d character."
+msgstr "Parol juda qisqa. Kamida %d belgidan iborat bo‘lishi kerak."
+
+msgid "Whether the user will be able to authenticate using a password or not. If disabled, they may still be able to authenticate using other backends, such as Single Sign-On or LDAP."
+msgstr "Foydalanuvchi parol bilan kira oladimi. O‘chirilgan bo‘lsa ham boshqa usullar (masalan, Single Sign-On yoki LDAP) bilan kirishi mumkin."
+
+msgid "Your old password was entered incorrectly. Please enter it again."
+msgstr "Joriy parol noto‘g‘ri kiritildi. Qayta kiriting."
+
+msgid "Your password can’t be a commonly used password."
+msgstr "Parol keng tarqalgan bo‘lishi mumkin emas."
+
+msgid "Your password can’t be entirely numeric."
+msgstr "Parol faqat raqamlardan iborat bo‘lishi mumkin emas."
+
+msgid "Your password can’t be too similar to your other personal information."
+msgstr "Parol shaxsiy ma’lumotlaringizga juda o‘xshash bo‘lishi mumkin emas."
+
+msgid "Your password must contain at least %(min_length)d character."
+msgstr "Parol kamida %(min_length)d belgidan iborat bo‘lishi kerak."
+
+#: django/contrib/auth/models.py
+msgid "active"
+msgstr "faol"
+
+msgid "codename"
+msgstr "kod nomi"
+
+msgid "date joined"
+msgstr "ro‘yxatdan o‘tgan sana"
+
+msgid "email address"
+msgstr "email manzili"
+
+msgid "first name"
+msgstr "ism"
+
+msgid "last name"
+msgstr "familiya"
+
+msgid "username"
+msgstr "foydalanuvchi nomi"
+
+msgid "users"
+msgstr "foydalanuvchilar"
+
+#: django/contrib/auth/models.py (Group/Permission)
+msgid "group"
+msgstr "guruh"
+
+msgid "groups"
+msgstr "guruhlar"
+
+msgid "permission"
+msgstr "ruxsat"
+
+msgid "permissions"
+msgstr "ruxsatlar"
+
+msgid "user permissions"
+msgstr "foydalanuvchi ruxsatlari"
+
+msgid "staff status"
+msgstr "xodim holati"
+
+msgid "superuser status"
+msgstr "superuser holati"
+
+#: django/contrib/admin/views/main.py (amallar)
+msgid "%(name)s object with primary key %(key)r does not exist."
+msgstr "“%(key)r” asosiy kalitli %(name)s obyekti mavjud emas."
+
+# --- django validatsiya xabarlari ------------------------------------------
+
+msgid "%(num)d day"
+msgid_plural "%(num)d days"
+msgstr[0] "%(num)d kun"
+
+msgid "%(num)d hour"
+msgid_plural "%(num)d hours"
+msgstr[0] "%(num)d soat"
+
+msgid "%(num)d minute"
+msgid_plural "%(num)d minutes"
+msgstr[0] "%(num)d daqiqa"
+
+msgid "%(num)d month"
+msgid_plural "%(num)d months"
+msgstr[0] "%(num)d oy"
+
+msgid "%(num)d week"
+msgid_plural "%(num)d weeks"
+msgstr[0] "%(num)d hafta"
+
+msgid "%(num)d year"
+msgid_plural "%(num)d years"
+msgstr[0] "%(num)d yil"
+
+msgid "%(size)d byte"
+msgid_plural "%(size)d bytes"
+msgstr[0] "%(size)d bayt"
+
+msgid "Constraint “%(name)s” is violated."
+msgstr "“%(name)s” cheklovi buzildi."
+
+msgid "Ensure that there are no more than %(max)s decimal place."
+msgid_plural "Ensure that there are no more than %(max)s decimal places."
+msgstr[0] "Kasr qismi %(max)s xonadan oshmasin."
+
+msgid "Ensure that there are no more than %(max)s digit in total."
+msgid_plural "Ensure that there are no more than %(max)s digits in total."
+msgstr[0] "Jami raqamlar soni %(max)s tadan oshmasin."
+
+msgid "Ensure this filename has at most %(max)d character (it has %(length)d)."
+msgid_plural "Ensure this filename has at most %(max)d characters (it has %(length)d)."
+msgstr[0] "Fayl nomi ko‘pi bilan %(max)d belgidan iborat bo‘lsin (hozir %(length)d)."
+
+msgid "Ensure this value is %(limit_value)s (it is %(show_value)s)."
+msgstr "Qiymat %(limit_value)s bo‘lishi kerak (hozir %(show_value)s)."
+
+msgid "Ensure this value is a multiple of step size %(limit_value)s."
+msgstr "Qiymat %(limit_value)s qadamiga karrali bo‘lsin."
+
+msgid "Ensure this value is greater than or equal to %(limit_value)s."
+msgstr "Qiymat %(limit_value)s dan katta yoki unga teng bo‘lsin."
+
+msgid "Ensure this value is less than or equal to %(limit_value)s."
+msgstr "Qiymat %(limit_value)s dan kichik yoki unga teng bo‘lsin."
+
+msgid "Invalid date string “%(datestr)s” given format “%(format)s”"
+msgstr "“%(format)s” formatidagi “%(datestr)s” sana noto‘g‘ri."
+
+msgid "Please correct the duplicate data for %(field)s, which must be unique."
+msgstr "%(field)s uchun takroriy ma’lumotni to‘g‘rilang — u yagona bo‘lishi kerak."
+
+msgid "Please either submit a file or check the clear checkbox, not both."
+msgstr "Faylni yuboring yoki tozalash belgisini qo‘ying — ikkalasini birga emas."
+
+msgid "Please submit at least %(num)d form."
+msgid_plural "Please submit at least %(num)d forms."
+msgstr[0] "Kamida %(num)d forma yuboring."
+
+msgid "Please submit at most %(num)d form."
+msgid_plural "Please submit at most %(num)d forms."
+msgstr[0] "Ko‘pi bilan %(num)d forma yuboring."
+
+msgid "String (unlimited)"
+msgstr "Matn (cheklanmagan)"
+
+msgid "“%(value)s” value must be either True, False, or None."
+msgstr "“%(value)s” qiymati True, False yoki None bo‘lishi kerak."
+
+#: django/contrib/admin/templates/admin/filter.html:5
+# Django bu shablonda `trimmed` ishlatmagani uchun msgid atrofdagi probellar bilan.
+msgid " By %(filter_title)s "
+msgstr " %(filter_title)s bo‘yicha "
+
+# --- django.contrib.admin / sessions / contenttypes model nomlari ---------------
+
+msgid "log entry"
+msgstr "jurnal yozuvi"
+
+msgid "log entries"
+msgstr "jurnal yozuvlari"
+
+msgid "session"
+msgstr "sessiya"
+
+msgid "sessions"
+msgstr "sessiyalar"
+
+msgid "content type"
+msgstr "kontent turi"
+
+msgid "content types"
+msgstr "kontent turlari"
+
+msgid "user"
+msgstr "foydalanuvchi"

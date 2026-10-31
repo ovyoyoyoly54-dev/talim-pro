@@ -10,8 +10,8 @@ class User(AbstractUser):
         TEACHER = "teacher", "O‘qituvchi"
         STUDENT = "student", "O‘quvchi"
         PARENT = "parent", "Ota-ona"
-    role = models.CharField(max_length=12, choices=Role.choices, default=Role.STUDENT)
-    phone = models.CharField(max_length=24, blank=True)
+    role = models.CharField("rol", max_length=12, choices=Role.choices, default=Role.STUDENT)
+    phone = models.CharField("telefon raqami", max_length=24, blank=True)
     # For a parent account, students are connected through StudentProfile.parent.
 
     class Meta(AbstractUser.Meta):
@@ -50,10 +50,10 @@ class PlatformSettings(models.Model):
         return self.site_name
 
 class StudyGroup(models.Model):
-    name = models.CharField(max_length=80, unique=True)
-    subject = models.CharField(max_length=100)
-    teachers = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name="teaching_groups", blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)
+    name = models.CharField("nomi", max_length=80, unique=True)
+    subject = models.CharField("fan", max_length=100)
+    teachers = models.ManyToManyField(settings.AUTH_USER_MODEL, verbose_name="o‘qituvchilar", related_name="teaching_groups", blank=True)
+    created_at = models.DateTimeField("yaratilgan vaqt", auto_now_add=True)
 
     class Meta:
         ordering = ["name"]
@@ -72,10 +72,10 @@ class StudyGroup(models.Model):
         return f"{self.name} — {self.subject}"
 
 class StudentProfile(models.Model):
-    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="student_profile")
-    group = models.ForeignKey(StudyGroup, on_delete=models.PROTECT, related_name="students")
-    parent = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="children")
-    joined_on = models.DateField(auto_now_add=True)
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, verbose_name="foydalanuvchi", on_delete=models.CASCADE, related_name="student_profile")
+    group = models.ForeignKey(StudyGroup, verbose_name="guruh", on_delete=models.PROTECT, related_name="students")
+    parent = models.ForeignKey(settings.AUTH_USER_MODEL, verbose_name="ota-ona", on_delete=models.SET_NULL, null=True, blank=True, related_name="children")
+    joined_on = models.DateField("qo‘shilgan sana", auto_now_add=True)
 
     class Meta:
         verbose_name = "o‘quvchi profili"
@@ -85,11 +85,11 @@ class StudentProfile(models.Model):
         return str(self.user)
 
 class Lesson(models.Model):
-    group = models.ForeignKey(StudyGroup, on_delete=models.CASCADE, related_name="lessons")
-    title = models.CharField(max_length=120)
-    starts_at = models.DateTimeField()
-    room = models.CharField(max_length=80, blank=True)
-    teacher = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="lessons")
+    group = models.ForeignKey(StudyGroup, verbose_name="guruh", on_delete=models.CASCADE, related_name="lessons")
+    title = models.CharField("mavzu", max_length=120)
+    starts_at = models.DateTimeField("boshlanish vaqti")
+    room = models.CharField("xona", max_length=80, blank=True)
+    teacher = models.ForeignKey(settings.AUTH_USER_MODEL, verbose_name="o‘qituvchi", on_delete=models.PROTECT, related_name="lessons")
 
     class Meta:
         ordering = ["starts_at"]
@@ -134,8 +134,8 @@ class GradeReasonQuerySet(models.QuerySet):
 
 
 class GradeReason(models.Model):
-    title = models.CharField(max_length=120, unique=True)
-    active = models.BooleanField(default=True)
+    title = models.CharField("nomi", max_length=120, unique=True)
+    active = models.BooleanField("faol", default=True)
     objects = GradeReasonQuerySet.as_manager()
 
     class Meta:
@@ -152,13 +152,13 @@ class GradeReason(models.Model):
         return self.title
 
 class GradeRecord(models.Model):
-    lesson = models.ForeignKey(Lesson, on_delete=models.CASCADE, related_name="grades")
-    student = models.ForeignKey(StudentProfile, on_delete=models.CASCADE, related_name="grades")
-    score = models.PositiveSmallIntegerField()
-    reasons = models.ManyToManyField(GradeReason, blank=True, related_name="grade_records")
-    note = models.TextField(blank=True, max_length=1000)
-    teacher = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="entered_grades")
-    updated_at = models.DateTimeField(auto_now=True)
+    lesson = models.ForeignKey(Lesson, verbose_name="dars", on_delete=models.CASCADE, related_name="grades")
+    student = models.ForeignKey(StudentProfile, verbose_name="o‘quvchi", on_delete=models.CASCADE, related_name="grades")
+    score = models.PositiveSmallIntegerField("baho")
+    reasons = models.ManyToManyField(GradeReason, verbose_name="sabablar", blank=True, related_name="grade_records")
+    note = models.TextField("izoh", blank=True, max_length=1000)
+    teacher = models.ForeignKey(settings.AUTH_USER_MODEL, verbose_name="o‘qituvchi", on_delete=models.PROTECT, related_name="entered_grades")
+    updated_at = models.DateTimeField("yangilangan vaqt", auto_now=True)
 
     class Meta:
         constraints = [
@@ -213,12 +213,12 @@ class Attendance(models.Model):
         PRESENT = "present", "Qatnashdi"
         LATE = "late", "Kechikdi"
         ABSENT = "absent", "Kelmagan"
-    lesson = models.ForeignKey(Lesson, on_delete=models.CASCADE, related_name="attendance")
-    student = models.ForeignKey(StudentProfile, on_delete=models.CASCADE, related_name="attendance")
-    status = models.CharField(max_length=10, choices=Status.choices, default=Status.PRESENT)
-    note = models.CharField(max_length=250, blank=True)
-    teacher = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT)
-    updated_at = models.DateTimeField(auto_now=True)
+    lesson = models.ForeignKey(Lesson, verbose_name="dars", on_delete=models.CASCADE, related_name="attendance")
+    student = models.ForeignKey(StudentProfile, verbose_name="o‘quvchi", on_delete=models.CASCADE, related_name="attendance")
+    status = models.CharField("holati", max_length=10, choices=Status.choices, default=Status.PRESENT)
+    note = models.CharField("izoh", max_length=250, blank=True)
+    teacher = models.ForeignKey(settings.AUTH_USER_MODEL, verbose_name="o‘qituvchi", on_delete=models.PROTECT)
+    updated_at = models.DateTimeField("yangilangan vaqt", auto_now=True)
 
     class Meta:
         constraints = [models.UniqueConstraint(fields=["lesson", "student"], name="one_attendance_per_student_per_lesson")]
@@ -245,12 +245,12 @@ class SMSLog(models.Model):
         SENT = "sent", "Yuborildi"
         FAILED = "failed", "Xatolik"
         DISABLED = "disabled", "Sozlanmagan"
-    parent = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
-    student = models.ForeignKey(StudentProfile, on_delete=models.SET_NULL, null=True, blank=True)
-    body = models.TextField()
-    status = models.CharField(max_length=10, choices=Status.choices)
-    provider_response = models.TextField(blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)
+    parent = models.ForeignKey(settings.AUTH_USER_MODEL, verbose_name="ota-ona", on_delete=models.SET_NULL, null=True, blank=True)
+    student = models.ForeignKey(StudentProfile, verbose_name="o‘quvchi", on_delete=models.SET_NULL, null=True, blank=True)
+    body = models.TextField("xabar matni")
+    status = models.CharField("holati", max_length=10, choices=Status.choices)
+    provider_response = models.TextField("provayder javobi", blank=True)
+    created_at = models.DateTimeField("yaratilgan vaqt", auto_now_add=True)
 
     class Meta:
         verbose_name = "SMS jurnali"
@@ -263,14 +263,14 @@ class PhoneOTP(models.Model):
         RESET_PASSWORD = "reset_password", "Parolni tiklash"
         CLOSE_ACCOUNT = "close_account", "Akkauntni yopish"
 
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="phone_otps")
-    purpose = models.CharField(max_length=20, choices=Purpose.choices)
-    code_hash = models.CharField(max_length=128)
-    request_ip_digest = models.CharField(max_length=64, blank=True, db_index=True)
-    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
-    expires_at = models.DateTimeField()
-    attempts = models.PositiveSmallIntegerField(default=0)
-    consumed_at = models.DateTimeField(null=True, blank=True)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, verbose_name="foydalanuvchi", on_delete=models.CASCADE, related_name="phone_otps")
+    purpose = models.CharField("maqsad", max_length=20, choices=Purpose.choices)
+    code_hash = models.CharField("kod xeshi", max_length=128)
+    request_ip_digest = models.CharField("so‘rov IP xeshi", max_length=64, blank=True, db_index=True)
+    created_at = models.DateTimeField("yaratilgan vaqt", auto_now_add=True, db_index=True)
+    expires_at = models.DateTimeField("amal qilish muddati")
+    attempts = models.PositiveSmallIntegerField("urinishlar soni", default=0)
+    consumed_at = models.DateTimeField("ishlatilgan vaqt", null=True, blank=True)
 
     class Meta:
         indexes = [models.Index(fields=["user", "purpose", "created_at"])]
