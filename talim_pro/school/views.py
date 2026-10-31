@@ -12,7 +12,7 @@ from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.http import require_GET
 from xml.sax.saxutils import escape
-from .forms import GradeRecordForm, PhoneResetRequestForm, PhoneOTPForm, PhonePasswordResetForm, SignupRequestForm, SignupCompleteForm, AccountClosureConfirmForm, PlatformSettingsForm, AccountSettingsForm, StyledPasswordChangeForm, AddStudentToGroupForm, LessonCreateForm
+from .forms import GradeRecordForm, PhoneResetRequestForm, PhoneOTPForm, PhonePasswordResetForm, SignupRequestForm, SignupCompleteForm, AccountClosureConfirmForm, PlatformSettingsForm, AccountSettingsForm, StyledPasswordChangeForm, AddStudentToGroupForm, LessonCreateForm, LessonRescheduleForm
 from .models import User, StudyGroup, StudentProfile, Lesson, GradeRecord, Attendance, SMSLog, PhoneOTP, PlatformSettings
 from .phone_auth import consume_phone_otp, issue_phone_otp, normalize_phone
 from .sms import send_parent_sms
@@ -465,6 +465,30 @@ def lesson_create(request):
         "form": form,
         "teacher_group_map": teacher_group_map,
     })
+
+
+@login_required
+def lesson_reschedule(request, lesson_id):
+    lesson = get_object_or_404(Lesson.objects.select_related("group", "teacher"), pk=lesson_id)
+    user = request.user
+    if not is_admin(user) and (user.role != User.Role.TEACHER or lesson.teacher_id != user.id or not lesson.group.teachers.filter(id=user.id).exists()):
+        raise PermissionDenied
+
+    form = LessonRescheduleForm(request.POST or None, lesson=lesson)
+    if request.method == "POST" and form.is_valid():
+        previous_starts_at = lesson.starts_at
+        lesson.starts_at = form.cleaned_data["starts_at"]
+        try:
+            lesson.full_clean()
+            lesson.save()
+        except ValidationError as error:
+            lesson.starts_at = previous_starts_at
+            form.add_error(None, error)
+        else:
+            messages.success(request, "Darsning sana va vaqti yangilandi.")
+            return redirect("schedule")
+
+    return render(request, "school/lesson_reschedule.html", {"form": form, "lesson": lesson})
 
 
 @login_required

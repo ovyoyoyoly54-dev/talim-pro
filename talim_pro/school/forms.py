@@ -102,6 +102,30 @@ class LessonCreateForm(forms.ModelForm):
         return data
 
 
+class LessonRescheduleForm(forms.Form):
+    starts_at = forms.DateTimeField(
+        label="Yangi sana va vaqt",
+        input_formats=["%Y-%m-%dT%H:%M", "%Y-%m-%d %H:%M", "%Y-%m-%d %H:%M:%S"],
+        widget=forms.DateTimeInput(
+            format="%Y-%m-%dT%H:%M",
+            attrs={"class": "input", "type": "datetime-local"},
+        ),
+        help_text="Dars boshlanishining yangi sana va vaqtini tanlang.",
+    )
+
+    def __init__(self, *args, lesson=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        if lesson and not self.is_bound:
+            self.initial["starts_at"] = timezone.localtime(lesson.starts_at)
+        self.fields["starts_at"].widget.attrs["min"] = timezone.localtime().strftime("%Y-%m-%dT%H:%M")
+
+    def clean_starts_at(self):
+        starts_at = self.cleaned_data["starts_at"]
+        if starts_at <= timezone.now():
+            raise ValidationError("Dars vaqti kelajakda bo‘lishi kerak.")
+        return starts_at
+
+
 class GradeRecordForm(forms.Form):
     lesson = forms.ModelChoiceField(queryset=Lesson.objects.none(), widget=forms.Select(attrs={"class": "input"}))
     student = forms.ModelChoiceField(queryset=StudentProfile.objects.none(), widget=forms.Select(attrs={"class": "input"}))

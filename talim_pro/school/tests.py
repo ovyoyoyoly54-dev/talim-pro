@@ -531,6 +531,48 @@ class LessonCreateTests(TestCase):
             self.assertNotContains(response, f'href="{reverse("lesson_create")}"')
 
 
+class LessonRescheduleTests(TestCase):
+    def setUp(self):
+        self.teacher = User.objects.create_user(
+            "reschedule_teacher", password="StrongPassword123!", role=User.Role.TEACHER,
+        )
+        self.other_teacher = User.objects.create_user(
+            "reschedule_other", password="StrongPassword123!", role=User.Role.TEACHER,
+        )
+        self.group = StudyGroup.objects.create(name="Reschedule A1", subject="Ingliz tili")
+        self.group.teachers.add(self.teacher)
+        self.other_group = StudyGroup.objects.create(name="Reschedule B1", subject="Matematika")
+        self.other_group.teachers.add(self.other_teacher)
+        self.lesson = Lesson.objects.create(
+            group=self.group, teacher=self.teacher, title="Mening darsim",
+            starts_at=timezone.now() + timedelta(days=2), room="101-xona",
+        )
+        self.other_lesson = Lesson.objects.create(
+            group=self.other_group, teacher=self.other_teacher, title="Boshqa dars",
+            starts_at=timezone.now() + timedelta(days=3), room="102-xona",
+        )
+
+    def test_teacher_can_reschedule_only_their_own_lesson(self):
+        self.client.force_login(self.teacher)
+        new_time = timezone.localtime(timezone.now() + timedelta(days=4)).replace(second=0, microsecond=0)
+
+        response = self.client.post(
+            reverse("lesson_reschedule", kwargs={"lesson_id": self.lesson.pk}),
+            {"starts_at": new_time.strftime("%Y-%m-%dT%H:%M")},
+        )
+
+        self.assertRedirects(response, reverse("schedule"))
+        self.lesson.refresh_from_db()
+        self.assertEqual(self.lesson.starts_at, new_time)
+
+    def test_teacher_cannot_reschedule_another_teachers_lesson(self):
+        self.client.force_login(self.teacher)
+
+        response = self.client.get(reverse("lesson_reschedule", kwargs={"lesson_id": self.other_lesson.pk}))
+
+        self.assertEqual(response.status_code, 403)
+
+
 class PlatformRulesTests(TestCase):
     def setUp(self):
         self.admin = User.objects.create_user("admin1", password="StrongPassword123!", role=User.Role.ADMIN)

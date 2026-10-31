@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}Dars vaqtini o‘zgartirish — TA'LIM PRO{% endblock %}
+{% block page_heading %}Dars vaqtini o‘zgartirish{% endblock %}
+{% block content %}
+<div class="page-intro">
+  <div>
+    <span class="eyebrow">DARS JADVALI</span>
+    <h2>{{ lesson.title }}</h2>
+    <p class="muted">{{ lesson.group.name }} guruhi uchun darsning faqat sana va vaqtini yangilang.</p>
+  </div>
+  <a class="button button-outline" href="{% url 'schedule' %}">Jadvalga qaytish</a>
+</div>
+<form method="post" class="panel" novalidate>
+  {% csrf_token %}
+  {% if form.non_field_errors %}<div class="message error">{{ form.non_field_errors }}</div>{% endif %}
+  <label class="lesson-field" for="{{ form.starts_at.id_for_label }}">
+    {{ form.starts_at.label }} <span class="required">*</span>
+    {{ form.starts_at }}
+    <small class="field-help">{{ form.starts_at.help_text }}</small>
+    {% if form.starts_at.errors %}<small class="field-error">{{ form.starts_at.errors|striptags }}</small>{% endif %}
+  </label>
+  <button class="button button-primary" type="submit">Yangi vaqtni saqlash</button>
+</form>
+{% endblock %}

@@ -52,6 +52,7 @@ urlpatterns = [
     path("", views.public_home, name="home"),
     path("baholash/", views.grade_lesson, name="grade_lesson"),
     path("dars-qoshish/", views.lesson_create, name="lesson_create"),
+    path("dars/<int:lesson_id>/vaqtini-ozgartirish/", views.lesson_reschedule, name="lesson_reschedule"),
     path("jadval/", views.schedule, name="schedule"),
     path("reyting/", views.ranking, name="ranking"),
     path("oquvchi/<int:student_id>/", views.student_detail, name="student_detail"),
