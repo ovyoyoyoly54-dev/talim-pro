@@ -98,8 +98,8 @@ class GradeRecordAdminForm(forms.ModelForm):
         cleaned = super().clean()
         score = cleaned.get("score")
         reasons = cleaned.get("reasons")
-        if score is not None and score < 8 and not reasons:
-            self.add_error("reasons", "8 dan past baho uchun kamida bitta sabab tanlang.")
+        if score is not None and score <= 8 and not reasons:
+            self.add_error("reasons", "8 yoki undan past baho uchun kamida bitta sabab tanlang.")
         self.instance._pending_reasons = reasons
         return cleaned
 
@@ -112,9 +112,10 @@ class GradeRecordAdmin(admin.ModelAdmin):
     search_fields = ("student__user__username", "student__user__first_name", "lesson__title")
 
     def save_model(self, request, obj, form, change):
-        form._pending_low_score = obj.score if obj.score < 8 else None
+        form._pending_low_score = obj.score if obj.score <= 8 else None
         if form._pending_low_score is not None:
-            obj.score = 8
+            obj._pending_reasons = form.cleaned_data.get("reasons")
+            obj.score = 9
         super().save_model(request, obj, form, change)
 
     def save_related(self, request, form, formsets, change):

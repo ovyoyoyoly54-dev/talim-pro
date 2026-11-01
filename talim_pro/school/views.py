@@ -466,7 +466,7 @@ def dashboard(request):
         })
     elif user.role == User.Role.TEACHER:
         lessons = teacher_lessons(user)
-        teaching_groups = StudyGroup.objects.filter(teachers=user, lessons__teacher=user).distinct()
+        teaching_groups = StudyGroup.objects.filter(teachers=user).distinct()
         context.update({"lessons": lessons.filter(starts_at__date__gte=timezone.localdate())[:8],
                         "groups": teaching_groups,
                         "student_count": StudentProfile.objects.filter(group__teachers=user).count(),
@@ -503,11 +503,12 @@ def grade_lesson(request):
                 form.add_error("student", "O‘quvchi tanlangan guruhga tegishli emas.")
             else:
                 with transaction.atomic():
-                    grade, _ = GradeRecord.objects.get_or_create(
-                        lesson=lesson, student=student,
-                        defaults={"score": 8, "note": form.cleaned_data["note"], "teacher": request.user}
-                    )
-                    grade.note = form.cleaned_data["note"]
+                    grade = GradeRecord.objects.filter(lesson=lesson, student=student).first()
+                    if grade is None:
+                        # Create neutrally first; selected reasons are attached before
+                        # saving the actual score so scores <= 8 pass model validation.
+                        grade = GradeRecord(lesson=lesson, student=student, score=9, teacher=request.user)
+                        grade.save()
                     grade.teacher = request.user
                     grade.score = form.cleaned_data["score"]
                     grade.reasons.set(form.cleaned_data["reasons"])

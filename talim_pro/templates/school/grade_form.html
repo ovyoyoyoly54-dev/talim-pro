@@ -1,16 +1,91 @@
 {% extends "base.html" %}
-{% block page_heading %}Baho qo‘yish{% endblock %}
+{% block page_heading %}Baho qo‘yish<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const score = document.getElementById("id_score");
+  const modal = document.getElementById("reason-modal");
+  if (!score || !modal) return;
+  const boxes = Array.from(modal.querySelectorAll('input[type="checkbox"]'));
+  const open = () => { modal.hidden = false; document.body.classList.add("modal-open"); };
+  const close = () => { modal.hidden = true; document.body.classList.remove("modal-open"); };
+  score.addEventListener("change", () => {
+    const value = Number(score.value);
+    if (value >= 0 && value <= 8) open();
+  });
+  if ((score.value !== "" && Number(score.value) <= 8) || modal.querySelector(".field-error")) open();
+  ["reason-modal-close", "reason-modal-cancel"].forEach(id => {
+    const button = document.getElementById(id);
+    if (button) button.addEventListener("click", close);
+  });
+  const confirm = document.getElementById("reason-modal-confirm");
+  if (confirm) confirm.addEventListener("click", () => {
+    if (score.value !== "" && Number(score.value) <= 8 && !boxes.some(box => box.checked)) {
+      let error = modal.querySelector(".reason-modal-error");
+      if (!error) {
+        error = document.createElement("small");
+        error.className = "field-error reason-modal-error";
+        confirm.closest(".reason-modal").insertBefore(error, confirm.closest(".reason-modal-actions"));
+      }
+      error.textContent = "Kamida bitta sababni tanlang.";
+      return;
+    }
+    close();
+  });
+  modal.addEventListener("click", event => { if (event.target === modal) close(); });
+});
+</script>
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const score = document.getElementById("id_score");
+  const modal = document.getElementById("reason-modal");
+  if (!score || !modal) return;
+  const boxes = Array.from(modal.querySelectorAll('input[type="checkbox"]'));
+  const open = () => { modal.hidden = false; document.body.classList.add("modal-open"); };
+  const close = () => { modal.hidden = true; document.body.classList.remove("modal-open"); };
+  score.addEventListener("change", () => {
+    const value = Number(score.value);
+    if (value >= 0 && value <= 8) open();
+  });
+  if (Number(score.value) <= 8 || modal.querySelector(".field-error")) open();
+  ["reason-modal-close", "reason-modal-cancel"].forEach(id => {
+    const button = document.getElementById(id);
+    if (button) button.addEventListener("click", close);
+  });
+  const confirm = document.getElementById("reason-modal-confirm");
+  if (confirm) confirm.addEventListener("click", () => {
+    if (Number(score.value) <= 8 && !boxes.some(box => box.checked)) {
+      let error = modal.querySelector(".reason-modal-error");
+      if (!error) {
+        error = document.createElement("small");
+        error.className = "field-error reason-modal-error";
+        confirm.closest(".reason-modal").insertBefore(error, confirm.closest(".reason-modal-actions"));
+      }
+      error.textContent = "Kamida bitta sababni tanlang.";
+      return;
+    }
+    close();
+  });
+  modal.addEventListener("click", event => { if (event.target === modal) close(); });
+});
+</script>
+{% endblock %}
 {% block content %}
-<div class="page-intro"><div><span class="eyebrow">O‘QUV JARAYONI</span><h2>Dars natijasini kiriting</h2><p class="muted">Baho va davomatni saqlang. 8 dan past baho uchun sabab majburiy.</p></div><span class="pill pill-blue">0–10 ball</span></div>
+<div class="page-intro"><div><span class="eyebrow">O‘QUV JARAYONI</span><h2>Dars natijasini kiriting</h2><p class="muted">Baho va davomatni saqlang. 8 yoki undan past baho uchun sabab tanlash majburiy.</p></div><span class="pill pill-blue">0–10 ball</span></div>
 <form method="post" class="grade-layout">{% csrf_token %}
 <div class="panel grade-panel"><div class="panel-heading"><div><h3>Asosiy ma'lumotlar</h3><p class="muted">Dars va o‘quvchini tanlang</p></div><span class="step-number">01</span></div>
 {% if form.non_field_errors %}<div class="message error">{{ form.non_field_errors }}</div>{% endif %}
 <label>Dars {{ form.lesson }}{% if form.lesson.errors %}<small class="field-error">{{ form.lesson.errors|striptags }}</small>{% endif %}</label>
 <label>O‘quvchi {{ form.student }}{% if form.student.errors %}<small class="field-error">{{ form.student.errors|striptags }}</small>{% endif %}</label>
 <div class="score-entry"><div class="score-title"><label for="{{ form.score.id_for_label }}">Dars bahosi</label><span class="score-value" id="score-value">—<small>/10</small></span></div>{{ form.score }}<div class="score-scale"><span>0 — Boshlang‘ich</span><span>10 — A'lo</span></div>{% if form.score.errors %}<small class="field-error">{{ form.score.errors|striptags }}</small>{% endif %}</div>
-<div class="reason-section" id="reason-section"><div class="section-title"><div><h4>Baholash sababi <span class="required">*</span></h4><p class="muted">8 dan past bahoda kamida bitta sabab tanlang.</p></div><span class="step-number">02</span></div><div class="reason-grid">{% for checkbox in form.reasons %}<label class="reason-option">{{ checkbox.tag }}<span>{{ checkbox.choice_label }}</span></label>{% empty %}<p class="muted">Sabablar administrator tomonidan qo‘shiladi.</p>{% endfor %}</div>{% if form.reasons.errors %}<small class="field-error">{{ form.reasons.errors|striptags }}</small>{% endif %}</div>
-<label>Qo‘shimcha izoh <span class="muted">(ixtiyoriy)</span>{{ form.note }}</label>
+<div class="reason-modal-backdrop" id="reason-modal" hidden>
+<section class="reason-modal" role="dialog" aria-modal="true" aria-labelledby="reason-modal-title">
+<button class="reason-modal-close" type="button" id="reason-modal-close" aria-label="Yopish">×</button>
+<span class="eyebrow">BAHO SABABI</span><h3 id="reason-modal-title">Nima sababdan past baho qo‘yildi?</h3>
+<p class="muted">8 yoki undan past baho uchun mos sabab(lar)ni tanlang. Bir nechta sabab tanlashingiz mumkin.</p>
+<div class="reason-modal-options">{% for checkbox in form.reasons %}<label class="reason-option">{{ checkbox.tag }}<span>{{ checkbox.choice_label }}</span></label>{% empty %}<p class="muted">Hozircha sabablar kiritilmagan. Administrator sozlamalardan sabab qo‘shishi kerak.</p>{% endfor %}</div>
+{% if form.reasons.errors %}<small class="field-error">{{ form.reasons.errors|striptags }}</small>{% endif %}
+<div class="reason-modal-actions"><button class="button button-secondary" type="button" id="reason-modal-cancel">Bekor qilish</button><button class="button button-primary" type="button" id="reason-modal-confirm">Tanlovni tasdiqlash</button></div>
+</section></div>
 </div>
-<div class="panel attendance-panel"><div class="panel-heading"><div><h3>Davomat</h3><p class="muted">Bugungi qatnashuv holati</p></div><span class="step-number">03</span></div><div class="attendance-options">{% for radio in form.attendance %}<label class="attendance-option">{{ radio.tag }}<span>{{ radio.choice_label }}</span></label>{% endfor %}</div><div class="sms-info"><span class="sms-icon">✉</span><div><b>Ota-onaga xabarnoma</b><p class="muted">8 dan past baho saqlanganda SMS sozlangan bo‘lsa, ota-onaga sabab va davomat bilan xabar yuboriladi.</p></div></div><button class="button button-primary button-wide" type="submit">Bahoni saqlash <span>→</span></button><p class="muted tiny center">Saqlashdan oldin ma'lumotlarni tekshiring.</p></div>
+<div class="panel attendance-panel"><div class="panel-heading"><div><h3>Davomat</h3><p class="muted">Bugungi qatnashuv holati</p></div><span class="step-number">03</span></div><div class="attendance-options">{% for radio in form.attendance %}<label class="attendance-option">{{ radio.tag }}<span>{{ radio.choice_label }}</span></label>{% endfor %}</div><div class="sms-info"><span class="sms-icon">✉</span><div><b>Ota-onaga xabarnoma</b><p class="muted">8 yoki undan past baho saqlanganda SMS sozlangan bo‘lsa, ota-onaga sabab va davomat bilan xabar yuboriladi.</p></div></div><button class="button button-primary button-wide" type="submit">Bahoni saqlash <span>→</span></button><p class="muted tiny center">Saqlashdan oldin ma'lumotlarni tekshiring.</p></div>
 </form>
 {% endblock %}

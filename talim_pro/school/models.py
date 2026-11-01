@@ -129,7 +129,7 @@ class Lesson(models.Model):
 
 class GradeReasonQuerySet(models.QuerySet):
     def delete(self):
-        if self.filter(grade_records__score__lt=8).exists():
+        if self.filter(grade_records__score__lte=8).exists():
             raise ValidationError("Past baholarda ishlatilgan sababni o‘chirib bo‘lmaydi. Uni faolsizlantiring.")
         return super().delete()
 
@@ -145,7 +145,7 @@ class GradeReason(models.Model):
         verbose_name_plural = "Baho sabablari"
 
     def delete(self, *args, **kwargs):
-        if self.grade_records.filter(score__lt=8).exists():
+        if self.grade_records.filter(score__lte=8).exists():
             raise ValidationError("Past baholarda ishlatilgan sababni o‘chirib bo‘lmaydi. Uni faolsizlantiring.")
         return super().delete(*args, **kwargs)
 
@@ -172,13 +172,11 @@ class GradeRecord(models.Model):
 
     def clean(self):
         score = getattr(self, "score", None)
-        if score is not None and score < 8:
-            if self.pk:
-                has_reason = self.reasons.exists()
-            else:
-                has_reason = bool(getattr(self, "_pending_reasons", None))
+        pending_reasons = getattr(self, "_pending_reasons", None)
+        if score is not None and score <= 8:
+            has_reason = bool(pending_reasons) if pending_reasons is not None else (self.pk and self.reasons.exists())
             if not has_reason:
-                raise ValidationError({"reasons": "8 dan past baho uchun kamida bitta sabab tanlang."})
+                raise ValidationError({"reasons": "8 yoki undan past baho uchun kamida bitta sabab tanlang."})
         if self.lesson_id and self.student_id and self.lesson.group_id != self.student.group_id:
             raise ValidationError("O‘quvchi ushbu dars guruhiga tegishli emas.")
         if self.lesson_id and self.teacher_id:
@@ -192,18 +190,16 @@ class GradeRecord(models.Model):
 
     def save(self, *args, **kwargs):
         pending_reasons = getattr(self, "_pending_reasons", None)
+        if self.score <= 8 and pending_reasons is not None:
+            final_score = self.score
+            self.score = 9
+            super().save(*args, **kwargs)
+            self.reasons.set(pending_reasons)
+            self.score = final_score
+            self._pending_reasons = None
+            self.full_clean()
+            return super().save()
         self.full_clean()
-        if self.pk is None and self.score < 8:
-            if not pending_reasons:
-                raise ValidationError({"reasons": "Past baholi yangi qayd uchun sabab belgilang."})
-            score = self.score
-            with transaction.atomic():
-                self.score = 8
-                super().save(*args, **kwargs)
-                self.reasons.set(pending_reasons)
-                self.score = score
-                super().save()
-            return
         return super().save(*args, **kwargs)
 
     def __str__(self):
