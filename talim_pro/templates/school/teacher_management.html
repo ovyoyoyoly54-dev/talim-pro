@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block page_heading %}O‘qituvchilar{% endblock %}
+{% block content %}
+<div class="welcome-row"><div><h2>O‘qituvchilar</h2><p class="muted">Yangi o‘qituvchi hisobini yarating va guruhlarga biriktiring.</p></div><a class="button button-secondary" href="{% url 'dashboard' %}">← Bosh sahifa</a></div>
+<div class="two-column">
+<section class="panel">
+<div class="panel-heading"><div><h3>Yangi o‘qituvchi</h3><p class="muted">Login va vaqtinchalik parol avtomatik yaratiladi.</p></div></div>
+<form method="post">{% csrf_token %}
+{% for field in form %}<div class="form-group" style="margin-bottom:14px"><label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}{% for error in field.errors %}<small class="error-text">{{ error }}</small>{% endfor %}</div>{% endfor %}
+{% if form.non_field_errors %}<p class="error-text">{{ form.non_field_errors }}</p>{% endif %}
+<button class="button button-primary" type="submit">+ O‘qituvchi yaratish</button>
+</form>
+</section>
+<section class="panel">
+<div class="panel-heading"><div><h3>O‘qituvchilar ro‘yxati</h3><p class="muted">{{ teachers|length }} nafar o‘qituvchi</p></div></div>
+{% for teacher in teachers %}
+<div class="list-row" style="align-items:flex-start"><div class="row-main"><b>{{ teacher.get_full_name|default:teacher.username }}</b><small>Login: {{ teacher.username }}</small><small>{{ teacher.phone|default:"Telefon kiritilmagan" }}</small><small>Guruhlar: {% for group in teacher.teaching_groups.all %}{{ group.name }}{% if not forloop.last %}, {% endif %}{% empty %}Biriktirilmagan{% endfor %}</small>
+<form method="post" action="{% url 'teacher_assign_group' teacher.id %}" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">{% csrf_token %}<select class="input" name="group_id" required><option value="">Guruh tanlang</option>{% for group in groups %}<option value="{{ group.id }}">{{ group.name }}</option>{% endfor %}</select><button class="button button-secondary" type="submit">Guruhga biriktirish</button></form>
+</div></div>
+{% empty %}<p class="empty">Hozircha o‘qituvchi qo‘shilmagan.</p>{% endfor %}
+</section></div>
+{% endblock %}

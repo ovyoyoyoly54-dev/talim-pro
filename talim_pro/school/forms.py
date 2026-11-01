@@ -335,3 +335,30 @@ class CreateStudentInGroupForm(forms.Form):
         if not phone:
             raise ValidationError("Ota-ona telefon raqamini +998 formatida kiriting.")
         return phone
+
+
+class CreateTeacherForm(forms.Form):
+    first_name = forms.CharField(max_length=150, label="Ismi", widget=forms.TextInput(attrs={"class": "input", "autocomplete": "given-name"}))
+    last_name = forms.CharField(max_length=150, label="Familiyasi", widget=forms.TextInput(attrs={"class": "input", "autocomplete": "family-name"}))
+    phone = forms.CharField(required=False, max_length=24, label="Telefon raqami", widget=forms.TextInput(attrs={"class": "input", "type": "tel", "placeholder": "+998 90 123 45 67"}))
+
+    def clean_first_name(self):
+        value = self.cleaned_data["first_name"].strip()
+        if not value:
+            raise ValidationError("O‘qituvchi ismini kiriting.")
+        return value
+
+    def clean_last_name(self):
+        value = self.cleaned_data["last_name"].strip()
+        if not value:
+            raise ValidationError("O‘qituvchi familiyasini kiriting.")
+        return value
+
+    def clean_phone(self):
+        value = self.cleaned_data.get("phone", "").strip()
+        if not value:
+            return ""
+        phone = normalize_phone(value)
+        if not phone:
+            raise ValidationError("Telefon raqamini +998 formatida kiriting.")
+        return phone
