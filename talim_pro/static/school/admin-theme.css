@@ -491,3 +491,112 @@ body.login .submit-row input:hover{background:linear-gradient(135deg,#5f97ff,#3f
   *{transition:none!important}
 }
 
+
+
+/* ==========================================================================
+   TA'LIM PRO — boshqaruv va guruhlar uchun qo'shimcha UX
+   ========================================================================== */
+#content{padding:30px clamp(18px,3vw,44px) 56px}
+.tp-page{max-width:1600px}
+.tp-page-head{align-items:center;margin-bottom:26px}
+.tp-page-heading h1{font-size:clamp(22px,2vw,28px);letter-spacing:-.8px}
+.tp-page-sub{font-size:12px}
+
+/* Boshqaruv bosh sahifasi: bo'limlarni oson topish */
+.tp-shell{gap:26px}
+.tp-hero{min-height:560px;border-radius:24px}
+.tp-panel{padding:30px;border-radius:22px}
+.tp-panel-head{margin-bottom:26px}
+.tp-panel-head h2{font-size:26px}
+.tp-cards{grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px}
+.tp-card{padding:20px;min-height:190px;border-radius:17px}
+.tp-card-icon{width:42px;height:42px;border-radius:13px}
+.tp-card h3{font-size:15px;margin-top:17px}
+.tp-card-desc{font-size:12px;line-height:1.7}
+.tp-card-link{font-size:11px}
+.tp-card-add{width:34px;height:34px;border-radius:11px;font-size:20px}
+
+/* Ro'yxatlar: qidiruv va amallarni ko'zga tashlanadigan qilish */
+#changelist{gap:22px}
+#changelist .changelist-form-container{border-radius:18px}
+#changelist-search{padding:18px 20px}
+#changelist-search #searchbar{height:46px;border-radius:12px;font-size:13px}
+#changelist .results{overflow-x:auto}
+#changelist table{min-width:620px}
+#changelist table thead th{padding:15px 16px;font-size:10px;letter-spacing:.8px}
+#changelist table tbody td{padding:15px 16px;font-size:12px;vertical-align:middle}
+#changelist table tbody tr:nth-child(even){background:#fbfcff}
+#changelist table tbody tr:hover{background:#f1f6ff}
+#changelist .paginator{padding:14px 18px;border-top:1px solid var(--tp-line);background:#fbfcff}
+#changelist-filter{border-radius:18px}
+#changelist-filter h2{padding:16px 19px}
+#changelist-filter li a,#changelist-filter li.selected a{padding:9px 12px}
+.object-tools a:link,.object-tools a:visited{border-radius:12px;padding:12px 18px}
+
+/* Forma sahifalari: bir xil o'qish kengligi va maydonlar */
+.tp-form-body{max-width:1100px}
+.tp-form-body fieldset.module{margin-bottom:20px;border-radius:18px}
+.tp-form-body fieldset.module h2{padding:17px 22px;font-size:11px;letter-spacing:1px}
+.tp-form-body fieldset.module .description{
+  margin:0;padding:12px 22px;background:#f6f9ff;border-bottom:1px solid #edf2fa;
+  color:#6b7c93;font-size:12px;line-height:1.65
+}
+.tp-form-body .form-row{display:block;padding:18px 22px}
+.tp-form-body .form-row label{display:block;margin:0 0 8px;font-size:12.5px;font-weight:750;color:#263b58}
+.tp-form-body .form-row .help,.tp-form-body .form-row p.help{
+  display:block;margin:7px 0 0;color:#77869a;font-size:11px;line-height:1.6
+}
+.tp-form-body input[type=text],.tp-form-body input[type=email],.tp-form-body input[type=number],.tp-form-body input[type=tel],.tp-form-body select{
+  width:100%;max-width:760px;min-height:46px;padding:11px 14px;border-radius:12px;
+  border-color:#dfe7f2;background:#fcfdff;font-size:13px
+}
+.tp-form-body input:focus,.tp-form-body select:focus,.tp-form-body textarea:focus{
+  border-color:#7fa5ef;background:#fff;box-shadow:0 0 0 4px #4f8bff18
+}
+.tp-form-body .selector{max-width:100%;gap:14px;padding:4px 0}
+.tp-form-body .selector-available,.tp-form-body .selector-chosen{
+  flex:1 1 260px;min-width:0;border:1px solid #e4ebf5;border-radius:14px;background:#fff;overflow:hidden
+}
+.tp-form-body .selector-available h2,.tp-form-body .selector-chosen h2{
+  padding:12px 15px;background:#f4f7fd;color:#334b6b;font-size:10px;letter-spacing:.7px
+}
+.tp-form-body .selector .selector-filter{padding:10px 12px;background:#fbfcff}
+.tp-form-body .selector .selector-filter input{width:100%;max-width:none;min-height:38px}
+.tp-form-body .selector select{width:100%;max-width:none;min-height:190px;border:0;border-radius:0;background:#fff}
+.tp-form-body .selector ul.selector-chooser{display:flex;flex-direction:column;justify-content:center;gap:8px;margin:0;padding:0 2px;background:transparent}
+.tp-form-body .selector-chooser li{margin:0}
+.tp-form-body .selector a.selector-add,.tp-form-body .selector a.selector-remove{
+  display:grid;place-items:center;width:36px;height:36px;border-radius:10px;
+  background:#eaf1ff;color:#285dc6;border:1px solid #dce8ff
+}
+.tp-form-body .selector a.selector-add:hover,.tp-form-body .selector a.selector-remove:hover{background:#356ce0;color:#fff}
+.tp-form-body .selector .help{padding:0 13px 12px;color:#7a8ba2;font-size:10px}
+.tp-form-body .submit-row{max-width:1100px;padding:16px 20px;border-radius:16px;gap:10px}
+.tp-form-body .submit-row input{min-height:42px}
+.tp-form-body .submit-row .default{background:linear-gradient(135deg,#4f8bff,#356ce0)}
+.tp-form-body .errorlist{margin:7px 0 0;padding:10px 13px;border-radius:10px;background:#fff1f1;color:#b52d3b;font-size:11px;list-style:none}
+.tp-form-body .help-tooltip{opacity:.8}
+
+/* Guruhlar ro'yxatida o'quvchi/o'qituvchi sonlari */
+body.model-studygroup #changelist table tbody td:nth-child(3),
+body.model-studygroup #changelist table tbody td:nth-child(4){font-variant-numeric:tabular-nums;font-weight:750;color:#315fba}
+body.model-studygroup #changelist table tbody td:nth-child(1) a{font-weight:800;color:#1b3d67}
+
+/* Fokus ko'rsatkichlari va harakatni kamaytirish */
+#nav-sidebar a:focus-visible,.tp-card a:focus-visible,.tp-hero a:focus-visible,
+.object-tools a:focus-visible,.submit-row input:focus-visible{
+  outline:3px solid #8db0ff;outline-offset:3px
+}
+@media(max-width:767px){
+  .tp-shell{gap:14px}
+  .tp-hero{min-height:0}
+  .tp-panel{padding:19px}
+  .tp-cards{grid-template-columns:1fr}
+  .tp-card{min-height:0}
+  .tp-form-body fieldset.module h2{padding:14px 16px}
+  .tp-form-body .form-row{padding:15px 16px}
+  .tp-form-body .selector{flex-direction:column}
+  .tp-form-body .selector ul.selector-chooser{flex-direction:row}
+  #changelist .results{margin:0}
+}
+@media(prefers-reduced-motion:reduce){.tp-card,.tp-hero-btn{transition:none!important}}
