@@ -1673,3 +1673,18 @@ tbody tr:hover td{background:#fbfcff}
 @media(max-width:1050px){.managed-group-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:760px){.groups-hero{align-items:flex-start;flex-direction:column;padding:23px}.group-detail-grid{grid-template-columns:1fr}.group-overview-stats{gap:10px}.group-overview-stat{padding:15px}.group-overview-stat>strong{font-size:24px}}
 @media(max-width:560px){.managed-group-grid{grid-template-columns:1fr}.group-overview-stats{grid-template-columns:1fr}.group-browser{padding:17px}.group-search{flex-wrap:wrap}.group-search input{flex-basis:calc(100% - 45px)}.group-search button{flex:1}.group-assign-form>div{align-items:stretch;flex-direction:column}.group-detail-hero .button{width:100%;text-align:center}.group-student-table{min-width:590px}}
+
+/* Automatic low-score reason picker */
+.reason-modal-backdrop[hidden]{display:none!important}
+.reason-modal-backdrop{position:fixed;inset:0;z-index:10000;display:grid;place-items:center;padding:20px;background:rgba(12,22,42,.58);backdrop-filter:blur(5px)}
+.reason-modal{position:relative;width:min(560px,100%);max-height:min(82vh,760px);overflow:auto;padding:30px;border:1px solid #e5eaf4;border-radius:22px;background:#fff;box-shadow:0 24px 80px rgba(12,22,42,.25)}
+.reason-modal h3{margin:8px 0;color:var(--navy);font-size:22px}
+.reason-modal>p{font-size:13px;line-height:1.6}
+.reason-modal-close{position:absolute;top:13px;right:16px;width:36px;height:36px;border:0;border-radius:50%;background:#f1f4f9;color:#5b6678;font-size:24px;cursor:pointer}
+.reason-modal-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:22px 0}
+.reason-modal-options .reason-option{display:flex;align-items:center;gap:10px;min-height:50px;padding:12px;border:1px solid #e5eaf2;border-radius:12px;background:#fbfcff;color:#35445b;font-size:12px;font-weight:650;cursor:pointer}
+.reason-modal-options .reason-option:has(input:checked){border-color:#8b9aff;background:#f0f3ff;color:#414fc5}
+.reason-modal-options input{width:17px;height:17px;accent-color:#5968e8}
+.reason-modal-actions{display:flex;justify-content:flex-end;gap:10px;padding-top:15px;border-top:1px solid #edf0f5}
+body.modal-open{overflow:hidden}
+@media(max-width:560px){.reason-modal{padding:23px 18px}.reason-modal-options{grid-template-columns:1fr}.reason-modal-actions{flex-direction:column-reverse}.reason-modal-actions .button{width:100%}}
