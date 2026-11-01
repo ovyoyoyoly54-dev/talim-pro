@@ -75,6 +75,7 @@ class StudentProfile(models.Model):
     user = models.OneToOneField(settings.AUTH_USER_MODEL, verbose_name="foydalanuvchi", on_delete=models.CASCADE, related_name="student_profile")
     group = models.ForeignKey(StudyGroup, verbose_name="guruh", on_delete=models.PROTECT, related_name="students")
     parent = models.ForeignKey(settings.AUTH_USER_MODEL, verbose_name="ota-ona", on_delete=models.SET_NULL, null=True, blank=True, related_name="children")
+    parent_phone = models.CharField("ota-onaning SMS raqami", max_length=24, blank=True)
     joined_on = models.DateField("qo‘shilgan sana", auto_now_add=True)
 
     class Meta:
