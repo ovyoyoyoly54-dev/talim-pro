@@ -2,6 +2,24 @@
 {% block page_heading %}O‘qituvchilar{% endblock %}
 {% block content %}
 <div class="welcome-row"><div><h2>O‘qituvchilar</h2><p class="muted">Yangi o‘qituvchi hisobini yarating va guruhlarga biriktiring.</p></div><a class="button button-secondary" href="{% url 'dashboard' %}">← Bosh sahifa</a></div>
+{% if credentials %}
+<section class="panel credential-panel">
+  <div class="message success">O‘qituvchi akkaunti muvaffaqiyatli yaratildi.</div>
+  <div id="teacher-credential-card" class="credential-card">
+    <div class="credential-brand">TA’LIM PRO <span>{{ credentials.role_label }}</span></div>
+    <h2>{{ credentials.person_name }}</h2>
+    <p class="muted">Tizimga kirish ma’lumotlari</p>
+    <div class="credential-row"><span>LOGIN</span><strong>{{ credentials.username }}</strong></div>
+    <div class="credential-row"><span>PAROL</span><strong>{{ credentials.password }}</strong></div>
+    <small>Ushbu ma’lumotlarni xavfsiz saqlang.</small>
+  </div>
+  <div class="credential-actions">
+    <button class="button button-primary" type="button" id="save-teacher-credentials">Rasmni saqlash</button>
+    <a class="button button-secondary" href="{% url 'teacher_management' %}">Keyingi</a>
+  </div>
+  <p class="muted">«Rasmni saqlash» tugmasi login va parol yozilgan PNG rasmni qurilmangizga yuklaydi. «Keyingi» yangi o‘qituvchi qo‘shish formasini ochadi.</p>
+</section>
+{% else %}
 <div class="two-column">
 <section class="panel">
 <div class="panel-heading"><div><h3>Yangi o‘qituvchi</h3><p class="muted">Login va vaqtinchalik parol avtomatik yaratiladi.</p></div></div>
@@ -19,4 +37,35 @@
 </div></div>
 {% empty %}<p class="empty">Hozircha o‘qituvchi qo‘shilmagan.</p>{% endfor %}
 </section></div>
+{% endif %}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  const button = document.getElementById("save-teacher-credentials");
+  const card = document.getElementById("teacher-credential-card");
+  if (!button || !card) return;
+  button.addEventListener("click", function () {
+    const canvas = document.createElement("canvas");
+    canvas.width = 1100; canvas.height = 680;
+    const ctx = canvas.getContext("2d");
+    ctx.fillStyle = "#f3f6fb"; ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = "#ffffff"; ctx.fillRect(55, 55, 990, 570);
+    ctx.strokeStyle = "#dce5f0"; ctx.lineWidth = 4; ctx.strokeRect(57, 57, 986, 566);
+    ctx.fillStyle = "#102544"; ctx.font = "bold 34px Arial"; ctx.fillText("TA’LIM PRO", 100, 130);
+    ctx.fillStyle = "#356ce0"; ctx.font = "bold 20px Arial"; ctx.fillText("O‘QITUVCHI", 820, 130);
+    ctx.fillStyle = "#102544"; ctx.font = "bold 42px Arial"; ctx.fillText(card.querySelector("h2").textContent, 100, 225);
+    ctx.fillStyle = "#77869a"; ctx.font = "24px Arial"; ctx.fillText("Tizimga kirish ma’lumotlari", 100, 275);
+    const rows = card.querySelectorAll(".credential-row strong");
+    [["LOGIN", rows[0].textContent], ["PAROL", rows[1].textContent]].forEach((row, index) => {
+      const y = 330 + index * 125;
+      ctx.fillStyle = "#f5f8fc"; ctx.fillRect(100, y, 900, 95);
+      ctx.fillStyle = "#77869a"; ctx.font = "bold 18px Arial"; ctx.fillText(row[0], 125, y + 30);
+      ctx.fillStyle = "#102544"; ctx.font = "bold 30px Arial"; ctx.fillText(row[1], 125, y + 70);
+    });
+    ctx.fillStyle = "#77869a"; ctx.font = "18px Arial"; ctx.fillText("Ushbu ma’lumotlarni xavfsiz saqlang.", 100, 585);
+    const link = document.createElement("a"); link.download = "talim-pro-oqituvchi-login.png";
+    link.href = canvas.toDataURL("image/png"); link.click();
+    button.textContent = "Rasm saqlandi";
+  });
+});
+</script>
 {% endblock %}
