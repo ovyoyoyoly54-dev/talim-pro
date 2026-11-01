@@ -428,6 +428,12 @@ def group_detail(request, group_id):
         group.teachers.add(teacher)
         messages.success(request, f"{teacher.get_full_name() or teacher.username} guruhga biriktirildi.")
         return redirect("group_detail", group_id=group.pk)
+    if request.method == "POST" and request.POST.get("action") == "assign_student":
+        student = get_object_or_404(StudentProfile, pk=request.POST.get("student_id"))
+        student.group = group
+        student.save(update_fields=["group"])
+        messages.success(request, f"{student.user.get_full_name() or student.user.username} guruhga biriktirildi.")
+        return redirect("group_detail", group_id=group.pk)
     students = group.students.select_related("user").annotate(
         average_score=Avg("grades__score"), total_score=Sum("grades__score"),
         grade_count=Count("grades", distinct=True),
@@ -441,6 +447,7 @@ def group_detail(request, group_id):
         "group": group, "students": students, "student_count": students.count(),
         "average_score": average_score, "lessons": lessons,
         "available_teachers": available_teachers,
+        "available_students": StudentProfile.objects.exclude(group=group).select_related("user").order_by("user__last_name", "user__first_name"),
     })
 
 
