@@ -19,10 +19,60 @@ class CustomUserAdmin(UserAdmin):
     search_fields = ("username", "first_name", "last_name", "phone")
     ordering = ("last_name", "first_name", "username")
 
+class StudyGroupAdminForm(forms.ModelForm):
+    """Guruh yaratish formasiga aniq ko‘rsatmalar va qulay maydonlar."""
+
+    class Meta:
+        model = StudyGroup
+        fields = ("name", "subject", "teachers")
+        widgets = {
+            "name": forms.TextInput(attrs={
+                "placeholder": "Masalan: IELTS Foundation A1",
+                "autocomplete": "off",
+            }),
+            "subject": forms.TextInput(attrs={
+                "placeholder": "Masalan: Ingliz tili",
+                "autocomplete": "off",
+            }),
+        }
+        help_texts = {
+            "name": "Guruhni boshqalardan ajratib turadigan qisqa va tushunarli nom kiriting.",
+            "subject": "Guruhda o‘tiladigan fan yoki yo‘nalishni yozing.",
+            "teachers": "Guruhga biriktirilgan o‘qituvchilarni tanlang. Bir nechta o‘qituvchi tanlash mumkin.",
+        }
+
+
 @admin.register(StudyGroup)
 class StudyGroupAdmin(admin.ModelAdmin):
-    list_display = ("name", "subject")
+    form = StudyGroupAdminForm
+    list_display = ("name", "subject", "student_total", "teacher_total", "created_at")
+    list_filter = ("subject",)
+    search_fields = ("name", "subject", "teachers__first_name", "teachers__last_name", "teachers__username")
     filter_horizontal = ("teachers",)
+    readonly_fields = ("created_at",)
+    fieldsets = (
+        ("Guruh haqida", {
+            "description": "Avval guruh nomi va o‘qitiladigan fan yo‘nalishini belgilang.",
+            "fields": ("name", "subject"),
+        }),
+        ("O‘qituvchilar", {
+            "description": "Guruhga dars beradigan o‘qituvchilarni biriktiring.",
+            "fields": ("teachers",),
+        }),
+        ("Tizim ma’lumoti", {
+            "classes": ("collapse",),
+            "fields": ("created_at",),
+        }),
+    )
+    list_per_page = 20
+
+    @admin.display(description="O‘quvchilar")
+    def student_total(self, obj):
+        return obj.students.count()
+
+    @admin.display(description="O‘qituvchilar")
+    def teacher_total(self, obj):
+        return obj.teachers.count()
 
 @admin.register(StudentProfile)
 class StudentProfileAdmin(admin.ModelAdmin):
