@@ -1,0 +1,66 @@
+/* TA'LIM PRO — refined product UI layer */
+:root{
+  --tp-accent:#416fe5;
+  --tp-accent-soft:#edf3ff;
+  --tp-border:#e5ebf3;
+  --tp-shadow:0 12px 32px rgba(16,37,68,.055);
+}
+html{scroll-behavior:smooth}
+body{background:radial-gradient(ellipse at 8% 0%,rgba(220,232,255,.58),transparent 34%),#f5f7fb}
+.topbar{position:sticky;top:0;z-index:4;background:rgba(255,255,255,.94);backdrop-filter:blur(14px);box-shadow:0 3px 16px rgba(16,37,68,.025)}
+.sidebar{box-shadow:8px 0 30px rgba(10,27,49,.06)}
+.sidebar nav a{position:relative;min-height:44px}
+.sidebar nav a.active{background:linear-gradient(100deg,rgba(255,255,255,.17),rgba(255,255,255,.07));color:#fff}
+.sidebar nav a.active::after{content:"";position:absolute;right:12px;width:6px;height:6px;border-radius:50%;background:#91b3ff;box-shadow:0 0 0 4px rgba(145,179,255,.12)}
+.brand-mark{box-shadow:0 8px 20px rgba(53,108,224,.28)}
+.content{padding-top:32px}
+.welcome-row{position:relative;isolation:isolate;overflow:hidden;padding:21px 23px;margin-bottom:22px;border:1px solid #e3eaf5;border-radius:17px;background:linear-gradient(112deg,#fff 0%,#f7faff 72%,#eef4ff 100%);box-shadow:0 8px 26px rgba(16,37,68,.035)}
+.welcome-row::after{content:"";position:absolute;z-index:-1;width:190px;height:190px;right:-72px;top:-112px;border:1px solid rgba(65,111,229,.12);border-radius:50%;box-shadow:0 0 0 24px rgba(65,111,229,.035),0 0 0 48px rgba(65,111,229,.025)}
+.welcome-row h2{font-size:21px;letter-spacing:-.65px}
+.welcome-row p{font-size:12px;line-height:1.7}
+.stats-grid{gap:15px}
+.stat-card{position:relative;overflow:hidden;border:1px solid var(--tp-border);border-radius:16px;box-shadow:var(--tp-shadow);transition:transform .2s ease,box-shadow .2s ease,border-color .2s ease}
+.stat-card::before{content:"";position:absolute;left:0;right:0;top:0;height:3px;background:linear-gradient(90deg,#416fe5,#8fb1ff);opacity:.85}
+.stat-card:nth-child(2)::before{background:linear-gradient(90deg,#1c9a70,#8ad8b7)}
+.stat-card:nth-child(3)::before{background:linear-gradient(90deg,#8060d5,#c0aaff)}
+.stat-card:hover{transform:translateY(-3px);border-color:#d5e1f4;box-shadow:0 16px 34px rgba(16,37,68,.085)}
+.stat-icon{width:40px;height:40px;border-radius:12px}
+.stat-card>strong{font-size:29px;letter-spacing:-1px}
+.panel{border-radius:17px;border-color:var(--tp-border);box-shadow:var(--tp-shadow)}
+.panel-heading{margin-bottom:17px}
+.panel-heading h3{font-size:15px;letter-spacing:-.35px}
+.group-card{border-radius:13px;background:linear-gradient(120deg,#fff,#fbfcff)}
+.group-card:hover{border-color:#d6e2f5;background:#fafdff}
+.group-icon{width:40px;height:40px;border-radius:12px;background:#edf3ff;color:#416fe5}
+.button{min-height:43px;border-radius:11px;letter-spacing:.05px}
+.button-primary{background:linear-gradient(110deg,#17385f,#244c7d);box-shadow:0 7px 17px rgba(16,37,68,.16)}
+.button-primary:hover{background:linear-gradient(110deg,#204878,#315f98)}
+.text-link{color:#416fe5}
+.text-link:hover{color:#244caa;text-decoration:underline;text-underline-offset:3px}
+.input,select.input,input.input,textarea.input,.stack-form .input{border-color:#dce5f0;border-radius:10px;min-height:43px}
+.input:focus,.stack-form .input:focus{border-color:#7da0ed;box-shadow:0 0 0 4px rgba(65,111,229,.10)}
+table th{background:#f6f8fc;color:#718198}
+table tbody tr{transition:background .15s ease}
+table tbody tr:hover{background:#f8faff}
+td{border-color:#edf1f6}
+.message{border:1px solid transparent;border-radius:11px}
+.message.success{border-color:#cceedd}
+.message.error{border-color:#f4d1d1}
+.message.warning{border-color:#f3e2b7}
+.score-chip{border-radius:9px}
+.date-tile{border:1px solid #e6edf8}
+.content>footer{border-top:1px solid rgba(222,230,240,.8);margin-top:18px;padding-top:18px}
+@media(max-width:760px){
+  .topbar{position:relative;backdrop-filter:none}
+  .content{padding-top:18px}
+  .welcome-row{padding:17px;margin-bottom:16px;border-radius:14px}
+  .welcome-row h2{font-size:18px}
+  .stats-grid{gap:10px}
+  .stat-card{border-radius:13px}
+  .panel{border-radius:14px}
+  .sidebar{box-shadow:0 5px 18px rgba(16,37,68,.09)}
+}
+@media(prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  .stat-card,.group-card,.button,.sidebar nav a{transition:none}
+}
