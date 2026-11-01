@@ -134,7 +134,6 @@ class GradeRecordForm(forms.Form):
         queryset=GradeReason.objects.filter(active=True), required=False,
         widget=forms.CheckboxSelectMultiple(attrs={"class": "reason-checkbox"})
     )
-    note = forms.CharField(required=False, max_length=1000, widget=forms.Textarea(attrs={"class": "input", "rows": 3, "placeholder": "Qo‘shimcha izoh..."}))
     attendance = forms.ChoiceField(choices=Attendance.Status.choices, widget=forms.RadioSelect)
 
     def __init__(self, *args, teacher=None, **kwargs):
@@ -149,8 +148,8 @@ class GradeRecordForm(forms.Form):
         reasons = data.get("reasons")
         lesson = data.get("lesson")
         student = data.get("student")
-        if score is not None and score < 8 and not reasons:
-            self.add_error("reasons", "8 dan past baho uchun kamida bitta sabab tanlanishi shart.")
+        if score is not None and score <= 8 and not reasons:
+            self.add_error("reasons", "8 yoki undan past baho uchun kamida bitta sabab tanlang.")
         if lesson and student and lesson.group_id != student.group_id:
             raise ValidationError("O‘quvchi tanlangan dars guruhida emas.")
         return data
