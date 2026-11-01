@@ -39,34 +39,33 @@
 </section></div>
 {% endif %}
 {% endblock %}
-{% block extra_scripts %}
-<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js" defer></script>
 <script>
 document.addEventListener("DOMContentLoaded", function () {
   const button = document.getElementById("save-teacher-credentials");
   const card = document.getElementById("teacher-credential-card");
   if (!button || !card) return;
-  button.addEventListener("click", async function () {
-    if (typeof html2canvas !== "function") {
-      window.print();
-      return;
-    }
-    button.disabled = true;
-    button.textContent = "Tayyorlanmoqda...";
-    try {
-      const canvas = await html2canvas(card, {backgroundColor: "#ffffff", scale: 2});
-      const link = document.createElement("a");
-      link.download = "talim-pro-oqituvchi-login.png";
-      link.href = canvas.toDataURL("image/png");
-      link.click();
-      button.textContent = "Rasm saqlandi";
-    } catch (error) {
-      window.print();
-      button.textContent = "Rasmni saqlash";
-    } finally {
-      button.disabled = false;
-    }
+  button.addEventListener("click", function () {
+    const canvas = document.createElement("canvas");
+    canvas.width = 1100; canvas.height = 680;
+    const ctx = canvas.getContext("2d");
+    ctx.fillStyle = "#f3f6fb"; ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = "#ffffff"; ctx.fillRect(55, 55, 990, 570);
+    ctx.strokeStyle = "#dce5f0"; ctx.lineWidth = 4; ctx.strokeRect(57, 57, 986, 566);
+    ctx.fillStyle = "#102544"; ctx.font = "bold 34px Arial"; ctx.fillText("TA’LIM PRO", 100, 130);
+    ctx.fillStyle = "#356ce0"; ctx.font = "bold 20px Arial"; ctx.fillText("O‘QITUVCHI", 820, 130);
+    ctx.fillStyle = "#102544"; ctx.font = "bold 42px Arial"; ctx.fillText(card.querySelector("h2").textContent, 100, 225);
+    ctx.fillStyle = "#77869a"; ctx.font = "24px Arial"; ctx.fillText("Tizimga kirish ma’lumotlari", 100, 275);
+    const rows = card.querySelectorAll(".credential-row strong");
+    [["LOGIN", rows[0].textContent], ["PAROL", rows[1].textContent]].forEach((row, index) => {
+      const y = 330 + index * 125;
+      ctx.fillStyle = "#f5f8fc"; ctx.fillRect(100, y, 900, 95);
+      ctx.fillStyle = "#77869a"; ctx.font = "bold 18px Arial"; ctx.fillText(row[0], 125, y + 30);
+      ctx.fillStyle = "#102544"; ctx.font = "bold 30px Arial"; ctx.fillText(row[1], 125, y + 70);
+    });
+    ctx.fillStyle = "#77869a"; ctx.font = "18px Arial"; ctx.fillText("Ushbu ma’lumotlarni xavfsiz saqlang.", 100, 585);
+    const link = document.createElement("a"); link.download = "talim-pro-oqituvchi-login.png";
+    link.href = canvas.toDataURL("image/png"); link.click();
+    button.textContent = "Rasm saqlandi";
   });
 });
 </script>
-{% endblock %}
