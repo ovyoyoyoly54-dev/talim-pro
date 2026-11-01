@@ -25,7 +25,7 @@
       {% if user.role == 'teacher' or user.role == 'admin' or user.is_superuser %}<a href="{% url 'grade_lesson' %}">✎ <span>Baho qo‘yish</span></a>{% endif %}
       <a href="{% url 'ranking' %}">↗ <span>Reyting</span></a>
       <a href="{% url 'schedule' %}">▦ <span>Dars jadvali</span></a>
-      {% if user.role == 'admin' or user.is_superuser %}<a href="{% url 'lesson_create' %}"{% if request.resolver_match.url_name == 'lesson_create' %} class="active" aria-current="page"{% endif %}>+ <span>Dars qo‘shish</span></a>{% endif %}
+      {% if user.role == 'admin' or user.is_superuser %}<a href="{% url 'teacher_management' %}"{% if request.resolver_match.url_name == 'teacher_management' %} class="active" aria-current="page"{% endif %}>♙ <span>O‘qituvchilar</span></a><a href="{% url 'lesson_create' %}"{% if request.resolver_match.url_name == 'lesson_create' %} class="active" aria-current="page"{% endif %}>+ <span>Dars qo‘shish</span></a>{% endif %}
       <a href="{% url 'settings_panel' %}"{% if request.resolver_match.url_name == 'settings_panel' %} class="active" aria-current="page"{% endif %}>⚙ <span>Sozlamalar</span></a>
       {% if user.is_staff or user.is_superuser %}<a href="{% url 'admin:index' %}">▦ <span>Boshqaruv paneli</span></a>{% endif %}
     </nav>
