@@ -1456,3 +1456,147 @@ tbody tr:hover td{background:#fbfcff}
 .credential-card>small{display:block;margin-top:18px;color:#77869a}
 .credential-actions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
 @media(max-width:600px){.credential-card{padding:20px 16px}.credential-card h2{font-size:21px}.credential-row strong{font-size:16px}}
+
+
+/* Settings page layout */
+.settings-layout {
+  display: grid;
+  grid-template-columns: minmax(230px, 285px) minmax(0, 1fr);
+  align-items: start;
+  gap: 24px;
+  margin-top: 24px;
+}
+.settings-nav {
+  position: sticky;
+  top: 24px;
+  padding: 22px 18px;
+}
+.settings-menu {
+  display: grid;
+  gap: 7px;
+  margin-top: 16px;
+}
+.settings-menu a {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 42px;
+  padding: 10px 12px;
+  border-radius: 11px;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 650;
+  text-decoration: none;
+  transition: background .18s ease, color .18s ease, transform .18s ease;
+}
+.settings-menu a:hover {
+  background: var(--surface-soft, #f3f6ff);
+  color: var(--primary);
+  transform: translateX(2px);
+}
+.settings-menu a:focus-visible {
+  outline: 3px solid rgba(79, 107, 237, .25);
+  outline-offset: 2px;
+}
+.settings-role {
+  border-top: 1px solid var(--line);
+  margin-top: 18px;
+  padding-top: 16px;
+}
+.settings-content {
+  min-width: 0;
+}
+.settings-card {
+  scroll-margin-top: 24px;
+  padding: 26px;
+  margin-bottom: 20px;
+}
+.settings-card .panel-heading {
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--line);
+  margin-bottom: 20px;
+}
+.settings-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px 18px;
+}
+.settings-form-grid > label {
+  display: grid;
+  gap: 8px;
+  align-content: start;
+  color: var(--navy);
+  font-size: 12px;
+  font-weight: 700;
+}
+.settings-form-grid input,
+.settings-form-grid select,
+.settings-form-grid textarea,
+.settings-card .stack-form > label input,
+.settings-card .stack-form > label select,
+.settings-card .stack-form > label textarea {
+  width: 100%;
+  min-width: 0;
+}
+.settings-form-grid .form-actions,
+.settings-card .form-actions {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding-top: 6px;
+}
+.settings-card .stack-form {
+  display: grid;
+  gap: 15px;
+}
+.settings-card .stack-form > label {
+  display: grid;
+  gap: 8px;
+  color: var(--navy);
+  font-size: 12px;
+  font-weight: 700;
+}
+.settings-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.settings-actions form {
+  margin: 0;
+}
+@media (max-width: 900px) {
+  .settings-layout {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  .settings-nav {
+    position: static;
+  }
+  .settings-menu {
+    display: flex;
+    flex-wrap: wrap;
+  }
+  .settings-menu a {
+    background: var(--surface-soft, #f3f6ff);
+  }
+}
+@media (max-width: 600px) {
+  .settings-card {
+    padding: 18px;
+  }
+  .settings-form-grid {
+    grid-template-columns: 1fr;
+  }
+  .settings-form-grid .form-actions,
+  .settings-card .form-actions {
+    grid-column: 1;
+    align-items: flex-start;
+  }
+  .settings-menu {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+}
