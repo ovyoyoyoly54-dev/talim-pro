@@ -15,7 +15,7 @@ from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.http import require_GET
 from xml.sax.saxutils import escape
-from .forms import GradeRecordForm, PhoneResetRequestForm, PhoneOTPForm, PhonePasswordResetForm, SignupRequestForm, SignupCompleteForm, AccountClosureConfirmForm, PlatformSettingsForm, AccountSettingsForm, StyledPasswordChangeForm, AddStudentToGroupForm, CreateStudentInGroupForm, LessonCreateForm, LessonRescheduleForm
+from .forms import GradeRecordForm, PhoneResetRequestForm, PhoneOTPForm, PhonePasswordResetForm, SignupRequestForm, SignupCompleteForm, AccountClosureConfirmForm, PlatformSettingsForm, AccountSettingsForm, StyledPasswordChangeForm, AddStudentToGroupForm, CreateStudentInGroupForm, CreateTeacherForm, LessonCreateForm, LessonRescheduleForm
 from .models import User, StudyGroup, StudentProfile, Lesson, GradeRecord, Attendance, SMSLog, PhoneOTP, PlatformSettings
 from .phone_auth import consume_phone_otp, issue_phone_otp, normalize_phone
 from .sms import send_parent_sms
@@ -343,6 +343,48 @@ def settings_panel(request):
 
 def teacher_lessons(user):
     return Lesson.objects.filter(group__teachers=user, teacher=user).select_related("group", "teacher")
+
+
+@login_required
+def teacher_management(request):
+    if not is_admin(request.user):
+        raise PermissionDenied
+    form = CreateTeacherForm(request.POST or None)
+    if request.method == "POST" and form.is_valid():
+        first_name = form.cleaned_data["first_name"]
+        last_name = form.cleaned_data["last_name"]
+        base = slugify(f"{first_name}.{last_name}").replace("-", ".") or "oqituvchi"
+        username = base[:140]
+        suffix = 1
+        while User.objects.filter(username=username).exists():
+            suffix += 1
+            username = f"{base[:130]}.{suffix}"
+        password = secrets.token_urlsafe(9)
+        teacher = User.objects.create_user(
+            username=username,
+            password=password,
+            first_name=first_name,
+            last_name=last_name,
+            phone=form.cleaned_data["phone"],
+            role=User.Role.TEACHER,
+        )
+        messages.success(request, f"O‘qituvchi yaratildi. Login: {teacher.username} | Vaqtinchalik parol: {password}")
+        return redirect("teacher_management")
+    teachers = User.objects.filter(role=User.Role.TEACHER).prefetch_related("teaching_groups").order_by("last_name", "first_name")
+    return render(request, "school/teacher_management.html", {"form": form, "teachers": teachers, "groups": StudyGroup.objects.all()})
+
+@login_required
+def teacher_assign_group(request, teacher_id):
+    if not is_admin(request.user):
+        raise PermissionDenied
+    teacher = get_object_or_404(User, pk=teacher_id, role=User.Role.TEACHER)
+    if request.method != "POST":
+        return redirect("teacher_management")
+    group_id = request.POST.get("group_id")
+    group = get_object_or_404(StudyGroup, pk=group_id)
+    group.teachers.add(teacher)
+    messages.success(request, f"{teacher.get_full_name()} “{group.name}” guruhiga biriktirildi.")
+    return redirect("teacher_management")
 
 @login_required
 def dashboard(request):
