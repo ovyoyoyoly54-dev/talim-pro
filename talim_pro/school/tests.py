@@ -618,11 +618,13 @@ class PlatformRulesTests(TestCase):
         self.reason = GradeReason.objects.create(title="Uy vazifasini bajarmadi")
 
     def test_assigned_group_is_visible_to_teacher_without_a_lesson(self):
+        group_without_lesson = StudyGroup.objects.create(name="B1", subject="Matematika")
+        group_without_lesson.teachers.add(self.teacher)
         client = Client()
         client.force_login(self.teacher)
         response = client.get(reverse("dashboard"))
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "A1")
+        self.assertContains(response, "B1")
 
     def test_group_limit_is_five(self):
         for n in range(2, 6):
