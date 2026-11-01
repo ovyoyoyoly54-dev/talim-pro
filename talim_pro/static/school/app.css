@@ -222,3 +222,17 @@ tbody tr:hover td{background:#fbfcff}
 @media(prefers-reduced-motion:reduce){
   .stat-card:after{transition:none}
 }
+
+
+/* Login and password credential cards */
+.credential-panel{max-width:720px;margin:0 auto}
+.credential-card{background:#fff;border:2px solid #dce5f0;border-radius:18px;padding:28px;max-width:560px;margin:20px auto;color:#102544;box-shadow:0 12px 30px rgba(16,37,68,.08)}
+.credential-brand{display:flex;justify-content:space-between;align-items:center;font-weight:900;letter-spacing:1.4px;color:#102544}
+.credential-brand span{font-size:10px;background:#edf3ff;color:#356ce0;padding:7px 10px;border-radius:30px;letter-spacing:.8px}
+.credential-card h2{margin:24px 0 5px;font-size:25px}
+.credential-row{display:flex;flex-direction:column;gap:7px;background:#f5f8fc;border:1px solid #e4ebf4;border-radius:12px;padding:14px 16px;margin-top:12px}
+.credential-row span{font-size:10px;letter-spacing:1.2px;color:#77869a;font-weight:800}
+.credential-row strong{font-size:18px;overflow-wrap:anywhere;color:#102544}
+.credential-card>small{display:block;margin-top:18px;color:#77869a}
+.credential-actions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+@media(max-width:600px){.credential-card{padding:20px 16px}.credential-card h2{font-size:21px}.credential-row strong{font-size:16px}}
