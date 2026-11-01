@@ -11,14 +11,14 @@ document.addEventListener("DOMContentLoaded", () => {
     const value = Number(score.value);
     if (value >= 0 && value <= 8) open();
   });
-  if (Number(score.value) <= 8 || modal.querySelector(".field-error")) open();
+  if ((score.value !== "" && Number(score.value) <= 8) || modal.querySelector(".field-error")) open();
   ["reason-modal-close", "reason-modal-cancel"].forEach(id => {
     const button = document.getElementById(id);
     if (button) button.addEventListener("click", close);
   });
   const confirm = document.getElementById("reason-modal-confirm");
   if (confirm) confirm.addEventListener("click", () => {
-    if (Number(score.value) <= 8 && !boxes.some(box => box.checked)) {
+    if (score.value !== "" && Number(score.value) <= 8 && !boxes.some(box => box.checked)) {
       let error = modal.querySelector(".reason-modal-error");
       if (!error) {
         error = document.createElement("small");
