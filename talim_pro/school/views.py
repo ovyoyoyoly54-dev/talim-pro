@@ -400,6 +400,51 @@ def teacher_assign_group(request, teacher_id):
     return redirect("teacher_management")
 
 @login_required
+def group_management(request):
+    if not is_admin(request.user):
+        raise PermissionDenied
+    query = request.GET.get("q", "").strip()
+    groups = StudyGroup.objects.all().prefetch_related("teachers").annotate(
+        student_total=Count("students", distinct=True),
+        lesson_total=Count("lessons", distinct=True),
+    )
+    if query:
+        groups = groups.filter(Q(name__icontains=query) | Q(subject__icontains=query) |
+                               Q(teachers__first_name__icontains=query) |
+                               Q(teachers__last_name__icontains=query)).distinct()
+    return render(request, "school/group_management.html", {
+        "groups": groups, "query": query, "total_groups": StudyGroup.objects.count(),
+        "total_students": StudentProfile.objects.count(), "total_lessons": Lesson.objects.count(),
+    })
+
+
+@login_required
+def group_detail(request, group_id):
+    if not is_admin(request.user):
+        raise PermissionDenied
+    group = get_object_or_404(StudyGroup.objects.prefetch_related("teachers"), pk=group_id)
+    if request.method == "POST" and request.POST.get("action") == "assign_teacher":
+        teacher = get_object_or_404(User, pk=request.POST.get("teacher_id"), role=User.Role.TEACHER)
+        group.teachers.add(teacher)
+        messages.success(request, f"{teacher.get_full_name() or teacher.username} guruhga biriktirildi.")
+        return redirect("group_detail", group_id=group.pk)
+    students = group.students.select_related("user").annotate(
+        average_score=Avg("grades__score"), total_score=Sum("grades__score"),
+        grade_count=Count("grades", distinct=True),
+    ).order_by("-average_score", "-total_score", "user__last_name", "user__first_name")
+    average_score = GradeRecord.objects.filter(student__group=group).aggregate(value=Avg("score"))["value"]
+    lessons = group.lessons.select_related("teacher").order_by("starts_at")
+    available_teachers = User.objects.filter(role=User.Role.TEACHER, is_active=True).exclude(
+        pk__in=group.teachers.values("pk")
+    ).order_by("last_name", "first_name")
+    return render(request, "school/group_detail.html", {
+        "group": group, "students": students, "student_count": students.count(),
+        "average_score": average_score, "lessons": lessons,
+        "available_teachers": available_teachers,
+    })
+
+
+@login_required
 def dashboard(request):
     user = request.user
     context = {"today": timezone.localdate()}
