@@ -1,68 +1,39 @@
 {% extends "base.html" %}
-{% load static %}
-{% block title %}{{ group.name }} — o'quvchi qo'shish {% endblock %}
-{% block page_heading %}{{ group.name }} — o'quvchi qo'shish{% endblock %}
+{% block title %}{{ group.name }} — yangi o‘quvchi{% endblock %}
+{% block page_heading %}{{ group.name }} — yangi o‘quvchi{% endblock %}
 {% block content %}
 <div class="welcome-row">
   <div>
-    <h2>{{ group.name }} — o'quvchi qo'shish</h2>
-    <p class="muted">{{ group.subject }} guruhiga yangi o'quvchini ro'yxatdan o'tganlardan tanlang.</p>
+    <h2>{{ group.name }} guruhiga o‘quvchi qo‘shish</h2>
+    <p class="muted">Yangi o‘quvchi uchun tizim avtomatik login va vaqtinchalik parol yaratadi.</p>
   </div>
-  <a class="button button-outline" href="{% url 'dashboard' %}">↰ Bosh sahifaga qaytish</a>
+  <a class="button button-outline" href="{% url 'dashboard' %}">↰ Bosh sahifa</a>
 </div>
-
+{% if credentials %}
 <div class="panel">
-  <div class="panel-heading">
-    <div>
-      <h3>O'quvchini tanlash</h3>
-      <p class="muted">Faqat STUDENT roli bilan ro'yxatdan o'tgan va hali hech bir guruhga biriktirilmagan foydalanuvchilar ko'rinadi.</p>
-    </div>
-  </div>
-
-  {% for message in messages %}
-    <div class="message {{ message.tags }}">{{ message }}</div>
-  {% endfor %}
-
-  {% if form.errors %}
-    <div class="message error">
-      {% for field_errors in form.errors.values %}
-        {% for error in field_errors %}
-          {{ error }}<br>
-        {% endfor %}
-      {% endfor %}
-    </div>
-  {% endif %}
-
-  <form method="get" class="stack-form" style="display:flex; gap:8px; align-items:flex-end; margin-bottom:16px; flex-wrap:wrap;">
-    {{ form.search }}
-    <button class="button button-primary" type="submit">Qidirish</button>
-    {% if search_query %}
-      <a class="button button-outline" href="{% url 'add_student_to_group' group_id=group.pk %}">Bekor qilish</a>
-    {% endif %}
-  </form>
-
-  {% if available_students %}
-    <div class="student-list">
-      {% for student in available_students %}
-        <div class="student-row">
-          <div class="student-info">
-            <span class="student-badge">{{ student.first_name|first|upper|default:student.username|first|upper }}</span>
-            <div class="student-meta">
-              <b>{{ student.get_full_name|default:student.username }}</b>
-            </div>
-          </div>
-          <form method="post" action="{% url 'add_student_to_group' group_id=group.pk %}" class="inline" style="margin:0; display:inline;">
-            {% csrf_token %}
-            <input type="hidden" name="student" value="{{ student.pk }}">
-            <button class="button button-primary button-small" type="submit">Qo'shish</button>
-          </form>
-        </div>
-      {% empty %}
-        <p class="empty">Qidiruv bo'yicha mos o'quvchi topilmadi yoki hali qo'shish uchun o'quvchilar yo'q.</p>
-      {% endfor %}
-    </div>
-  {% else %}
-    <p class="empty">Hozircha guruhga qo'shish uchun o'quvchi yo'q.</p>
-  {% endif %}
+  <div class="message success">O‘quvchi akkaunti yaratildi va guruhga qo‘shildi.</div>
+  <h3>{{ credentials.student_name }}</h3>
+  <p><b>Login:</b> {{ credentials.username }}</p>
+  <p><b>Vaqtinchalik parol:</b> {{ credentials.password }}</p>
+  <p class="muted">Bu ma’lumotlarni o‘quvchiga xavfsiz yetkazing. Parol keyinchalik sozlamalardan o‘zgartirilishi mumkin.</p>
+  <button class="button button-primary" type="button" onclick="window.print()">Chop etish</button>
+  <a class="button button-outline" href="{% url 'add_student_to_group' group_id=group.pk %}">Yana o‘quvchi qo‘shish</a>
 </div>
+{% else %}
+<div class="panel">
+  {% if form.errors %}
+    <div class="message error">{% for errors in form.errors.values %}{% for error in errors %}{{ error }}{% endfor %}{% endfor %}</div>
+  {% endif %}
+  <form method="post" class="stack-form">
+    {% csrf_token %}
+    <h3>O‘quvchi ma’lumotlari</h3>
+    <label>{{ form.first_name.label }}</label>{{ form.first_name }}
+    <label>{{ form.last_name.label }}</label>{{ form.last_name }}
+    <h3>Ota-ona SMS xabarnomasi</h3>
+    <p class="muted">Ota-onaga alohida akkaunt ochilmaydi. Bu raqamga o‘quvchining kundalik bahosi haqida SMS yuboriladi.</p>
+    <label>{{ form.parent_phone.label }}</label>{{ form.parent_phone }}
+    <button class="button button-primary" type="submit">Akkaunt yaratish va guruhga qo‘shish</button>
+  </form>
+</div>
+{% endif %}
 {% endblock %}

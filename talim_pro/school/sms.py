@@ -2,13 +2,13 @@ import os
 import requests
 from .models import SMSLog
 
-def send_parent_sms(*, parent, student, body):
+def send_parent_sms(*, parent=None, student, body, phone=None):
     """Generic JSON SMS gateway adapter. Configure SMS_API_URL and SMS_API_TOKEN in .env.
     Provider-specific payload/auth can be adapted in this one function.
     """
     url = os.getenv("SMS_API_URL", "").strip()
     token = os.getenv("SMS_API_TOKEN", "").strip()
-    phone = (parent.phone if parent else "").strip()
+    phone = (phone or (parent.phone if parent else "")).strip()
     if not url or not token or not phone:
         return SMSLog.objects.create(
             parent=parent, student=student, body=body,
