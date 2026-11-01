@@ -1,5 +1,8 @@
 from django.contrib import messages
 from django.contrib.auth import logout, login as auth_login, update_session_auth_hash
+from django.contrib.auth.hashers import make_password
+import secrets
+from django.utils.text import slugify
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
 from django.db import IntegrityError, transaction
@@ -12,7 +15,7 @@ from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.http import require_GET
 from xml.sax.saxutils import escape
-from .forms import GradeRecordForm, PhoneResetRequestForm, PhoneOTPForm, PhonePasswordResetForm, SignupRequestForm, SignupCompleteForm, AccountClosureConfirmForm, PlatformSettingsForm, AccountSettingsForm, StyledPasswordChangeForm, AddStudentToGroupForm, LessonCreateForm, LessonRescheduleForm
+from .forms import GradeRecordForm, PhoneResetRequestForm, PhoneOTPForm, PhonePasswordResetForm, SignupRequestForm, SignupCompleteForm, AccountClosureConfirmForm, PlatformSettingsForm, AccountSettingsForm, StyledPasswordChangeForm, AddStudentToGroupForm, CreateStudentInGroupForm, LessonCreateForm, LessonRescheduleForm
 from .models import User, StudyGroup, StudentProfile, Lesson, GradeRecord, Attendance, SMSLog, PhoneOTP, PlatformSettings
 from .phone_auth import consume_phone_otp, issue_phone_otp, normalize_phone
 from .sms import send_parent_sms
@@ -406,20 +409,20 @@ def grade_lesson(request):
                         lesson=lesson, student=student,
                         defaults={"status": form.cleaned_data["attendance"], "teacher": request.user}
                     )
-                if grade.score < 8 and student.parent:
+                if student.parent_phone:
                     reason_text = ", ".join(grade.reasons.values_list("title", flat=True))
-                    body = (f"Hurmatli ota-ona! {student.user.get_full_name() or student.user.username} "
-                            f"{lesson.title} darsidan {grade.score}/10 ball oldi. Sabab: {reason_text or 'ko‘rsatilmagan'}. "
-                            f"Davomat: {attendance.get_status_display()}.")
-                    log = send_parent_sms(parent=student.parent, student=student, body=body)
+                    body = (f"TA'LIM PRO: {student.user.get_full_name() or student.user.username} "
+                            f"{lesson.title} darsidan {grade.score}/10 baho oldi. "
+                            f"Sabab: {reason_text or 'ko‘rsatilmagan'}. Davomat: {attendance.get_status_display()}.")
+                    log = send_parent_sms(parent=None, student=student, phone=student.parent_phone, body=body)
                     if log.status == SMSLog.Status.SENT:
-                        messages.success(request, "Baho saqlandi va ota-onaga SMS yuborildi.")
+                        messages.success(request, "Baho va davomat saqlandi. Ota-onaga SMS yuborildi.")
                     elif log.status == SMSLog.Status.DISABLED:
-                        messages.warning(request, "Baho saqlandi. SMS yuborilmadi: SMS xizmati sozlanmagan.")
+                        messages.warning(request, "Baho saqlandi. SMS xizmati sozlanmagan yoki ota-ona raqami yo‘q.")
                     else:
                         messages.warning(request, "Baho saqlandi, ammo SMS yuborishda xatolik yuz berdi.")
                 else:
-                    messages.success(request, "Baho va davomat saqlandi.")
+                    messages.success(request, "Baho va davomat saqlandi. Ota-ona SMS raqami biriktirilmagan.")
                 return redirect("dashboard")
     else:
         form = GradeRecordForm(teacher=request.user if not is_admin(request.user) else None)
@@ -540,65 +543,51 @@ def student_detail(request, student_id):
 
 @login_required
 def add_student_to_group(request, group_id):
-    """O'quvchini o'qituvchiga biriktirilgan guruhga qo'shish.
-    Har bir so'rovda serverda o'qituvchi va guruh ruxsati tekshiradi."""
+    """O‘qituvchi o‘z guruhiga yangi o‘quvchi akkauntini yaratadi."""
     user = request.user
-    # Ruxsat: faqat o'qituvchi yoki administrator
     if user.role != User.Role.TEACHER and not is_admin(user):
         raise PermissionDenied
-
     group = get_object_or_404(StudyGroup, pk=group_id)
-
-    # O'qituvchi bu guruhga biriktirilganligini tekshirish (admin barcha guruhlarga qo'sha oladi)
     if user.role == User.Role.TEACHER and (
         not group.teachers.filter(id=user.id).exists()
         or not group.lessons.filter(teacher=user).exists()
     ):
         raise PermissionDenied
 
-    if request.method == "POST":
-        form = AddStudentToGroupForm(request.POST, teacher=user, group=group)
-        if form.is_valid():
-            student = form.cleaned_data["student"]
-            add_error = None
-            try:
-                with transaction.atomic():
-                    locked_student = User.objects.select_for_update().get(
-                        pk=student.pk,
-                        role=User.Role.STUDENT,
-                        is_active=True,
-                    )
-                    if StudentProfile.objects.filter(user=locked_student).exists():
-                        add_error = "Bu o‘quvchi boshqa so‘rovda guruhga biriktirildi. Ro‘yxatni yangilang."
-                    else:
-                        StudentProfile.objects.create(user=locked_student, group=group)
-            except (IntegrityError, User.DoesNotExist):
-                add_error = "Bu o‘quvchi boshqa so‘rovda guruhga biriktirildi. Ro‘yxatni yangilang."
-
-            if add_error:
-                form.add_error("student", add_error)
-            else:
-                messages.success(
-                    request,
-                    f"{student.get_full_name() or student.username} o'quvchisi \"{group.name}\" guruhiga qo'shildi.",
+    form = CreateStudentInGroupForm(request.POST or None)
+    credentials = None
+    if request.method == "POST" and form.is_valid():
+        first_name = form.cleaned_data["first_name"]
+        last_name = form.cleaned_data["last_name"]
+        parent_phone = form.cleaned_data["parent_phone"]
+        base = slugify(f"{first_name}.{last_name}".replace("’", "").replace("'", "")) or "student"
+        username = base[:120]
+        while User.objects.filter(username__iexact=username).exists():
+            username = f"{base[:110]}{secrets.randbelow(9000) + 1000}"
+        temporary_password = secrets.token_urlsafe(9)
+        try:
+            with transaction.atomic():
+                student_user = User.objects.create_user(
+                    username=username,
+                    first_name=first_name,
+                    last_name=last_name,
+                    password=temporary_password,
+                    role=User.Role.STUDENT,
+                    is_active=True,
                 )
-                return redirect("add_student_to_group", group_id=group.pk)
-    else:
-        form = AddStudentToGroupForm(teacher=user, group=group)
-
-    # Qidiruv bo'yicha filtr (GET parametri)
-    search_query = request.GET.get("search", "").strip()
-    if search_query:
-        form.fields["student"].queryset = form.fields["student"].queryset.filter(
-            Q(first_name__icontains=search_query) | Q(last_name__icontains=search_query)
-        )
-
-    # Ro'yxat bo'shmi
-    available_students = form.fields["student"].queryset
+                StudentProfile.objects.create(
+                    user=student_user,
+                    group=group,
+                    parent_phone=parent_phone,
+                )
+            credentials = {"username": username, "password": temporary_password,
+                           "student_name": f"{first_name} {last_name}"}
+            form = CreateStudentInGroupForm()
+        except IntegrityError:
+            form.add_error(None, "Akkaunt yaratishda xatolik yuz berdi. Qayta urinib ko‘ring.")
 
     return render(request, "school/add_student_to_group.html", {
         "group": group,
         "form": form,
-        "available_students": available_students,
-        "search_query": search_query,
+        "credentials": credentials,
     })
