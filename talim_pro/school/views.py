@@ -350,28 +350,41 @@ def teacher_management(request):
     if not is_admin(request.user):
         raise PermissionDenied
     form = CreateTeacherForm(request.POST or None)
+    credentials = None
     if request.method == "POST" and form.is_valid():
         first_name = form.cleaned_data["first_name"]
         last_name = form.cleaned_data["last_name"]
         base = slugify(f"{first_name}.{last_name}").replace("-", ".") or "oqituvchi"
         username = base[:140]
         suffix = 1
-        while User.objects.filter(username=username).exists():
+        while User.objects.filter(username__iexact=username).exists():
             suffix += 1
             username = f"{base[:130]}.{suffix}"
         password = secrets.token_urlsafe(9)
-        teacher = User.objects.create_user(
-            username=username,
-            password=password,
-            first_name=first_name,
-            last_name=last_name,
-            phone=form.cleaned_data["phone"],
-            role=User.Role.TEACHER,
-        )
-        messages.success(request, f"O‘qituvchi yaratildi. Login: {teacher.username} | Vaqtinchalik parol: {password}")
-        return redirect("teacher_management")
+        try:
+            with transaction.atomic():
+                teacher = User.objects.create_user(
+                    username=username,
+                    password=password,
+                    first_name=first_name,
+                    last_name=last_name,
+                    phone=form.cleaned_data["phone"],
+                    role=User.Role.TEACHER,
+                )
+            credentials = {
+                "username": teacher.username,
+                "password": password,
+                "person_name": teacher.get_full_name(),
+                "role_label": "O‘QITUVCHI",
+            }
+            form = CreateTeacherForm()
+        except IntegrityError:
+            form.add_error(None, "Akkaunt yaratilmadi. Ma’lumotlarni tekshirib, qayta urinib ko‘ring.")
     teachers = User.objects.filter(role=User.Role.TEACHER).prefetch_related("teaching_groups").order_by("last_name", "first_name")
-    return render(request, "school/teacher_management.html", {"form": form, "teachers": teachers, "groups": StudyGroup.objects.all()})
+    return render(request, "school/teacher_management.html", {
+        "form": form, "teachers": teachers, "groups": StudyGroup.objects.all(),
+        "credentials": credentials,
+    })
 
 @login_required
 def teacher_assign_group(request, teacher_id):
