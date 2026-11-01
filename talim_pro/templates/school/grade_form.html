@@ -35,7 +35,7 @@ document.addEventListener("DOMContentLoaded", () => {
 </script>
 {% endblock %}
 {% block content %}
-<div class="page-intro"><div><span class="eyebrow">O‘QUV JARAYONI</span><h2>Dars natijasini kiriting</h2><p class="muted">Baho va davomatni saqlang. 8 dan past baho uchun sabab majburiy.</p></div><span class="pill pill-blue">0–10 ball</span></div>
+<div class="page-intro"><div><span class="eyebrow">O‘QUV JARAYONI</span><h2>Dars natijasini kiriting</h2><p class="muted">Baho va davomatni saqlang. 8 yoki undan past baho uchun sabab tanlash majburiy.</p></div><span class="pill pill-blue">0–10 ball</span></div>
 <form method="post" class="grade-layout">{% csrf_token %}
 <div class="panel grade-panel"><div class="panel-heading"><div><h3>Asosiy ma'lumotlar</h3><p class="muted">Dars va o‘quvchini tanlang</p></div><span class="step-number">01</span></div>
 {% if form.non_field_errors %}<div class="message error">{{ form.non_field_errors }}</div>{% endif %}
@@ -52,6 +52,6 @@ document.addEventListener("DOMContentLoaded", () => {
 <div class="reason-modal-actions"><button class="button button-secondary" type="button" id="reason-modal-cancel">Bekor qilish</button><button class="button button-primary" type="button" id="reason-modal-confirm">Tanlovni tasdiqlash</button></div>
 </section></div>
 </div>
-<div class="panel attendance-panel"><div class="panel-heading"><div><h3>Davomat</h3><p class="muted">Bugungi qatnashuv holati</p></div><span class="step-number">03</span></div><div class="attendance-options">{% for radio in form.attendance %}<label class="attendance-option">{{ radio.tag }}<span>{{ radio.choice_label }}</span></label>{% endfor %}</div><div class="sms-info"><span class="sms-icon">✉</span><div><b>Ota-onaga xabarnoma</b><p class="muted">8 dan past baho saqlanganda SMS sozlangan bo‘lsa, ota-onaga sabab va davomat bilan xabar yuboriladi.</p></div></div><button class="button button-primary button-wide" type="submit">Bahoni saqlash <span>→</span></button><p class="muted tiny center">Saqlashdan oldin ma'lumotlarni tekshiring.</p></div>
+<div class="panel attendance-panel"><div class="panel-heading"><div><h3>Davomat</h3><p class="muted">Bugungi qatnashuv holati</p></div><span class="step-number">03</span></div><div class="attendance-options">{% for radio in form.attendance %}<label class="attendance-option">{{ radio.tag }}<span>{{ radio.choice_label }}</span></label>{% endfor %}</div><div class="sms-info"><span class="sms-icon">✉</span><div><b>Ota-onaga xabarnoma</b><p class="muted">8 yoki undan past baho saqlanganda SMS sozlangan bo‘lsa, ota-onaga sabab va davomat bilan xabar yuboriladi.</p></div></div><button class="button button-primary button-wide" type="submit">Bahoni saqlash <span>→</span></button><p class="muted tiny center">Saqlashdan oldin ma'lumotlarni tekshiring.</p></div>
 </form>
 {% endblock %}
