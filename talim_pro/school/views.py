@@ -447,7 +447,7 @@ def group_detail(request, group_id):
         "group": group, "students": students, "student_count": students.count(),
         "average_score": average_score, "lessons": lessons,
         "available_teachers": available_teachers,
-        "available_students": StudentProfile.objects.exclude(group=group).select_related("user").order_by("user__last_name", "user__first_name"),
+        "available_students": StudentProfile.objects.exclude(group=group).exclude(grades__isnull=False).exclude(attendance__isnull=False).select_related("user").order_by("user__last_name", "user__first_name"),
     })
 
 
