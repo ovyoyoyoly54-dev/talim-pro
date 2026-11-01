@@ -2,6 +2,24 @@
 {% block page_heading %}O‘qituvchilar{% endblock %}
 {% block content %}
 <div class="welcome-row"><div><h2>O‘qituvchilar</h2><p class="muted">Yangi o‘qituvchi hisobini yarating va guruhlarga biriktiring.</p></div><a class="button button-secondary" href="{% url 'dashboard' %}">← Bosh sahifa</a></div>
+{% if credentials %}
+<section class="panel credential-panel">
+  <div class="message success">O‘qituvchi akkaunti muvaffaqiyatli yaratildi.</div>
+  <div id="teacher-credential-card" class="credential-card">
+    <div class="credential-brand">TA’LIM PRO <span>{{ credentials.role_label }}</span></div>
+    <h2>{{ credentials.person_name }}</h2>
+    <p class="muted">Tizimga kirish ma’lumotlari</p>
+    <div class="credential-row"><span>LOGIN</span><strong>{{ credentials.username }}</strong></div>
+    <div class="credential-row"><span>PAROL</span><strong>{{ credentials.password }}</strong></div>
+    <small>Ushbu ma’lumotlarni xavfsiz saqlang.</small>
+  </div>
+  <div class="credential-actions">
+    <button class="button button-primary" type="button" id="save-teacher-credentials">Rasmni saqlash</button>
+    <a class="button button-secondary" href="{% url 'teacher_management' %}">Keyingi</a>
+  </div>
+  <p class="muted">«Rasmni saqlash» tugmasi login va parol yozilgan PNG rasmni qurilmangizga yuklaydi. «Keyingi» yangi o‘qituvchi qo‘shish formasini ochadi.</p>
+</section>
+{% else %}
 <div class="two-column">
 <section class="panel">
 <div class="panel-heading"><div><h3>Yangi o‘qituvchi</h3><p class="muted">Login va vaqtinchalik parol avtomatik yaratiladi.</p></div></div>
@@ -19,4 +37,36 @@
 </div></div>
 {% empty %}<p class="empty">Hozircha o‘qituvchi qo‘shilmagan.</p>{% endfor %}
 </section></div>
+{% endif %}
+{% endblock %}
+{% block extra_scripts %}
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js" defer></script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  const button = document.getElementById("save-teacher-credentials");
+  const card = document.getElementById("teacher-credential-card");
+  if (!button || !card) return;
+  button.addEventListener("click", async function () {
+    if (typeof html2canvas !== "function") {
+      window.print();
+      return;
+    }
+    button.disabled = true;
+    button.textContent = "Tayyorlanmoqda...";
+    try {
+      const canvas = await html2canvas(card, {backgroundColor: "#ffffff", scale: 2});
+      const link = document.createElement("a");
+      link.download = "talim-pro-oqituvchi-login.png";
+      link.href = canvas.toDataURL("image/png");
+      link.click();
+      button.textContent = "Rasm saqlandi";
+    } catch (error) {
+      window.print();
+      button.textContent = "Rasmni saqlash";
+    } finally {
+      button.disabled = false;
+    }
+  });
+});
+</script>
 {% endblock %}
