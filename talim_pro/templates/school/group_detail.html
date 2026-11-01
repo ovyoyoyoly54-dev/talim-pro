@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}{{ group.name }} — Guruh boshqaruvi{% endblock %}
+{% block page_heading %}{{ group.name }}{% endblock %}
+{% block content %}
+<div class="group-detail-back"><a href="{% url 'group_management' %}">← Guruhlar ro‘yxati</a><span class="group-count-pill">{{ group.subject }}</span></div>
+<section class="groups-hero group-detail-hero"><div><span class="groups-kicker">GURUH BOSHQARUVI</span><h2>{{ group.name }}</h2><p>{{ group.subject }} · Guruhning o‘quv jarayoni va tarkibi</p></div><a class="button button-primary" href="{% url 'add_student_to_group' group_id=group.pk %}">＋ Yangi o‘quvchi qo‘shish</a></section>
+<div class="group-overview-stats">
+  <div class="group-overview-stat"><span>O‘quvchilar</span><strong>{{ student_count }}</strong><small>Guruhdagi jami o‘quvchilar</small></div>
+  <div class="group-overview-stat"><span>O‘rtacha reyting</span><strong>{% if average_score != None %}{{ average_score|floatformat:1 }}<small>/10</small>{% else %}—{% endif %}</strong><small>Barcha kiritilgan baholar</small></div>
+  <div class="group-overview-stat"><span>Darslar</span><strong>{{ lessons|length }}</strong><small>Jadvaldagi mashg‘ulotlar</small></div>
+</div>
+<div class="group-detail-grid">
+<section class="panel group-detail-panel"><div class="group-section-heading"><div><h3>O‘qituvchilar</h3><p class="muted">Guruhga biriktirilgan ustozlar</p></div><span class="group-count-pill">{{ group.teachers.count }} ta</span></div>
+<div class="group-teacher-list">{% for teacher in group.teachers.all %}<div class="group-person-row"><span class="teacher-avatar large">{{ teacher.first_name|first|default:teacher.username|first|upper }}</span><div><b>{{ teacher.get_full_name|default:teacher.username }}</b><small>{{ teacher.phone|default:"Telefon kiritilmagan" }}</small></div></div>{% empty %}<p class="empty">Hali o‘qituvchi biriktirilmagan.</p>{% endfor %}</div>
+{% if available_teachers %}<form method="post" class="group-assign-form">{% csrf_token %}<input type="hidden" name="action" value="assign_teacher"><label for="teacher_id">Yana o‘qituvchi biriktirish</label><div><select id="teacher_id" name="teacher_id" required><option value="">O‘qituvchini tanlang</option>{% for teacher in available_teachers %}<option value="{{ teacher.pk }}">{{ teacher.get_full_name|default:teacher.username }}</option>{% endfor %}</select><button class="button button-primary" type="submit">Biriktirish</button></div></form>{% endif %}
+</section>
+<section class="panel group-detail-panel"><div class="group-section-heading"><div><h3>Dars jadvali</h3><p class="muted">Guruhning belgilangan mashg‘ulotlari</p></div><a class="text-link" href="{% url 'lesson_create' %}">＋ Dars qo‘shish</a></div>
+<div class="group-schedule-list">{% for lesson in lessons %}<div class="group-schedule-row"><span class="schedule-date-icon">▦</span><div><b>{{ lesson.title }}</b><small>{{ lesson.starts_at|date:"l, d.m.Y" }} · {{ lesson.teacher.get_full_name|default:lesson.teacher.username }}</small>{% if lesson.room %}<small>{{ lesson.room }}</small>{% endif %}</div><strong>{{ lesson.starts_at|date:"H:i" }}</strong></div>{% empty %}<p class="empty">Bu guruh uchun dars jadvali hali tuzilmagan.</p>{% endfor %}</div>
+</section>
+</div>
+<section class="panel group-detail-panel group-students-panel"><div class="group-section-heading"><div><h3>O‘quvchilar reytingi</h3><p class="muted">O‘quvchilar o‘rtacha bahosi bo‘yicha saralangan</p></div><span class="group-count-pill">{{ student_count }} nafar</span></div>
+<div class="group-student-table-wrap"><table class="group-student-table"><thead><tr><th>#</th><th>O‘quvchi</th><th>Baholar soni</th><th>O‘rtacha baho</th><th>Profil</th></tr></thead><tbody>{% for student in students %}<tr><td>{{ forloop.counter }}</td><td><b>{{ student.user.get_full_name|default:student.user.username }}</b><small>{{ student.user.username }}</small></td><td>{{ student.grade_count|default:0 }}</td><td><span class="group-score">{% if student.average_score != None %}{{ student.average_score|floatformat:1 }}/10{% else %}Baholanmagan{% endif %}</span></td><td><a class="text-link" href="{% url 'student_detail' student_id=student.pk %}">Ko‘rish →</a></td></tr>{% empty %}<tr><td colspan="5" class="empty">Guruhda hali o‘quvchi yo‘q.</td></tr>{% endfor %}</tbody></table></div>
+{% if available_students %}<form method="post" class="group-assign-form student-assign-form">{% csrf_token %}<input type="hidden" name="action" value="assign_student"><label for="student_id">Baholari va davomat qaydlari hali yo‘q o‘quvchini guruhga biriktirish</label><div><select id="student_id" name="student_id" required><option value="">O‘quvchini tanlang</option>{% for student in available_students %}<option value="{{ student.pk }}">{{ student.user.get_full_name|default:student.user.username }} — {{ student.group.name }}</option>{% endfor %}</select><button class="button button-primary" type="submit">Guruhga biriktirish</button></div></form>{% endif %}
+</section>
+{% endblock %}

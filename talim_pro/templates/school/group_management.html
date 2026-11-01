@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Guruhlarni boshqarish — TA’LIM PRO{% endblock %}
+{% block page_heading %}Guruhlarni boshqarish{% endblock %}
+{% block content %}
+<section class="groups-hero">
+  <div><span class="groups-kicker">ADMINISTRATOR PANELI</span><h2>Guruhlar markazi</h2><p>Barcha o‘quv guruhlari, o‘qituvchilar va darslarni bitta joydan boshqaring.</p></div>
+  <a class="button button-primary" href="{% url 'admin:school_studygroup_add' %}">＋ Yangi guruh</a>
+</section>
+<div class="group-overview-stats">
+  <div class="group-overview-stat"><span>Jami guruhlar</span><strong>{{ total_groups }}</strong><small>Faol o‘quv guruhlari</small></div>
+  <div class="group-overview-stat"><span>O‘quvchilar</span><strong>{{ total_students }}</strong><small>Barcha guruhlarda</small></div>
+  <div class="group-overview-stat"><span>Darslar</span><strong>{{ total_lessons }}</strong><small>Jadvaldagi mashg‘ulotlar</small></div>
+</div>
+<section class="group-browser panel">
+  <div class="group-browser-head"><div><h3>Guruhlaringiz</h3><p class="muted">Guruhni tanlab, uning batafsil boshqaruv sahifasiga kiring.</p></div><span class="group-count-pill">{{ groups|length }} ta guruh</span></div>
+  <form method="get" class="group-search"><span>⌕</span><input type="search" name="q" value="{{ query }}" placeholder="Guruh, fan yoki o‘qituvchi bo‘yicha qidirish..." aria-label="Guruh qidirish"><button class="button button-primary" type="submit">Qidirish</button>{% if query %}<a class="button button-quiet" href="{% url 'group_management' %}">Tozalash</a>{% endif %}</form>
+  <div class="managed-group-grid">
+    {% for group in groups %}
+    <a class="managed-group-card" href="{% url 'group_detail' group_id=group.pk %}">
+      <div class="managed-group-top"><span class="managed-group-symbol">▦</span><span class="managed-group-open">Boshqarish ↗</span></div>
+      <h3>{{ group.name }}</h3><p>{{ group.subject }}</p>
+      <div class="managed-group-meta"><span>♙ {{ group.student_total }} o‘quvchi</span><span>▤ {{ group.lesson_total }} dars</span></div>
+      <div class="managed-group-teachers"><small>O‘QITUVCHILAR</small><div>{% for teacher in group.teachers.all %}<span class="teacher-avatar">{{ teacher.first_name|first|default:teacher.username|first|upper }}</span><b>{{ teacher.get_full_name|default:teacher.username }}</b>{% empty %}<em>Hali biriktirilmagan</em>{% endfor %}</div></div>
+    </a>
+    {% empty %}
+    <div class="groups-empty"><span>⌕</span><h3>{% if query %}Guruh topilmadi{% else %}Hozircha guruh yo‘q{% endif %}</h3><p>{% if query %}Boshqa nom yoki fan bilan qidirib ko‘ring.{% else %}Yangi guruh yaratib, o‘quvchilarni biriktirishni boshlang.{% endif %}</p>{% if query %}<a href="{% url 'group_management' %}" class="text-link">Barcha guruhlarni ko‘rish</a>{% endif %}</div>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}
