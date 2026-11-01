@@ -3,27 +3,29 @@
 {% block page_heading %}{{ group.name }} — yangi o‘quvchi{% endblock %}
 {% block content %}
 <div class="welcome-row">
-  <div>
-    <h2>{{ group.name }} guruhiga o‘quvchi qo‘shish</h2>
-    <p class="muted">Yangi o‘quvchi uchun tizim avtomatik login va vaqtinchalik parol yaratadi.</p>
-  </div>
+  <div><h2>{{ group.name }} guruhiga o‘quvchi qo‘shish</h2><p class="muted">Yangi o‘quvchi uchun tizim avtomatik login va vaqtinchalik parol yaratadi.</p></div>
   <a class="button button-outline" href="{% url 'dashboard' %}">↰ Bosh sahifa</a>
 </div>
 {% if credentials %}
-<div class="panel">
+<section class="panel credential-panel">
   <div class="message success">O‘quvchi akkaunti yaratildi va guruhga qo‘shildi.</div>
-  <h3>{{ credentials.student_name }}</h3>
-  <p><b>Login:</b> {{ credentials.username }}</p>
-  <p><b>Vaqtinchalik parol:</b> {{ credentials.password }}</p>
-  <p class="muted">Bu ma’lumotlarni o‘quvchiga xavfsiz yetkazing. Parol keyinchalik sozlamalardan o‘zgartirilishi mumkin.</p>
-  <button class="button button-primary" type="button" onclick="window.print()">Chop etish</button>
-  <a class="button button-outline" href="{% url 'add_student_to_group' group_id=group.pk %}">Yana o‘quvchi qo‘shish</a>
-</div>
+  <div id="student-credential-card" class="credential-card">
+    <div class="credential-brand">TA’LIM PRO <span>O‘QUVCHI</span></div>
+    <h2>{{ credentials.student_name }}</h2>
+    <p class="muted">{{ group.name }} guruhi — tizimga kirish ma’lumotlari</p>
+    <div class="credential-row"><span>LOGIN</span><strong>{{ credentials.username }}</strong></div>
+    <div class="credential-row"><span>PAROL</span><strong>{{ credentials.password }}</strong></div>
+    <small>Ushbu ma’lumotlarni xavfsiz saqlang.</small>
+  </div>
+  <div class="credential-actions">
+    <button class="button button-primary" type="button" id="save-student-credentials">Rasmni saqlash</button>
+    <a class="button button-secondary" href="{% url 'add_student_to_group' group_id=group.pk %}">Keyingi</a>
+  </div>
+  <p class="muted">«Rasmni saqlash» tugmasi login va parol yozilgan PNG rasmni qurilmangizga yuklaydi. «Keyingi» shu guruhga yana o‘quvchi qo‘shadi.</p>
+</section>
 {% else %}
 <div class="panel">
-  {% if form.errors %}
-    <div class="message error">{% for errors in form.errors.values %}{% for error in errors %}{{ error }}{% endfor %}{% endfor %}</div>
-  {% endif %}
+  {% if form.errors %}<div class="message error">{% for errors in form.errors.values %}{% for error in errors %}{{ error }}{% endfor %}{% endfor %}</div>{% endif %}
   <form method="post" class="stack-form">
     {% csrf_token %}
     <h3>O‘quvchi ma’lumotlari</h3>
@@ -37,3 +39,35 @@
 </div>
 {% endif %}
 {% endblock %}
+{% if credentials %}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  const button = document.getElementById("save-student-credentials");
+  const card = document.getElementById("student-credential-card");
+  if (!button || !card) return;
+  button.addEventListener("click", function () {
+    const canvas = document.createElement("canvas");
+    canvas.width = 1100; canvas.height = 680;
+    const ctx = canvas.getContext("2d");
+    ctx.fillStyle = "#f3f6fb"; ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = "#ffffff"; ctx.fillRect(55, 55, 990, 570);
+    ctx.strokeStyle = "#dce5f0"; ctx.lineWidth = 4; ctx.strokeRect(57, 57, 986, 566);
+    ctx.fillStyle = "#102544"; ctx.font = "bold 34px Arial"; ctx.fillText("TA’LIM PRO", 100, 130);
+    ctx.fillStyle = "#356ce0"; ctx.font = "bold 20px Arial"; ctx.fillText("O‘QUVCHI", 820, 130);
+    ctx.fillStyle = "#102544"; ctx.font = "bold 42px Arial"; ctx.fillText(card.querySelector("h2").textContent, 100, 225);
+    ctx.fillStyle = "#77869a"; ctx.font = "24px Arial"; ctx.fillText("Tizimga kirish ma’lumotlari", 100, 275);
+    const rows = card.querySelectorAll(".credential-row strong");
+    [["LOGIN", rows[0].textContent], ["PAROL", rows[1].textContent]].forEach((row, index) => {
+      const y = 330 + index * 125;
+      ctx.fillStyle = "#f5f8fc"; ctx.fillRect(100, y, 900, 95);
+      ctx.fillStyle = "#77869a"; ctx.font = "bold 18px Arial"; ctx.fillText(row[0], 125, y + 30);
+      ctx.fillStyle = "#102544"; ctx.font = "bold 30px Arial"; ctx.fillText(row[1], 125, y + 70);
+    });
+    ctx.fillStyle = "#77869a"; ctx.font = "18px Arial"; ctx.fillText("Ushbu ma’lumotlarni xavfsiz saqlang.", 100, 585);
+    const link = document.createElement("a"); link.download = "talim-pro-oquvchi-login.png";
+    link.href = canvas.toDataURL("image/png"); link.click();
+    button.textContent = "Rasm saqlandi";
+  });
+});
+</script>
+{% endif %}
