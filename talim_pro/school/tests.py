@@ -636,6 +636,14 @@ class PlatformRulesTests(TestCase):
         self.assertFalse(form.is_valid())
         self.assertIn("reasons", form.errors)
 
+    def test_score_eight_requires_reason_in_form(self):
+        form = GradeRecordForm(data={
+            "lesson": self.lesson.pk, "student": self.profile.pk, "score": "8",
+            "attendance": Attendance.Status.PRESENT,
+        }, teacher=self.teacher)
+        self.assertFalse(form.is_valid())
+        self.assertIn("reasons", form.errors)
+
     def test_model_rejects_new_low_grade_without_reason(self):
         record = GradeRecord(lesson=self.lesson, student=self.profile, score=6, teacher=self.teacher)
         with self.assertRaises(ValidationError):
@@ -644,7 +652,7 @@ class PlatformRulesTests(TestCase):
             record.save()
 
     def test_low_grade_reason_cannot_be_removed_from_model_relation(self):
-        record = GradeRecord.objects.create(lesson=self.lesson, student=self.profile, score=8, teacher=self.teacher)
+        record = GradeRecord.objects.create(lesson=self.lesson, student=self.profile, score=9, teacher=self.teacher)
         record.reasons.add(self.reason)
         record.score = 6
         record.save()
