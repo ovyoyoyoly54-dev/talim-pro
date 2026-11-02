@@ -823,11 +823,13 @@ class AddStudentToGroupTests(TestCase):
         response = self.client.get(reverse("add_student_to_group", kwargs={"group_id": self.group.pk}))
         self.assertEqual(response.status_code, 403)
 
-    def test_assigned_teacher_without_lesson_cannot_add_students(self):
+    def test_assigned_teacher_without_lesson_can_add_students(self):
         group = StudyGroup.objects.create(name="A2", subject="Matematika")
         group.teachers.add(self.teacher)
         self.client.force_login(self.teacher)
-        self.assertEqual(self.client.get(reverse("add_student_to_group", kwargs={"group_id": group.pk})).status_code, 403)
+        response = self.client.get(reverse("add_student_to_group", kwargs={"group_id": group.pk}))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Akkaunt yaratish")
 
     def test_student_cannot_access(self):
         self.client.force_login(self.student_user)
