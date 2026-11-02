@@ -699,6 +699,7 @@ def add_student_to_group(request, group_id):
                     password=temporary_password,
                     role=User.Role.STUDENT,
                     is_active=True,
+                    must_change_credentials=True,
                 )
                 StudentProfile.objects.create(
                     user=student_user,
