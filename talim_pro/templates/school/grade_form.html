@@ -1,73 +1,5 @@
 {% extends "base.html" %}
-{% block page_heading %}Baho qo‘yish<script>
-document.addEventListener("DOMContentLoaded", () => {
-  const score = document.getElementById("id_score");
-  const modal = document.getElementById("reason-modal");
-  if (!score || !modal) return;
-  const boxes = Array.from(modal.querySelectorAll('input[type="checkbox"]'));
-  const open = () => { modal.hidden = false; document.body.classList.add("modal-open"); };
-  const close = () => { modal.hidden = true; document.body.classList.remove("modal-open"); };
-  score.addEventListener("change", () => {
-    const value = Number(score.value);
-    if (value >= 0 && value <= 8) open();
-  });
-  if ((score.value !== "" && Number(score.value) <= 8) || modal.querySelector(".field-error")) open();
-  ["reason-modal-close", "reason-modal-cancel"].forEach(id => {
-    const button = document.getElementById(id);
-    if (button) button.addEventListener("click", close);
-  });
-  const confirm = document.getElementById("reason-modal-confirm");
-  if (confirm) confirm.addEventListener("click", () => {
-    if (score.value !== "" && Number(score.value) <= 8 && !boxes.some(box => box.checked)) {
-      let error = modal.querySelector(".reason-modal-error");
-      if (!error) {
-        error = document.createElement("small");
-        error.className = "field-error reason-modal-error";
-        confirm.closest(".reason-modal").insertBefore(error, confirm.closest(".reason-modal-actions"));
-      }
-      error.textContent = "Kamida bitta sababni tanlang.";
-      return;
-    }
-    close();
-  });
-  modal.addEventListener("click", event => { if (event.target === modal) close(); });
-});
-</script>
-<script>
-document.addEventListener("DOMContentLoaded", () => {
-  const score = document.getElementById("id_score");
-  const modal = document.getElementById("reason-modal");
-  if (!score || !modal) return;
-  const boxes = Array.from(modal.querySelectorAll('input[type="checkbox"]'));
-  const open = () => { modal.hidden = false; document.body.classList.add("modal-open"); };
-  const close = () => { modal.hidden = true; document.body.classList.remove("modal-open"); };
-  score.addEventListener("change", () => {
-    const value = Number(score.value);
-    if (value >= 0 && value <= 8) open();
-  });
-  if (Number(score.value) <= 8 || modal.querySelector(".field-error")) open();
-  ["reason-modal-close", "reason-modal-cancel"].forEach(id => {
-    const button = document.getElementById(id);
-    if (button) button.addEventListener("click", close);
-  });
-  const confirm = document.getElementById("reason-modal-confirm");
-  if (confirm) confirm.addEventListener("click", () => {
-    if (Number(score.value) <= 8 && !boxes.some(box => box.checked)) {
-      let error = modal.querySelector(".reason-modal-error");
-      if (!error) {
-        error = document.createElement("small");
-        error.className = "field-error reason-modal-error";
-        confirm.closest(".reason-modal").insertBefore(error, confirm.closest(".reason-modal-actions"));
-      }
-      error.textContent = "Kamida bitta sababni tanlang.";
-      return;
-    }
-    close();
-  });
-  modal.addEventListener("click", event => { if (event.target === modal) close(); });
-});
-</script>
-{% endblock %}
+{% block page_heading %}Baho qo‘yish{% endblock %}
 {% block content %}
 <div class="page-intro"><div><span class="eyebrow">O‘QUV JARAYONI</span><h2>Dars natijasini kiriting</h2><p class="muted">Baho va davomatni saqlang. 8 yoki undan past baho uchun sabab tanlash majburiy.</p></div><span class="pill pill-blue">0–10 ball</span></div>
 <form method="post" class="grade-layout">{% csrf_token %}
@@ -88,4 +20,45 @@ document.addEventListener("DOMContentLoaded", () => {
 </div>
 <div class="panel attendance-panel"><div class="panel-heading"><div><h3>Davomat</h3><p class="muted">Bugungi qatnashuv holati</p></div><span class="step-number">03</span></div><div class="attendance-options">{% for radio in form.attendance %}<label class="attendance-option">{{ radio.tag }}<span>{{ radio.choice_label }}</span></label>{% endfor %}</div><div class="sms-info"><span class="sms-icon">✉</span><div><b>Ota-onaga xabarnoma</b><p class="muted">8 yoki undan past baho saqlanganda SMS sozlangan bo‘lsa, ota-onaga sabab va davomat bilan xabar yuboriladi.</p></div></div><button class="button button-primary button-wide" type="submit">Bahoni saqlash <span>→</span></button><p class="muted tiny center">Saqlashdan oldin ma'lumotlarni tekshiring.</p></div>
 </form>
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const form = document.querySelector("form.grade-layout");
+  const score = document.getElementById("id_score");
+  const modal = document.getElementById("reason-modal");
+  if (!form || !score || !modal) return;
+  const boxes = Array.from(modal.querySelectorAll('input[type="checkbox"]'));
+  let confirmed = false;
+  const open = () => { modal.hidden = false; document.body.classList.add("modal-open"); };
+  const close = () => { modal.hidden = true; document.body.classList.remove("modal-open"); };
+
+  form.addEventListener("submit", event => {
+    if (score.value !== "" && Number(score.value) <= 8 && !confirmed) {
+      event.preventDefault();
+      open();
+    }
+  });
+  ["reason-modal-close", "reason-modal-cancel"].forEach(id => {
+    const button = document.getElementById(id);
+    if (button) button.addEventListener("click", close);
+  });
+  const confirmButton = document.getElementById("reason-modal-confirm");
+  if (confirmButton) confirmButton.addEventListener("click", () => {
+    if (score.value !== "" && Number(score.value) <= 8 && !boxes.some(box => box.checked)) {
+      let error = modal.querySelector(".reason-modal-error");
+      if (!error) {
+        error = document.createElement("small");
+        error.className = "field-error reason-modal-error";
+        confirmButton.closest(".reason-modal").insertBefore(error, confirmButton.closest(".reason-modal-actions"));
+      }
+      error.textContent = "Davom etish uchun kamida bitta sababni tanlang.";
+      return;
+    }
+    confirmed = true;
+    close();
+    form.requestSubmit();
+  });
+  modal.addEventListener("click", event => { if (event.target === modal) close(); });
+  if (score.value !== "" && Number(score.value) <= 8 && modal.querySelector(".field-error")) open();
+});
+</script>
 {% endblock %}
