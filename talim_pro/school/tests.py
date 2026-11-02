@@ -169,7 +169,7 @@ class AdminNavigationTests(TestCase):
 
     def test_dashboard_group_management_link_targets_groups(self):
         response = self.client.get(reverse("dashboard"))
-        self.assertContains(response, f'href="{reverse("admin:school_studygroup_changelist")}"')
+        self.assertContains(response, f'href="{reverse("group_management")}"')
         self.assertContains(response, "Guruhlarni boshqarish")
 
     def test_dashboard_shows_admins_lessons_and_recent_grades(self):
@@ -839,7 +839,7 @@ class AddStudentToGroupTests(TestCase):
             "first_name": "Ali", "last_name": "Valiyev", "parent_phone": "90 123 45 67",
         })
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "Vaqtinchalik parol")
+        self.assertContains(response, "PAROL")
         student = User.objects.get(first_name="Ali", last_name="Valiyev", role=User.Role.STUDENT)
         profile = StudentProfile.objects.get(user=student)
         self.assertEqual(profile.group, self.group)
@@ -980,7 +980,7 @@ class LoginRedirectTests(TestCase):
         )
         StudentProfile.objects.create(user=user, group=StudyGroup.objects.create(name="Login A1", subject="Matematika"))
         self.client.force_login(user)
-                response = self.client.get(reverse("login"))
+        response = self.client.get(reverse("login"))
         self.assertRedirects(response, reverse("dashboard"))
 
 
