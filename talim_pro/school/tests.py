@@ -823,11 +823,13 @@ class AddStudentToGroupTests(TestCase):
         response = self.client.get(reverse("add_student_to_group", kwargs={"group_id": self.group.pk}))
         self.assertEqual(response.status_code, 403)
 
-    def test_assigned_teacher_without_lesson_cannot_add_students(self):
+    def test_assigned_teacher_without_lesson_can_add_students(self):
         group = StudyGroup.objects.create(name="A2", subject="Matematika")
         group.teachers.add(self.teacher)
         self.client.force_login(self.teacher)
-        self.assertEqual(self.client.get(reverse("add_student_to_group", kwargs={"group_id": group.pk})).status_code, 403)
+        response = self.client.get(reverse("add_student_to_group", kwargs={"group_id": group.pk}))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Akkaunt yaratish")
 
     def test_student_cannot_access(self):
         self.client.force_login(self.student_user)
@@ -1061,3 +1063,30 @@ class BugfixRegressionTests(TestCase):
         self.teacher.refresh_from_db()
         self.assertEqual(self.teacher.username, "fix_teacher")
 
+
+
+class StudentFirstLoginCredentialsTests(TestCase):
+    def setUp(self):
+        self.student = User.objects.create_user(
+            "generated.student", password="TempPass!2026",
+            role=User.Role.STUDENT, must_change_credentials=True,
+        )
+
+    def test_student_can_change_generated_login_and_password(self):
+        self.client.force_login(self.student)
+        response = self.client.post(reverse("first_login_credentials"), {
+            "username": "my.own.login",
+            "new_password1": "StrongNewPass!2026",
+            "new_password2": "StrongNewPass!2026",
+        })
+        self.assertRedirects(response, reverse("dashboard"))
+        self.student.refresh_from_db()
+        self.assertEqual(self.student.username, "my.own.login")
+        self.assertTrue(self.student.check_password("StrongNewPass!2026"))
+        self.assertFalse(self.student.must_change_credentials)
+
+    def test_student_dashboard_shows_attendance_navigation_and_warning(self):
+        self.client.force_login(self.student)
+        response = self.client.get(reverse("dashboard"))
+        self.assertContains(response, "Davomatim")
+        self.assertContains(response, "Login va parolni almashtiring")

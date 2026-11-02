@@ -50,7 +50,7 @@ urlpatterns = [
     path("service-worker.js", views.service_worker, name="service_worker"),
     path("manifest.webmanifest", views.web_manifest, name="web_manifest"),
     path("offline/", views.offline_page, name="offline_page"),
-    path("dashboard/", views.dashboard, name="dashboard"),
+    path("dashboard/", views.dashboard, name="dashboard"),\n    path("birinchi-kirish/", views.first_login_credentials, name="first_login_credentials"),
     path("guruhlar/", views.group_management, name="group_management"),
     path("guruh/<int:group_id>/", views.group_detail, name="group_detail"),
     path("oqituvchilar/", views.teacher_management, name="teacher_management"),
