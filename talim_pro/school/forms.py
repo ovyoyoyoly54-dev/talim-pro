@@ -142,7 +142,7 @@ class GradeRecordForm(forms.Form):
     )
     attendance = forms.ChoiceField(choices=Attendance.Status.choices, widget=forms.RadioSelect)
 
-        def __init__(self, *args, teacher=None, allow_all=False, **kwargs):
+    def __init__(self, *args, teacher=None, allow_all=False, **kwargs):
         super().__init__(*args, **kwargs)
         if allow_all:
             # Administrator barcha dars va o'quvchilarni baholay oladi.
