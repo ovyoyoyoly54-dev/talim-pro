@@ -1688,3 +1688,10 @@ tbody tr:hover td{background:#fbfcff}
 .reason-modal-actions{display:flex;justify-content:flex-end;gap:10px;padding-top:15px;border-top:1px solid #edf0f5}
 body.modal-open{overflow:hidden}
 @media(max-width:560px){.reason-modal{padding:23px 18px}.reason-modal-options{grid-template-columns:1fr}.reason-modal-actions{flex-direction:column-reverse}.reason-modal-actions .button{width:100%}}
+
+
+/* Student first-login security notice and attendance */
+.credential-alert{display:flex;align-items:center;gap:10px;margin:16px 0;padding:12px;border:1px solid rgba(251,191,36,.45);border-radius:14px;background:rgba(245,158,11,.13);color:#fff!important}
+.credential-alert-icon{display:grid;place-items:center;flex:0 0 30px;height:30px;border-radius:50%;background:#f59e0b;color:#172033;font-weight:900;font-size:19px}
+.credential-alert b,.credential-alert small{display:block}.credential-alert b{font-size:12px}.credential-alert small{font-size:10px;color:#cbd5e1;margin-top:2px}
+.credential-notice{border:1px solid #fcd34d;background:#fffbeb;color:#92400e;padding:14px 18px;border-radius:14px;margin-bottom:18px}
