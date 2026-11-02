@@ -606,7 +606,7 @@ def lesson_reschedule(request, lesson_id):
         try:
             lesson.full_clean()
             lesson.save()
-                except ValidationError as error:
+        except ValidationError as error:
             lesson.starts_at = previous_starts_at
             # Model xatolari group/teacher/room maydonlariga tegishli, ular bu formada
             # yo'q; shuning uchun umumiy (non-field) xato sifatida ko'rsatiladi.
