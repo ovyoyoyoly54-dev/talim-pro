@@ -36,8 +36,14 @@ class AccountSettingsForm(forms.ModelForm):
             "first_name": forms.TextInput(attrs={"class": "input", "autocomplete": "given-name"}),
             "last_name": forms.TextInput(attrs={"class": "input", "autocomplete": "family-name"}),
             "email": forms.EmailInput(attrs={"class": "input", "autocomplete": "email"}),
-            "phone": forms.TextInput(attrs={"class": "input", "type": "tel", "autocomplete": "tel", "placeholder": "+998 90 123 45 67"}),
+                        "phone": forms.TextInput(attrs={"class": "input", "type": "tel", "autocomplete": "tel", "placeholder": "+998 90 123 45 67"}),
         }
+
+    def clean_username(self):
+        username = self.cleaned_data["username"].strip()
+        if User.objects.filter(username__iexact=username).exclude(pk=self.instance.pk).exists():
+            raise ValidationError("Bu foydalanuvchi nomi band. Boshqasini tanlang.")
+        return username
 
 
 AdminAccountSettingsForm = AccountSettingsForm
@@ -136,9 +142,13 @@ class GradeRecordForm(forms.Form):
     )
     attendance = forms.ChoiceField(choices=Attendance.Status.choices, widget=forms.RadioSelect)
 
-    def __init__(self, *args, teacher=None, **kwargs):
+        def __init__(self, *args, teacher=None, allow_all=False, **kwargs):
         super().__init__(*args, **kwargs)
-        if teacher:
+        if allow_all:
+            # Administrator barcha dars va o'quvchilarni baholay oladi.
+            self.fields["lesson"].queryset = Lesson.objects.select_related("group")
+            self.fields["student"].queryset = StudentProfile.objects.select_related("user")
+        elif teacher:
             allowed = Lesson.objects.filter(group__teachers=teacher, teacher=teacher)
             self.fields["lesson"].queryset = allowed
             self.fields["student"].queryset = StudentProfile.objects.filter(group__in=allowed.values("group_id"))

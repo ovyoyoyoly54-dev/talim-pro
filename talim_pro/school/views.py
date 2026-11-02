@@ -4,7 +4,8 @@ from django.contrib.auth.hashers import make_password
 import secrets
 from django.utils.text import slugify
 from django.contrib.auth.decorators import login_required
-from django.core.exceptions import PermissionDenied
+from django.core.exceptions import PermissionDenied, ValidationError
+
 from django.db import IntegrityError, transaction
 from django.db.models import Avg, Sum, Count, Q
 from django.shortcuts import render, redirect, get_object_or_404
@@ -429,7 +430,10 @@ def group_detail(request, group_id):
         messages.success(request, f"{teacher.get_full_name() or teacher.username} guruhga biriktirildi.")
         return redirect("group_detail", group_id=group.pk)
     if request.method == "POST" and request.POST.get("action") == "assign_student":
-        student = get_object_or_404(StudentProfile, pk=request.POST.get("student_id"))
+                # Faqat baho va davomati yo'q o'quvchini ko'chirish mumkin, aks holda eski
+        # qaydlar boshqa guruh darsiga bog'liq bo'lib qoladi.
+        movable = StudentProfile.objects.exclude(group=group).exclude(grades__isnull=False).exclude(attendance__isnull=False)
+        student = get_object_or_404(movable, pk=request.POST.get("student_id"))
         student.group = group
         student.save(update_fields=["group"])
         messages.success(request, f"{student.user.get_full_name() or student.user.username} guruhga biriktirildi.")
@@ -494,7 +498,7 @@ def grade_lesson(request):
     if request.user.role != User.Role.TEACHER and not is_admin(request.user):
         raise PermissionDenied
     if request.method == "POST":
-        form = GradeRecordForm(request.POST, teacher=request.user if not is_admin(request.user) else None)
+        form = GradeRecordForm(request.POST, teacher=request.user, allow_all=is_admin(request.user))
         if form.is_valid():
             lesson, student = form.cleaned_data["lesson"], form.cleaned_data["student"]
             if not is_admin(request.user) and (lesson.teacher_id != request.user.id or not lesson.group.teachers.filter(id=request.user.id).exists()):
@@ -533,14 +537,9 @@ def grade_lesson(request):
                     messages.success(request, "Baho va davomat saqlandi. Ota-ona SMS raqami biriktirilmagan.")
                 return redirect("dashboard")
     else:
-        form = GradeRecordForm(teacher=request.user if not is_admin(request.user) else None)
+        form = GradeRecordForm(teacher=request.user, allow_all=is_admin(request.user))
 
-    # Administrator sees all lessons and students; teachers are limited by the form's teacher filter.
-    if is_admin(request.user):
-        form.fields["lesson"].queryset = Lesson.objects.all()
-        form.fields["student"].queryset = StudentProfile.objects.all()
-
-    return render(request, "school/grade_form.html", {"form": form})
+        return render(request, "school/grade_form.html", {"form": form})
 
 @login_required
 def schedule(request):
@@ -607,9 +606,11 @@ def lesson_reschedule(request, lesson_id):
         try:
             lesson.full_clean()
             lesson.save()
-        except ValidationError as error:
+                except ValidationError as error:
             lesson.starts_at = previous_starts_at
-            form.add_error(None, error)
+            # Model xatolari group/teacher/room maydonlariga tegishli, ular bu formada
+            # yo'q; shuning uchun umumiy (non-field) xato sifatida ko'rsatiladi.
+            form.add_error(None, error.messages)
         else:
             messages.success(request, "Darsning sana va vaqti yangilandi.")
             return redirect("schedule")

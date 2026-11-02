@@ -59,8 +59,9 @@ def _send_code(phone, code):
             timeout=12,
             allow_redirects=False,
         )
-        response.raise_for_status()
-        return True
+        # raise_for_status() 3xx javoblarni o'tkazib yuboradi; redirect o'chirilgani
+        # uchun bunday javob SMS yuborilmaganini bildiradi.
+        return 200 <= response.status_code < 300
     except requests.RequestException:
         # Never log the OTP, destination, token, provider URL, or provider response.
         return False

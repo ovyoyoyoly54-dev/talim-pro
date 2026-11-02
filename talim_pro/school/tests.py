@@ -980,6 +980,84 @@ class LoginRedirectTests(TestCase):
         )
         StudentProfile.objects.create(user=user, group=StudyGroup.objects.create(name="Login A1", subject="Matematika"))
         self.client.force_login(user)
-        response = self.client.get(reverse("login"))
+                response = self.client.get(reverse("login"))
         self.assertRedirects(response, reverse("dashboard"))
+
+
+class BugfixRegressionTests(TestCase):
+    def setUp(self):
+        self.admin = User.objects.create_user("fix_admin", password="StrongPassword123!", role=User.Role.ADMIN)
+        self.teacher = User.objects.create_user("fix_teacher", password="StrongPassword123!", role=User.Role.TEACHER)
+        self.group = StudyGroup.objects.create(name="Fix A1", subject="Ingliz tili")
+        self.group.teachers.add(self.teacher)
+        self.other_group = StudyGroup.objects.create(name="Fix B1", subject="Matematika")
+        self.student_user = User.objects.create_user("fix_student", password="StrongPassword123!", role=User.Role.STUDENT)
+        self.profile = StudentProfile.objects.create(user=self.student_user, group=self.group)
+        self.start = timezone.now().replace(second=0, microsecond=0) + timedelta(days=2)
+        self.lesson = Lesson.objects.create(group=self.group, teacher=self.teacher, title="Fix dars", starts_at=self.start)
+        self.reason = GradeReason.objects.create(title="Fix sabab")
+
+    def test_reschedule_conflict_shows_form_error_instead_of_500(self):
+        other = Lesson.objects.create(
+            group=self.group, teacher=self.teacher, title="Ikkinchi dars",
+            starts_at=self.start + timedelta(days=1),
+        )
+        self.client.force_login(self.teacher)
+        response = self.client.post(
+            reverse("lesson_reschedule", kwargs={"lesson_id": other.pk}),
+            {"starts_at": timezone.localtime(self.start).strftime("%Y-%m-%dT%H:%M")},
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Bu guruhda aynan shu vaqtda dars mavjud.")
+        other.refresh_from_db()
+        self.assertEqual(other.starts_at, self.start + timedelta(days=1))
+
+    def test_admin_can_submit_grade(self):
+        self.client.force_login(self.admin)
+        response = self.client.post(reverse("grade_lesson"), {
+            "lesson": self.lesson.pk, "student": self.profile.pk, "score": "10",
+            "attendance": Attendance.Status.PRESENT,
+        })
+        self.assertRedirects(response, reverse("dashboard"))
+        self.assertEqual(GradeRecord.objects.get(lesson=self.lesson, student=self.profile).score, 10)
+
+    def test_failed_low_grade_save_leaves_no_temporary_record(self):
+        other_user = User.objects.create_user("fix_other_student", role=User.Role.STUDENT)
+        other_profile = StudentProfile.objects.create(user=other_user, group=self.other_group)
+        record = GradeRecord(lesson=self.lesson, student=other_profile, score=5, teacher=self.teacher)
+        record._pending_reasons = [self.reason]
+        with self.assertRaises(ValidationError):
+            record.save()
+        self.assertFalse(GradeRecord.objects.filter(student=other_profile).exists())
+
+    @patch.dict("os.environ", {"SMS_API_URL": "https://sms.example.com/send", "SMS_API_TOKEN": "test-token"})
+    @patch("school.phone_auth.requests.post")
+    def test_sms_redirect_response_is_not_treated_as_sent(self, post):
+        from .phone_auth import _send_code
+        post.return_value.status_code = 302
+        self.assertFalse(_send_code("+998901234567", "123456"))
+        post.return_value.status_code = 200
+        self.assertTrue(_send_code("+998901234567", "123456"))
+
+    def test_group_detail_rejects_moving_student_with_grades(self):
+        GradeRecord.objects.create(lesson=self.lesson, student=self.profile, score=9, teacher=self.teacher)
+        self.client.force_login(self.admin)
+        response = self.client.post(
+            reverse("group_detail", kwargs={"group_id": self.other_group.pk}),
+            {"action": "assign_student", "student_id": self.profile.pk},
+        )
+        self.assertEqual(response.status_code, 404)
+        self.profile.refresh_from_db()
+        self.assertEqual(self.profile.group, self.group)
+
+    def test_account_settings_rejects_username_differing_only_by_case(self):
+        User.objects.create_user("Ali", password="StrongPassword123!", role=User.Role.STUDENT)
+        self.client.force_login(self.teacher)
+        response = self.client.post(reverse("settings_panel"), {
+            "action": "account_settings", "username": "ali",
+            "first_name": "", "last_name": "", "email": "", "phone": "",
+        })
+        self.assertEqual(response.status_code, 200)
+        self.teacher.refresh_from_db()
+        self.assertEqual(self.teacher.username, "fix_teacher")
 
