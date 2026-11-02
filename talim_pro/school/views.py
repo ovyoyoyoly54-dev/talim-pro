@@ -16,7 +16,7 @@ from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.http import require_GET
 from xml.sax.saxutils import escape
-from .forms import GradeRecordForm, PhoneResetRequestForm, PhoneOTPForm, PhonePasswordResetForm, SignupRequestForm, SignupCompleteForm, AccountClosureConfirmForm, PlatformSettingsForm, AccountSettingsForm, StyledPasswordChangeForm, AddStudentToGroupForm, CreateStudentInGroupForm, CreateTeacherForm, LessonCreateForm, LessonRescheduleForm
+from .forms import GradeRecordForm, PhoneResetRequestForm, PhoneOTPForm, PhonePasswordResetForm, SignupRequestForm, SignupCompleteForm, AccountClosureConfirmForm, PlatformSettingsForm, AccountSettingsForm, StyledPasswordChangeForm, AddStudentToGroupForm, CreateStudentInGroupForm, CreateTeacherForm, FirstLoginCredentialsForm, LessonCreateForm, LessonRescheduleForm
 from .models import User, StudyGroup, StudentProfile, Lesson, GradeRecord, Attendance, SMSLog, PhoneOTP, PlatformSettings
 from .phone_auth import consume_phone_otp, issue_phone_otp, normalize_phone
 from .sms import send_parent_sms
@@ -458,7 +458,7 @@ def group_detail(request, group_id):
 @login_required
 def dashboard(request):
     user = request.user
-    context = {"today": timezone.localdate()}
+    context = {"today": timezone.localdate(), "must_change_credentials": user.must_change_credentials}
     if is_admin(user):
         context.update({
             "group_count": StudyGroup.objects.count(),
@@ -492,6 +492,23 @@ def dashboard(request):
     else:
         raise PermissionDenied
     return render(request, "school/dashboard.html", context)
+
+@login_required
+def first_login_credentials(request):
+    if request.user.role != User.Role.STUDENT or not request.user.must_change_credentials:
+        return redirect("dashboard")
+    form = FirstLoginCredentialsForm(request.POST or None, user=request.user)
+    if request.method == "POST" and form.is_valid():
+        user = request.user
+        user.username = form.cleaned_data["username"]
+        user.set_password(form.cleaned_data["new_password1"])
+        user.must_change_credentials = False
+        user.save(update_fields=["username", "password", "must_change_credentials"])
+        update_session_auth_hash(request, user)
+        messages.success(request, "Login va parolingiz yangilandi. Endi tizimdan foydalanishingiz mumkin.")
+        return redirect("dashboard")
+    return render(request, "school/first_login_credentials.html", {"form": form})
+
 
 @login_required
 def grade_lesson(request):
@@ -682,6 +699,7 @@ def add_student_to_group(request, group_id):
                     password=temporary_password,
                     role=User.Role.STUDENT,
                     is_active=True,
+                    must_change_credentials=True,
                 )
                 StudentProfile.objects.create(
                     user=student_user,

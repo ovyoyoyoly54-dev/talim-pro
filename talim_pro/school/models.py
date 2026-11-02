@@ -12,6 +12,7 @@ class User(AbstractUser):
         PARENT = "parent", "Ota-ona"
     role = models.CharField("rol", max_length=12, choices=Role.choices, default=Role.STUDENT)
     phone = models.CharField("telefon raqami", max_length=24, blank=True)
+    must_change_credentials = models.BooleanField("login va parolni almashtirishi kerak", default=False)
     # For a parent account, students are connected through StudentProfile.parent.
 
     class Meta(AbstractUser.Meta):
