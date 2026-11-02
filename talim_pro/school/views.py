@@ -657,10 +657,9 @@ def add_student_to_group(request, group_id):
     if user.role != User.Role.TEACHER and not is_admin(user):
         raise PermissionDenied
     group = get_object_or_404(StudyGroup, pk=group_id)
-    if user.role == User.Role.TEACHER and (
-        not group.teachers.filter(id=user.id).exists()
-        or not group.lessons.filter(teacher=user).exists()
-    ):
+    # Guruhga biriktirilgan o‘qituvchi o‘quvchi qo‘sha oladi.
+    # Dars biriktirilishi baho qo‘yish uchun kerak, o‘quvchi qo‘shish uchun emas.
+    if user.role == User.Role.TEACHER and not group.teachers.filter(id=user.id).exists():
         raise PermissionDenied
 
     form = CreateStudentInGroupForm(request.POST or None)
