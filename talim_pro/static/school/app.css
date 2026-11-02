@@ -222,3 +222,102 @@ tbody tr:hover td{background:#fbfcff}
 @media(prefers-reduced-motion:reduce){
   .stat-card:after{transition:none}
 }
+
+
+/* Add-student page — focused, calm and responsive workflow */
+.add-student-page{max-width:1120px;margin:0 auto}
+.add-student-heading{
+  display:flex;align-items:center;justify-content:space-between;gap:24px;
+  padding:28px 30px;margin-bottom:18px;border-radius:19px;
+  background:radial-gradient(circle at 92% 10%,#ffffff25,transparent 28%),linear-gradient(115deg,#112744,#244b7d);
+  color:#fff;box-shadow:0 14px 32px #10254420
+}
+.add-student-heading-copy{min-width:0}
+.add-student-back{display:inline-flex;margin-bottom:17px;color:#c8d8ef;font-size:11px;font-weight:700}
+.add-student-back:hover{color:#fff}
+.add-student-heading .eyebrow{display:block;color:#a9c4ee;font-size:9px;letter-spacing:1.5px}
+.add-student-heading h2{margin:7px 0 5px;color:#fff;font-size:clamp(23px,3vw,30px);letter-spacing:-.8px}
+.add-student-heading p{margin:0;color:#d0dced;font-size:12px}
+.add-student-heading-mark{
+  display:grid;place-items:center;flex:none;width:64px;height:64px;border-radius:19px;
+  border:1px solid #ffffff30;background:#ffffff13;color:#fff;font-size:34px;font-weight:300
+}
+.add-student-summary{
+  display:flex;align-items:center;gap:14px;padding:17px 20px;margin-bottom:18px;
+  border:1px solid #e5ecf6;border-radius:15px;background:#fff;box-shadow:0 5px 18px #10254408
+}
+.add-student-summary-icon{display:grid;place-items:center;width:42px;height:42px;flex:none;border-radius:13px;background:#edf3ff;color:#356ce0;font-size:19px}
+.add-student-summary>div:nth-child(2){flex:1;min-width:0}
+.add-student-summary strong{display:block;color:#243a57;font-size:12px}
+.add-student-summary p{margin:3px 0 0;color:#8391a4;font-size:10.5px;line-height:1.5}
+.add-student-count{color:#244e91;font-size:20px;font-weight:850;font-variant-numeric:tabular-nums}
+.add-student-count small{display:block;color:#8795a8;font-size:9px;font-weight:650;text-align:right}
+.add-student-panel{padding:25px 27px}
+.add-student-panel-head{display:flex;align-items:flex-start;justify-content:space-between;gap:18px;margin-bottom:20px}
+.add-student-panel-head .eyebrow{color:#6f8ab6;font-size:9px}
+.add-student-panel-head h3{margin:5px 0 4px;color:#1d3452;font-size:17px;letter-spacing:-.35px}
+.add-student-panel-head p{margin:0;font-size:11px}
+.add-student-secure{display:inline-flex;align-items:center;gap:6px;flex:none;padding:7px 10px;border-radius:999px;background:#eaf8f1;color:#18845d;font-size:9px;font-weight:800}
+.add-student-search{display:flex;align-items:center;gap:9px;padding:11px;margin-bottom:15px;border:1px solid #e8eef6;border-radius:13px;background:#f8faff}
+.add-student-search-field{display:flex;align-items:center;gap:9px;flex:1;min-width:0}
+.add-student-search-field>span{color:#8194b1;font-size:24px;line-height:1}
+.add-student-search-field input{width:100%;min-width:0;min-height:42px;margin:0;padding:9px 11px;border:1px solid #e0e8f3;border-radius:10px;background:#fff;color:#263c58;font-size:12px}
+.add-student-search-field input:focus{outline:0;border-color:#83a5e8;box-shadow:0 0 0 3px #356ce018}
+.add-student-search .button{min-height:42px;padding:10px 16px}
+.add-student-search .button-outline{border:1px solid #e0e7f1}
+.add-student-list{display:grid;gap:8px}
+.add-student-row{
+  display:flex;align-items:center;gap:14px;min-width:0;padding:13px 14px;
+  border:1px solid #edf1f7;border-radius:13px;background:#fff;
+  transition:border-color .16s,background .16s,transform .16s
+}
+.add-student-row:hover{border-color:#d5e2f8;background:#fbfcff;transform:translateY(-1px)}
+.add-student-person{display:flex;align-items:center;gap:11px;flex:1;min-width:0}
+.add-student-avatar{
+  display:grid;place-items:center;width:40px;height:40px;flex:none;border-radius:13px;
+  background:linear-gradient(145deg,#eaf1ff,#dbe7ff);color:#315fae;font-size:14px;font-weight:850
+}
+.add-student-person-copy{min-width:0}
+.add-student-person-copy strong,.add-student-person-copy span{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.add-student-person-copy strong{color:#243a57;font-size:12px}
+.add-student-person-copy span{margin-top:3px;color:#91a0b2;font-size:10px}
+.add-student-available{display:inline-flex;align-items:center;gap:6px;color:#7a8b9f;font-size:9px;white-space:nowrap}
+.add-student-available i{width:6px;height:6px;border-radius:50%;background:#25a876}
+.add-student-action{margin:0;flex:none}
+.add-student-action .button{min-height:38px;padding:8px 13px;font-size:10px}
+.add-student-footnote{display:flex;align-items:center;gap:8px;margin:13px 4px;color:#8290a3;font-size:10px}
+.add-student-footnote span{color:#527ac1;font-size:14px}
+.add-student-empty{display:grid;justify-items:center;text-align:center;padding:42px 20px}
+.add-student-empty-icon{display:grid;place-items:center;width:54px;height:54px;border-radius:17px;background:#f0f4fb;color:#6d85aa;font-size:29px}
+.add-student-empty h4{margin:15px 0 5px;color:#2a405e;font-size:14px}
+.add-student-empty p{max-width:390px;margin:0 0 15px;color:#8391a4;font-size:11px;line-height:1.7}
+.add-student-empty .button{min-height:39px}
+.add-student-page .message{margin-bottom:14px;padding:12px 15px;border-radius:11px;font-size:11px}
+.add-student-page .message p{margin:3px 0}
+@media(max-width:760px){
+  .add-student-heading{padding:21px 19px;border-radius:15px}
+  .add-student-heading-mark{width:48px;height:48px;border-radius:14px;font-size:27px}
+  .add-student-summary{padding:14px;gap:11px}
+  .add-student-summary p{font-size:10px}
+  .add-student-panel{padding:18px 15px}
+  .add-student-panel-head{display:block}
+  .add-student-secure{margin-top:12px}
+  .add-student-search{display:grid;grid-template-columns:1fr auto}
+  .add-student-search-field{grid-column:1/-1}
+  .add-student-search .button{width:100%}
+  .add-student-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;padding:12px}
+  .add-student-person{grid-column:1/-1}
+  .add-student-available{grid-column:1;grid-row:2}
+  .add-student-action{grid-column:2;grid-row:2}
+  .add-student-action .button{min-width:105px}
+}
+@media(max-width:380px){
+  .add-student-heading{padding:18px 15px}
+  .add-student-heading-mark{display:none}
+  .add-student-count{font-size:17px}
+  .add-student-search{grid-template-columns:1fr}
+  .add-student-search-field{grid-column:auto}
+  .add-student-row{grid-template-columns:1fr}
+  .add-student-person,.add-student-available,.add-student-action{grid-column:1;grid-row:auto}
+  .add-student-action .button{width:100%}
+}
