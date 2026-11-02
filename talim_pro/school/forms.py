@@ -371,3 +371,38 @@ class CreateTeacherForm(forms.Form):
         if not phone:
             raise ValidationError("Telefon raqamini +998 formatida kiriting.")
         return phone
+
+
+class FirstLoginCredentialsForm(forms.Form):
+    username = forms.CharField(
+        max_length=150, label="Yangi login",
+        widget=forms.TextInput(attrs={"class": "input", "autocomplete": "username"}),
+    )
+    new_password1 = forms.CharField(
+        label="Yangi parol", min_length=8,
+        widget=forms.PasswordInput(attrs={"class": "input", "autocomplete": "new-password"}),
+    )
+    new_password2 = forms.CharField(
+        label="Yangi parolni takrorlang",
+        widget=forms.PasswordInput(attrs={"class": "input", "autocomplete": "new-password"}),
+    )
+
+    def __init__(self, *args, user, **kwargs):
+        self.user = user
+        super().__init__(*args, **kwargs)
+        self.fields["username"].initial = user.username
+
+    def clean_username(self):
+        username = self.cleaned_data["username"].strip()
+        if User.objects.filter(username__iexact=username).exclude(pk=self.user.pk).exists():
+            raise ValidationError("Bu login band. Boshqasini tanlang.")
+        return username
+
+    def clean(self):
+        data = super().clean()
+        password = data.get("new_password1")
+        if password:
+            validate_password(password, self.user)
+        if password and password != data.get("new_password2"):
+            self.add_error("new_password2", "Parollar bir xil emas.")
+        return data
