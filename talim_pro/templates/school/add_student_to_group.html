@@ -1,68 +1,100 @@
 {% extends "base.html" %}
 {% load static %}
-{% block title %}{{ group.name }} — o'quvchi qo'shish {% endblock %}
-{% block page_heading %}{{ group.name }} — o'quvchi qo'shish{% endblock %}
+{% block title %}{{ group.name }} — O‘quvchi qo‘shish{% endblock %}
+{% block page_heading %}O‘quvchi qo‘shish{% endblock %}
 {% block content %}
-<div class="welcome-row">
-  <div>
-    <h2>{{ group.name }} — o'quvchi qo'shish</h2>
-    <p class="muted">{{ group.subject }} guruhiga yangi o'quvchini ro'yxatdan o'tganlardan tanlang.</p>
-  </div>
-  <a class="button button-outline" href="{% url 'dashboard' %}">↰ Bosh sahifaga qaytish</a>
-</div>
-
-<div class="panel">
-  <div class="panel-heading">
-    <div>
-      <h3>O'quvchini tanlash</h3>
-      <p class="muted">Faqat STUDENT roli bilan ro'yxatdan o'tgan va hali hech bir guruhga biriktirilmagan foydalanuvchilar ko'rinadi.</p>
+<section class="add-student-page">
+  <div class="add-student-heading">
+    <div class="add-student-heading-copy">
+      <a class="add-student-back" href="{% url 'dashboard' %}">← Boshqaruv paneliga qaytish</a>
+      <span class="eyebrow">GURUHNI BOSHQARISH</span>
+      <h2>{{ group.name }}</h2>
+      <p>{{ group.subject }} guruhiga yangi o‘quvchi biriktiring.</p>
     </div>
+    <div class="add-student-heading-mark" aria-hidden="true">＋</div>
+  </div>
+
+  <div class="add-student-summary">
+    <div class="add-student-summary-icon" aria-hidden="true">👥</div>
+    <div>
+      <strong>O‘quvchilarni guruhga qo‘shish</strong>
+      <p>Faqat faol va hozircha boshqa guruhga biriktirilmagan o‘quvchilar ko‘rsatiladi.</p>
+    </div>
+    <span class="add-student-count">{{ available_students|length }} <small>mavjud</small></span>
   </div>
 
   {% for message in messages %}
-    <div class="message {{ message.tags }}">{{ message }}</div>
+    <div class="message {{ message.tags }}" role="status">{{ message }}</div>
   {% endfor %}
 
   {% if form.errors %}
-    <div class="message error">
+    <div class="message error" role="alert">
       {% for field_errors in form.errors.values %}
         {% for error in field_errors %}
-          {{ error }}<br>
+          <p>{{ error }}</p>
         {% endfor %}
       {% endfor %}
     </div>
   {% endif %}
 
-  <form method="get" class="stack-form" style="display:flex; gap:8px; align-items:flex-end; margin-bottom:16px; flex-wrap:wrap;">
-    {{ form.search }}
-    <button class="button button-primary" type="submit">Qidirish</button>
-    {% if search_query %}
-      <a class="button button-outline" href="{% url 'add_student_to_group' group_id=group.pk %}">Bekor qilish</a>
-    {% endif %}
-  </form>
-
-  {% if available_students %}
-    <div class="student-list">
-      {% for student in available_students %}
-        <div class="student-row">
-          <div class="student-info">
-            <span class="student-badge">{{ student.first_name|first|upper|default:student.username|first|upper }}</span>
-            <div class="student-meta">
-              <b>{{ student.get_full_name|default:student.username }}</b>
-            </div>
-          </div>
-          <form method="post" action="{% url 'add_student_to_group' group_id=group.pk %}" class="inline" style="margin:0; display:inline;">
-            {% csrf_token %}
-            <input type="hidden" name="student" value="{{ student.pk }}">
-            <button class="button button-primary button-small" type="submit">Qo'shish</button>
-          </form>
-        </div>
-      {% empty %}
-        <p class="empty">Qidiruv bo'yicha mos o'quvchi topilmadi yoki hali qo'shish uchun o'quvchilar yo'q.</p>
-      {% endfor %}
+  <section class="panel add-student-panel">
+    <div class="add-student-panel-head">
+      <div>
+        <span class="eyebrow">O‘QUVCHILAR RO‘YXATI</span>
+        <h3>O‘quvchini tanlang</h3>
+        <p class="muted">Ism yoki familiya orqali qidirib, kerakli o‘quvchini qo‘shing.</p>
+      </div>
+      <span class="add-student-secure">✓ Xavfsiz biriktirish</span>
     </div>
-  {% else %}
-    <p class="empty">Hozircha guruhga qo'shish uchun o'quvchi yo'q.</p>
-  {% endif %}
-</div>
+
+    <form method="get" class="add-student-search" role="search">
+      <label class="add-student-search-field" for="{{ form.search.id_for_label }}">
+        <span aria-hidden="true">⌕</span>
+        {{ form.search }}
+      </label>
+      <button class="button button-primary" type="submit">Qidirish</button>
+      {% if search_query %}
+        <a class="button button-outline" href="{% url 'add_student_to_group' group_id=group.pk %}">Tozalash</a>
+      {% endif %}
+    </form>
+
+    {% if available_students %}
+      <div class="add-student-list">
+        {% for student in available_students %}
+          <article class="add-student-row">
+            <div class="add-student-person">
+              <span class="add-student-avatar">{{ student.first_name|first|upper|default:student.username|first|upper }}</span>
+              <div class="add-student-person-copy">
+                <strong>{{ student.get_full_name|default:student.username }}</strong>
+                <span>@{{ student.username }}</span>
+              </div>
+            </div>
+            <span class="add-student-available"><i></i> Guruhga biriktirilmagan</span>
+            <form method="post" action="{% url 'add_student_to_group' group_id=group.pk %}" class="add-student-action">
+              {% csrf_token %}
+              <input type="hidden" name="student" value="{{ student.pk }}">
+              <button class="button button-primary button-small" type="submit">
+                <span aria-hidden="true">＋</span> Qo‘shish
+              </button>
+            </form>
+          </article>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="add-student-empty">
+        <span class="add-student-empty-icon" aria-hidden="true">⌕</span>
+        {% if search_query %}
+          <h4>Hech kim topilmadi</h4>
+          <p>“{{ search_query }}” bo‘yicha mos o‘quvchi yo‘q. Ism yoki familiyani tekshirib ko‘ring.</p>
+          <a class="button button-outline" href="{% url 'add_student_to_group' group_id=group.pk %}">Barcha o‘quvchilarni ko‘rish</a>
+        {% else %}
+          <h4>Hozircha o‘quvchilar yo‘q</h4>
+          <p>Guruhga qo‘shish mumkin bo‘lgan faol o‘quvchilar topilmadi.</p>
+        {% endif %}
+      </div>
+    {% endif %}
+  </section>
+
+  <p class="add-student-footnote"><span aria-hidden="true">ⓘ</span> O‘quvchi qo‘shilgach, u avtomatik ravishda ushbu guruhga biriktiriladi.</p>
+</section>
 {% endblock %}
