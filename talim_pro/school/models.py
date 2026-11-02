@@ -190,7 +190,7 @@ class GradeRecord(models.Model):
 
     def save(self, *args, **kwargs):
         pending_reasons = getattr(self, "_pending_reasons", None)
-                if self.score <= 8 and pending_reasons is not None:
+        if self.score <= 8 and pending_reasons is not None:
             final_score = self.score
             # Vaqtinchalik 9 baho va sabablar bitta tranzaksiyada saqlanadi:
             # yakuniy tekshiruv xato bersa, bazada noto'g'ri baho qolmaydi.
