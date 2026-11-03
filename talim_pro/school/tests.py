@@ -1023,6 +1023,16 @@ class BugfixRegressionTests(TestCase):
         self.assertRedirects(response, reverse("dashboard"))
         self.assertEqual(GradeRecord.objects.get(lesson=self.lesson, student=self.profile).score, 10)
 
+    def test_invalid_grade_post_renders_form_errors_instead_of_returning_none(self):
+        self.client.force_login(self.admin)
+        response = self.client.post(reverse("grade_lesson"), {
+            "lesson": self.lesson.pk, "student": self.profile.pk, "score": "99",
+            "attendance": Attendance.Status.PRESENT,
+        })
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("score", response.context["form"].errors)
+        self.assertFalse(GradeRecord.objects.filter(lesson=self.lesson, student=self.profile).exists())
+
     def test_failed_low_grade_save_leaves_no_temporary_record(self):
         other_user = User.objects.create_user("fix_other_student", role=User.Role.STUDENT)
         other_profile = StudentProfile.objects.create(user=other_user, group=self.other_group)
