@@ -556,7 +556,8 @@ def grade_lesson(request):
     else:
         form = GradeRecordForm(teacher=request.user, allow_all=is_admin(request.user))
 
-        return render(request, "school/grade_form.html", {"form": form})
+    # Invalid POST requests must re-render the bound form with validation errors.
+    return render(request, "school/grade_form.html", {"form": form})
 
 @login_required
 def schedule(request):
