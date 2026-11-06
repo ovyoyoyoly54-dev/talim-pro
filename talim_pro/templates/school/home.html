@@ -1,49 +1,125 @@
 {% extends "base.html" %}
 {% load static %}
-{% block title %}{{ platform_settings.site_name|default:"TA’LIM PRO" }} — O‘quv markazini boshqarish{% endblock %}
-{% block meta_description %}{{ platform_settings.home_description|default:"O‘quv markazidagi darslar, baholar, davomat va ota-onalar bilan aloqani TA’LIM PRO platformasida boshqaring." }}{% endblock %}
+{% block title %}{{ platform_settings.site_name|default:"TA’LIM PRO" }} — O‘quv markazlari uchun yagona platforma{% endblock %}
+{% block meta_description %}{{ platform_settings.home_description|default:"O‘quv markazingizdagi guruhlar, dars jadvali, baholar va davomatni yagona platformada boshqaring." }}{% endblock %}
 {% block robots_meta %}index,follow{% endblock %}
 {% block canonical_meta %}<link rel="canonical" href="{{ canonical_url }}">{% endblock %}
 {% block open_graph_meta %}
 <meta property="og:type" content="website">
 <meta property="og:locale" content="uz_UZ">
 <meta property="og:site_name" content="{{ platform_settings.site_name|default:'TA’LIM PRO' }}">
-<meta property="og:title" content="{{ platform_settings.site_name|default:'TA’LIM PRO' }} — O‘quv markazini boshqarish">
-<meta property="og:description" content="{{ platform_settings.home_description|default:'Darslar, baholar, davomat va ota-onalar bilan aloqani bitta platformada boshqaring.' }}">
+<meta property="og:title" content="{{ platform_settings.site_name|default:'TA’LIM PRO' }} — O‘quv markazlari uchun">
+<meta property="og:description" content="{{ platform_settings.home_description|default:'O‘quv jarayonini bitta qulay platformada boshqaring.' }}">
 <meta property="og:url" content="{{ canonical_url }}">
 <meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{% static 'school/icon-512.png' %}">
 {% endblock %}
 {% block content %}
 <div class="public-home">
   <header class="public-nav">
-    <a class="brand" href="{% url 'home' %}"><span class="brand-mark">T</span><span>{{ platform_settings.site_name|default:"TA’LIM PRO" }}<small>O‘quv markazi</small></span></a>
-    <a class="button button-primary" href="{% url 'login' %}">Tizimga kirish <span aria-hidden="true">→</span></a>
+    <a class="brand" href="{% url 'home' %}" aria-label="TA'LIM PRO bosh sahifa">
+      <span class="brand-mark">T</span><span>{{ platform_settings.site_name|default:"TA’LIM PRO" }}<small>TA’LIM BOSHQARUVI</small></span>
+    </a>
+    <nav class="public-nav-links" aria-label="Asosiy navigatsiya">
+      <a href="#imkoniyatlar">Imkoniyatlar</a>
+      <a href="#kimlar-uchun">Kimlar uchun</a>
+      <a href="#qanday-ishlaydi">Qanday ishlaydi</a>
+      <a href="#aloqa">Aloqa</a>
+    </nav>
+    <a class="button button-primary" href="{% url 'login' %}">Platformaga kirish <span aria-hidden="true">→</span></a>
   </header>
 
-  <section class="public-hero" aria-labelledby="hero-title">
-    <div class="hero-copy">
-      <span class="pill pill-blue">O‘QUV MARKAZI UCHUN</span>
-      <h1 id="hero-title">{{ platform_settings.home_heading|default:"Ta’lim jarayoni bitta joyda." }}</h1>
-      <p>{{ platform_settings.home_description|default:"Dars jadvali, baholar va davomatni tartibli boshqaring. O‘qituvchi, o‘quvchi va ota-onalar kerakli ma’lumotni o‘z roliga mos sahifada ko‘radi." }}</p>
-      <div class="hero-actions"><a class="button button-primary" href="{% url 'login' %}">Platformaga kirish <span aria-hidden="true">→</span></a><a class="text-link" href="#imkoniyatlar">Imkoniyatlarni ko‘rish ↓</a></div>
-      <p class="hero-note">Telefon va kompyuterda foydalanish uchun moslashtirilgan.</p>
-    </div>
-    <div class="hero-visual" aria-hidden="true">
-      <div class="visual-orbit"></div>
-      <div class="preview-card"><div class="preview-top"><span class="preview-brand"><i>T</i> TA’LIM PRO</span><span class="preview-dot"></span></div><div class="preview-greeting">O‘quv jarayoni <b>bir joyda</b></div><div class="preview-stats"><div><small>Guruhlar</small><b>12</b></div><div><small>O‘quvchilar</small><b>248</b></div></div><div class="preview-row"><span class="preview-calendar">12<br><small>OKT</small></span><span><b>Matematika</b><small>Algebra · 10:30</small></span><i>→</i></div><div class="preview-row"><span class="preview-calendar blue-tile">14<br><small>OKT</small></span><span><b>Ingliz tili</b><small>Intermediate · 14:00</small></span><i>→</i></div></div>
-      <div class="floating-score"><span>O‘rtacha baho</span><b>8.6 <small>/ 10</small></b></div>
-    </div>
-  </section>
+  <main>
+    <section class="public-hero" aria-labelledby="hero-title">
+      <div class="hero-copy">
+        <span class="pill pill-blue">O‘QUV MARKAZLARI UCHUN RAQAMLI YECHIM</span>
+        <h1 id="hero-title">{{ platform_settings.home_heading|default:"Ta’lim jarayonini boshqarish — endi ancha oson." }}</h1>
+        <p>{{ platform_settings.home_description|default:"Guruhlar, dars jadvali, baholar va davomatni yagona joyda boshqaring. Jamoangizga tartibli ish muhiti, o‘quvchilarga esa tushunarli kuzatuv imkoniyatini taqdim eting." }}</p>
+        <div class="hero-actions">
+          <a class="button button-primary" href="{% url 'login' %}">Tizimga kirish <span aria-hidden="true">→</span></a>
+          <a class="text-link" href="#imkoniyatlar">Imkoniyatlarni ko‘rish ↓</a>
+        </div>
+        <div class="hero-assurance"><span class="assurance-dot"></span> Telefon, planshet va kompyuterga mos</div>
+      </div>
+      <div class="hero-visual" aria-label="TA'LIM PRO boshqaruv panelining namunaviy ko‘rinishi">
+        <div class="visual-orbit"></div>
+        <div class="preview-card">
+          <div class="preview-top"><span class="preview-brand"><i>T</i> TA’LIM PRO</span><span class="preview-status">NAMUNAVIY KO‘RINISH</span></div>
+          <div class="preview-greeting">Xush kelibsiz! <b>O‘quv jarayoni bir joyda.</b></div>
+          <div class="preview-stats"><div><small>Guruhlar</small><b>—</b></div><div><small>O‘quvchilar</small><b>—</b></div></div>
+          <div class="preview-row"><span class="preview-calendar">01<br><small>DARS</small></span><span><b>Dars jadvali</b><small>Guruhlar va mashg‘ulotlar</small></span><i>→</i></div>
+          <div class="preview-row"><span class="preview-calendar blue-tile">02<br><small>NAZ</small></span><span><b>Baholash va davomat</b><small>O‘quv natijalarini kuzatish</small></span><i>→</i></div>
+          <div class="preview-progress"><span></span></div>
+          <small class="preview-caption">Haqiqiy ma’lumotlar foydalanuvchi kabinetida ko‘rsatiladi</small>
+        </div>
+        <div class="floating-score"><span>Yagona boshqaruv</span><b>Bir platforma</b></div>
+      </div>
+    </section>
 
-  <section class="feature-section" id="imkoniyatlar" aria-labelledby="features-title">
-    <div class="section-intro"><span class="eyebrow">SODDA VA TARTIBLI BOSHQARUV</span><h2 id="features-title">Kundalik ishlar uchun kerakli vositalar</h2><p class="muted">Markaz jamoasi uchun bitta tushunarli ish maydoni.</p></div>
-    <div class="feature-grid">
-      <article class="feature-card"><span class="feature-icon">▦</span><h3>Dars jadvali</h3><p>Guruh, o‘qituvchi, xona va dars vaqtlarini bir jadvalda ko‘ring.</p></article>
-      <article class="feature-card"><span class="feature-icon">✓</span><h3>Baho va davomat</h3><p>Har bir dars natijasini qayd eting, past bahoga izoh va sabab kiriting.</p></article>
-      <article class="feature-card"><span class="feature-icon">♡</span><h3>Ota-ona bilan aloqa</h3><p>Ruxsat berilgan akkauntlarda farzandning o‘quv jarayonini kuzating.</p></article>
-    </div>
-  </section>
+    <section class="public-proof" aria-label="Platforma afzalliklari">
+      <div><b>Yagona tizim</b><span>Kerakli ma’lumot bir joyda</span></div>
+      <div><b>Rollar bo‘yicha kirish</b><span>Har kimga o‘ziga mos kabinet</span></div>
+      <div><b>Mobilga mos</b><span>Istalgan qulay qurilmadan</span></div>
+    </section>
 
-  <section class="public-cta"><div><span class="eyebrow">{{ platform_settings.site_name|default:"TA’LIM PRO" }}</span><h2>O‘quv jarayonini tartib bilan boshqaring.</h2><p>Hisobingiz bo‘lsa, platformaga kirib davom eting.</p>{% if platform_settings.contact_phone or platform_settings.contact_email %}<p>{% if platform_settings.contact_phone %}Aloqa: {{ platform_settings.contact_phone }}{% endif %}{% if platform_settings.contact_phone and platform_settings.contact_email %} · {% endif %}{% if platform_settings.contact_email %}{{ platform_settings.contact_email }}{% endif %}</p>{% endif %}</div><a class="button button-primary" href="{% url 'login' %}">Tizimga kirish <span aria-hidden="true">→</span></a></section>
+    <section class="feature-section" id="imkoniyatlar" aria-labelledby="features-title">
+      <div class="section-intro">
+        <span class="eyebrow">PLATFORMA IMKONIYATLARI</span>
+        <h2 id="features-title">Markaz faoliyatining muhim qismlari — bir joyda</h2>
+        <p class="muted">Kundalik boshqaruvni soddalashtirish uchun kerakli vositalar.</p>
+      </div>
+      <div class="feature-grid">
+        <article class="feature-card"><span class="feature-icon">▦</span><h3>Guruhlar va o‘quvchilar</h3><p>Guruhlar tarkibini, o‘quvchilarni va ularga biriktirilgan ma’lumotlarni tartibli yuriting.</p></article>
+        <article class="feature-card"><span class="feature-icon">◷</span><h3>Dars jadvali</h3><p>Mashg‘ulotlar vaqti, guruhlar hamda o‘qituvchilar jadvalini kuzating.</p></article>
+        <article class="feature-card"><span class="feature-icon">✓</span><h3>Baho va davomat</h3><p>Dars natijalarini qayd eting, baholarga sabab va izohlarni biriktiring.</p></article>
+        <article class="feature-card"><span class="feature-icon">↗</span><h3>Reyting va natijalar</h3><p>O‘quvchilarning o‘zlashtirish ko‘rsatkichlarini tushunarli ko‘rinishda kuzating.</p></article>
+        <article class="feature-card"><span class="feature-icon">◎</span><h3>Ota-onalar kabineti</h3><p>Ota-onalar farzandining o‘quv jarayoniga tegishli ma’lumotlarni ko‘rishi mumkin.</p></article>
+        <article class="feature-card"><span class="feature-icon">▤</span><h3>Bildirishnomalar</h3><p>Ulangan va sozlangan xabarnoma xizmati orqali muhim yangiliklarni yetkazing.</p></article>
+      </div>
+    </section>
+
+    <section class="audience-section" id="kimlar-uchun" aria-labelledby="audience-title">
+      <div class="section-intro">
+        <span class="eyebrow">HAR BIR FOYDALANUVCHI UCHUN</span>
+        <h2 id="audience-title">Bitta platforma, turli imkoniyatlar</h2>
+        <p class="muted">Foydalanuvchi o‘z roliga mos bo‘lim va ma’lumotlardan foydalanadi.</p>
+      </div>
+      <div class="audience-grid">
+        <article><span>01</span><h3>Administrator</h3><p>Markaz, guruhlar, o‘qituvchilar va umumiy jarayonlarni boshqaradi.</p></article>
+        <article><span>02</span><h3>O‘qituvchi</h3><p>Biriktirilgan guruhlari, darslari, baholash va davomat bilan ishlaydi.</p></article>
+        <article><span>03</span><h3>O‘quvchi</h3><p>O‘z dars jadvali, baholari, davomat va natijalarini ko‘radi.</p></article>
+        <article><span>04</span><h3>Ota-ona</h3><p>Farzandining o‘quv jarayoniga oid ruxsat etilgan ma’lumotlarni kuzatadi.</p></article>
+      </div>
+    </section>
+
+    <section class="steps-section" id="qanday-ishlaydi" aria-labelledby="steps-title">
+      <div class="section-intro">
+        <span class="eyebrow">BOSHLASH OSON</span>
+        <h2 id="steps-title">Ish jarayoni qanday tashkil etiladi?</h2>
+      </div>
+      <div class="steps-grid">
+        <article><span>1</span><div><h3>Hisobingizga kiring</h3><p>Administrator taqdim etgan login va parol orqali shaxsiy kabinetni oching.</p></div></article>
+        <article><span>2</span><div><h3>O‘z bo‘limingizni tanlang</h3><p>Rolingizga mos guruhlar, darslar va ma’lumotlar bilan ishlang.</p></div></article>
+        <article><span>3</span><div><h3>Jarayonni kuzating</h3><p>Yangilangan baholar, davomat va jadval ma’lumotlarini ko‘rib boring.</p></div></article>
+      </div>
+    </section>
+
+    <section class="public-cta" id="aloqa">
+      <div>
+        <span class="eyebrow">TA’LIM PRO BILAN</span>
+        <h2>O‘quv jarayonini tartibli boshqarishni boshlang.</h2>
+        <p>Platformadan foydalanayotgan bo‘lsangiz, shaxsiy kabinetingizga kiring.</p>
+        {% if platform_settings.contact_phone or platform_settings.contact_email %}
+        <p class="cta-contact">{% if platform_settings.contact_phone %}Telefon: {{ platform_settings.contact_phone }}{% endif %}{% if platform_settings.contact_phone and platform_settings.contact_email %} · {% endif %}{% if platform_settings.contact_email %}Email: {{ platform_settings.contact_email }}{% endif %}</p>
+        {% endif %}
+      </div>
+      <a class="button button-primary" href="{% url 'login' %}">Platformaga kirish <span aria-hidden="true">→</span></a>
+    </section>
+  </main>
+
+  <footer class="public-footer">
+    <a class="brand" href="{% url 'home' %}"><span class="brand-mark">T</span><span>TA’LIM PRO<small>TA’LIM BOSHQARUVI</small></span></a>
+    <span>© {% now "Y" %} TA’LIM PRO. Barcha huquqlar himoyalangan.</span>
+    <a href="{% url 'login' %}">Shaxsiy kabinet <span aria-hidden="true">→</span></a>
+  </footer>
 </div>
 {% endblock %}
