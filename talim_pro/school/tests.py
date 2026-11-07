@@ -1128,7 +1128,7 @@ class ParentSMSGatewaySafetyTests(TestCase):
             phone=self.profile.parent_phone,
             body="Baho 9/10",
         )
-        self.assertEqual(log.status, SMSLog.Status.FAILED)
+        self.assertEqual(log.status, "failed")
         self.assertFalse(post.call_args.kwargs["allow_redirects"])
 
     @patch.dict("os.environ", {
@@ -1142,5 +1142,5 @@ class ParentSMSGatewaySafetyTests(TestCase):
             phone=self.profile.parent_phone,
             body="Baho 9/10",
         )
-        self.assertEqual(log.status, SMSLog.Status.DISABLED)
+        self.assertEqual(log.status, "disabled")
         post.assert_not_called()
