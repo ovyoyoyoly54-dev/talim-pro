@@ -10,7 +10,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const suffix = document.createElement("small");
     suffix.textContent = "/10";
     value.append(suffix);
-    if (section) section.classList.toggle("reason-required", Number.isFinite(n) && n <= 8);
+    if (section) section.classList.toggle("reason-required", Number.isFinite(n) && n < 8);
   }
   score?.addEventListener("input", updateScore);
   updateScore();
