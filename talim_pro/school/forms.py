@@ -156,11 +156,17 @@ class GradeRecordForm(forms.Form):
         if allow_all:
             # Administrator barcha dars va o'quvchilarni baholay oladi.
             self.fields["lesson"].queryset = Lesson.objects.select_related("group")
-            self.fields["student"].queryset = StudentProfile.objects.select_related("user")
+            self.fields["student"].queryset = StudentProfile.objects.filter(
+                user__role=User.Role.STUDENT, user__is_active=True,
+            ).select_related("user")
         elif teacher:
             allowed = Lesson.objects.filter(group__teachers=teacher, teacher=teacher)
             self.fields["lesson"].queryset = allowed
-            self.fields["student"].queryset = StudentProfile.objects.filter(group__in=allowed.values("group_id"))
+            self.fields["student"].queryset = StudentProfile.objects.filter(
+                group__in=allowed.values("group_id"),
+                user__role=User.Role.STUDENT,
+                user__is_active=True,
+            ).select_related("user").distinct()
     def clean(self):
         data = super().clean()
         score = data.get("score")
