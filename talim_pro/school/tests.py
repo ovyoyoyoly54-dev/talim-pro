@@ -1166,3 +1166,52 @@ class AccountPhoneNormalizationTests(TestCase):
         )
         self.assertTrue(form.is_valid(), form.errors)
         self.assertEqual(form.cleaned_data["phone"], "+998901234567")
+
+
+class LessonStudentRoleIsolationTests(TestCase):
+    """Dars baholash va statistikada o'qituvchi profillari o'quvchi bo'lib chiqmasin."""
+
+    def setUp(self):
+        self.group = StudyGroup.objects.create(name="RoleCheck A1", subject="Ingliz tili")
+        self.teacher = User.objects.create_user(
+            "rolecheck_teacher", password="StrongPassword123!", role=User.Role.TEACHER,
+        )
+        self.second_teacher = User.objects.create_user(
+            "rolecheck_teacher2", password="StrongPassword123!", role=User.Role.TEACHER,
+        )
+        self.group.teachers.add(self.teacher, self.second_teacher)
+        self.lesson = Lesson.objects.create(
+            group=self.group, teacher=self.teacher, title="Role check",
+            starts_at=timezone.now() + timedelta(days=3),
+        )
+        self.student = User.objects.create_user(
+            "rolecheck_student", password="StrongPassword123!", role=User.Role.STUDENT,
+        )
+        self.student_profile = StudentProfile.objects.create(user=self.student, group=self.group)
+        # Legacy/noto'g'ri ma'lumot: o'qituvchiga ham StudentProfile ochilgan bo'lishi mumkin.
+        self.teacher_profile = StudentProfile.objects.create(user=self.second_teacher, group=self.group)
+
+    def test_teacher_grade_form_lists_only_real_students(self):
+        form = GradeRecordForm(teacher=self.teacher)
+        self.assertEqual(list(form.fields["student"].queryset), [self.student_profile])
+
+    def test_admin_grade_form_lists_only_real_students(self):
+        form = GradeRecordForm(allow_all=True)
+        self.assertEqual(list(form.fields["student"].queryset), [self.student_profile])
+
+    def test_group_detail_student_count_excludes_teacher_profiles(self):
+        admin_user = User.objects.create_superuser(
+            "rolecheck_admin", "rolecheck-admin@example.invalid", "StrongPassword123!",
+            role=User.Role.ADMIN,
+        )
+        self.client.force_login(admin_user)
+        response = self.client.get(reverse("group_detail", kwargs={"group_id": self.group.pk}))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context["student_count"], 1)
+        self.assertEqual(list(response.context["students"]), [self.student_profile])
+
+    def test_teacher_dashboard_count_excludes_teacher_profiles(self):
+        self.client.force_login(self.teacher)
+        response = self.client.get(reverse("dashboard"))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context["student_count"], 1)
