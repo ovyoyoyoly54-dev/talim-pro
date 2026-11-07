@@ -406,7 +406,11 @@ def group_management(request):
         raise PermissionDenied
     query = request.GET.get("q", "").strip()
     groups = StudyGroup.objects.all().prefetch_related("teachers").annotate(
-        student_total=Count("students", distinct=True),
+        student_total=Count(
+            "students",
+            filter=Q(students__user__role=User.Role.STUDENT, students__user__is_active=True),
+            distinct=True,
+        ),
         lesson_total=Count("lessons", distinct=True),
     )
     if query:
@@ -438,7 +442,9 @@ def group_detail(request, group_id):
         student.save(update_fields=["group"])
         messages.success(request, f"{student.user.get_full_name() or student.user.username} guruhga biriktirildi.")
         return redirect("group_detail", group_id=group.pk)
-    students = group.students.select_related("user").annotate(
+    students = group.students.filter(
+        user__role=User.Role.STUDENT, user__is_active=True,
+    ).select_related("user").annotate(
         average_score=Avg("grades__score"), total_score=Sum("grades__score"),
         grade_count=Count("grades", distinct=True),
     ).order_by("-average_score", "-total_score", "user__last_name", "user__first_name")
@@ -462,7 +468,9 @@ def dashboard(request):
     if is_admin(user):
         context.update({
             "group_count": StudyGroup.objects.count(),
-            "student_count": StudentProfile.objects.count(),
+            "student_count": StudentProfile.objects.filter(
+                user__role=User.Role.STUDENT, user__is_active=True,
+            ).count(),
             "lesson_count": Lesson.objects.count(),
             "recent_grades": GradeRecord.objects.select_related("student__user", "lesson").order_by("-updated_at")[:8],
             "upcoming_lessons": Lesson.objects.select_related("group", "teacher").filter(starts_at__gte=timezone.now()).order_by("starts_at")[:8],
@@ -473,7 +481,9 @@ def dashboard(request):
         teaching_groups = StudyGroup.objects.filter(teachers=user).distinct()
         context.update({"lessons": lessons.filter(starts_at__date__gte=timezone.localdate())[:8],
                         "groups": teaching_groups,
-                        "student_count": StudentProfile.objects.filter(group__teachers=user).count(),
+                        "student_count": StudentProfile.objects.filter(
+                            group__teachers=user, user__role=User.Role.STUDENT, user__is_active=True,
+                        ).distinct().count(),
                         "recent_grades": GradeRecord.objects.filter(teacher=user).select_related("student__user", "lesson").order_by("-updated_at")[:8]})
     elif user.role == User.Role.STUDENT:
         profile = StudentProfile.objects.select_related("group").filter(user=user).first()
