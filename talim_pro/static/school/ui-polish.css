@@ -64,3 +64,169 @@ td{border-color:#edf1f6}
   html{scroll-behavior:auto}
   .stat-card,.group-card,.button,.sidebar nav a{transition:none}
 }
+
+
+/* --------------------------------------------------------------------------
+   TA'LIM PRO — 2026 visual refinement
+   Softer surfaces, clearer hierarchy and consistent interaction states.
+   -------------------------------------------------------------------------- */
+:root{
+  --tp-ink:#14243b;
+  --tp-muted:#718096;
+  --tp-line:#e7edf5;
+  --tp-blue:#356ce0;
+  --tp-blue-deep:#17385f;
+  --tp-canvas:#f3f6fb;
+  --tp-surface:#ffffff;
+  --tp-radius:18px;
+  --tp-ease:cubic-bezier(.2,.75,.25,1);
+}
+html{background:var(--tp-canvas);scroll-padding-top:100px}
+body{
+  color:var(--tp-ink);
+  background:
+    radial-gradient(ellipse at 7% 0%,rgba(87,133,224,.12),transparent 34%),
+    radial-gradient(ellipse at 96% 18%,rgba(123,157,218,.09),transparent 30%),
+    linear-gradient(180deg,#f5f7fb 0%,#f1f5fa 100%);
+}
+::selection{background:rgba(65,111,229,.18);color:#17385f}
+:focus-visible{outline:3px solid rgba(65,111,229,.45);outline-offset:3px}
+.sidebar{
+  background:linear-gradient(180deg,#142a47 0%,#10233d 58%,#0d1d33 100%);
+  border-right:1px solid rgba(255,255,255,.07);
+  box-shadow:12px 0 34px rgba(13,29,51,.10);
+}
+.brand{padding-bottom:28px}
+.brand-mark{
+  border:1px solid rgba(255,255,255,.22);
+  background:linear-gradient(145deg,#6d96f0,#356ce0 62%,#244c9b);
+  box-shadow:0 9px 22px rgba(53,108,224,.32),inset 0 1px 0 rgba(255,255,255,.28);
+}
+.sidebar nav{gap:5px}
+.sidebar nav a{
+  min-height:46px;
+  border:1px solid transparent;
+  border-radius:12px;
+  transition:background .22s var(--tp-ease),color .22s var(--tp-ease),transform .22s var(--tp-ease),border-color .22s var(--tp-ease);
+}
+.sidebar nav a:hover{
+  background:rgba(255,255,255,.075);
+  border-color:rgba(255,255,255,.07);
+  transform:translateX(2px);
+}
+.sidebar nav a.active{
+  border:1px solid rgba(151,183,255,.20);
+  border-left:3px solid #8fb2ff;
+  background:linear-gradient(100deg,rgba(73,119,210,.34),rgba(73,119,210,.12));
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.06),0 5px 16px rgba(5,15,30,.10);
+}
+.topbar{
+  min-height:82px;
+  padding:16px clamp(20px,3vw,42px);
+  border-bottom:1px solid rgba(222,231,243,.82);
+  background:rgba(250,252,255,.84);
+  box-shadow:0 5px 22px rgba(23,45,76,.035);
+  backdrop-filter:blur(18px) saturate(145%);
+}
+.topbar h1{font-size:clamp(20px,2vw,25px);letter-spacing:-.8px}
+.eyebrow{letter-spacing:1.45px;color:#5279c7}
+.date-pill{
+  border-color:#e4eaf3;
+  background:rgba(255,255,255,.78);
+  color:#61728b;
+}
+.content{padding:clamp(20px,2.7vw,36px) clamp(18px,3vw,42px) 26px}
+.welcome-row{
+  border-color:#dce6f5;
+  border-radius:20px;
+  background:linear-gradient(112deg,#fff 0%,#f8faff 56%,#eaf1ff 100%);
+  box-shadow:0 12px 30px rgba(28,55,96,.055),inset 0 1px 0 #fff;
+}
+.welcome-row h2,.page-intro h2{color:#172b49;letter-spacing:-.85px}
+.panel,.stat-card,.group-card{
+  border-color:var(--tp-line);
+  border-radius:var(--tp-radius);
+  background:rgba(255,255,255,.94);
+  box-shadow:0 8px 24px rgba(24,48,82,.045),0 1px 2px rgba(24,48,82,.025);
+}
+.panel{padding:clamp(18px,2vw,27px)}
+.panel:hover{box-shadow:0 13px 30px rgba(24,48,82,.075)}
+.stat-card{padding:22px}
+.stat-card::before{height:3px}
+.stat-card>strong{color:#142b4a;font-variant-numeric:tabular-nums}
+.stat-icon{box-shadow:inset 0 1px 0 rgba(255,255,255,.65)}
+.group-card{min-height:82px}
+.button{
+  min-height:44px;
+  border-radius:12px;
+  transition:transform .2s var(--tp-ease),box-shadow .2s var(--tp-ease),background .2s ease,border-color .2s ease;
+}
+.button:active{transform:translateY(1px)}
+.button-primary{
+  background:linear-gradient(115deg,#1b3d67 0%,#28548a 100%);
+  box-shadow:0 7px 17px rgba(23,56,95,.18),inset 0 1px 0 rgba(255,255,255,.13);
+}
+.button-primary:hover{
+  background:linear-gradient(115deg,#244b79,#3568a4);
+  box-shadow:0 10px 22px rgba(23,56,95,.22);
+}
+.button-outline{border-color:#dce5f0;background:#fff}
+.input,select.input,input.input,textarea.input,
+input[type=text],input[type=password],input[type=email],input[type=tel],input[type=number],input[type=date],input[type=datetime-local],select,textarea{
+  min-height:44px;
+  border-color:#dce5f0;
+  border-radius:11px;
+  background:#fff;
+  box-shadow:0 1px 2px rgba(22,43,72,.025);
+}
+.input:focus,input:focus,select:focus,textarea:focus{
+  border-color:#7da0ed;
+  box-shadow:0 0 0 4px rgba(65,111,229,.11);
+}
+.table-wrap{border-color:#e7edf5;border-radius:14px;background:#fff}
+table th{background:#f5f8fc;color:#718198}
+table td{color:#46566e}
+tbody tr:hover td{background:#f7faff}
+.message{box-shadow:0 5px 16px rgba(20,40,70,.035)}
+.avatar-light{border-color:#dce7fb;background:linear-gradient(145deg,#f1f5ff,#e4edff);color:#315fb4}
+.content>footer{color:#8a98aa}
+.content>footer span{color:#9aa6b6}
+a,button{-webkit-tap-highlight-color:transparent}
+@media(min-width:1500px){
+  .content{max-width:1500px}
+  .stats-grid{gap:18px}
+}
+@media(max-width:1050px){
+  .topbar{padding-inline:24px}
+  .content{padding-inline:24px}
+}
+@media(max-width:760px){
+  body{background:linear-gradient(180deg,#f5f7fb,#f1f5fa)}
+  .topbar{min-height:72px;padding:13px 17px}
+  .topbar h1{font-size:19px}
+  .top-actions{gap:9px}
+  .date-pill{padding:7px 10px;font-size:11px}
+  .content{padding:17px 15px 22px}
+  .welcome-row{border-radius:15px}
+  .panel,.stat-card{border-radius:15px}
+  .page-intro{align-items:flex-start;flex-direction:column}
+  .page-intro .button{width:100%}
+  .two-column,.grade-layout{grid-template-columns:minmax(0,1fr)}
+  .stats-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .stat-card{padding:16px}
+  .stat-card>strong{font-size:25px}
+}
+@media(max-width:480px){
+  .topbar{align-items:flex-start}
+  .topbar .eyebrow{font-size:9px}
+  .topbar h1{font-size:17px}
+  .top-actions .date-pill{max-width:118px;white-space:nowrap;overflow:hidden}
+  .content>footer{align-items:flex-start;flex-direction:column;gap:5px}
+  .stats-grid{gap:10px}
+  .stat-card>span{font-size:10px}
+  .stat-icon{width:36px;height:36px;margin-bottom:12px}
+  .button{white-space:normal}
+}
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
+}
