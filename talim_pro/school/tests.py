@@ -1100,3 +1100,47 @@ class StudentFirstLoginCredentialsTests(TestCase):
         response = self.client.get(reverse("dashboard"))
         self.assertContains(response, "Davomatim")
         self.assertContains(response, "Login va parolni almashtiring")
+
+
+class ParentSMSGatewaySafetyTests(TestCase):
+    def setUp(self):
+        group = StudyGroup.objects.create(name="SMS xavfsizlik", subject="Ingliz tili")
+        student = User.objects.create_user(
+            "sms_gateway_student",
+            password="StrongPassword123!",
+            role=User.Role.STUDENT,
+        )
+        self.profile = StudentProfile.objects.create(
+            user=student,
+            group=group,
+            parent_phone="+998901234567",
+        )
+
+    @patch.dict("os.environ", {
+        "SMS_API_URL": "https://provider.example/send",
+        "SMS_API_TOKEN": "test-token",
+    })
+    @patch("school.sms.requests.post")
+    def test_redirect_is_not_followed_or_marked_sent(self, post):
+        post.return_value.status_code = 302
+        log = send_parent_sms(
+            student=self.profile,
+            phone=self.profile.parent_phone,
+            body="Baho 9/10",
+        )
+        self.assertEqual(log.status, SMSLog.Status.FAILED)
+        self.assertFalse(post.call_args.kwargs["allow_redirects"])
+
+    @patch.dict("os.environ", {
+        "SMS_API_URL": "http://provider.example/send",
+        "SMS_API_TOKEN": "test-token",
+    })
+    @patch("school.sms.requests.post")
+    def test_non_https_gateway_is_rejected_before_request(self, post):
+        log = send_parent_sms(
+            student=self.profile,
+            phone=self.profile.parent_phone,
+            body="Baho 9/10",
+        )
+        self.assertEqual(log.status, SMSLog.Status.DISABLED)
+        post.assert_not_called()
