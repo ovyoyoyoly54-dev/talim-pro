@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 {% block page_heading %}Bosh sahifa{% endblock %}
 {% block content %}
+<div class="dashboard-page">
 <div class="welcome-row"><div><h2>Assalomu alaykum, {{ user.first_name|default:user.username }}! <span class="wave">✦</span></h2><p class="muted">Bugungi o‘quv jarayoni va natijalar bilan tanishing.</p></div><div class="welcome-actions"><span class="pill pill-green"><span class="status-dot"></span> Tizim faol</span>{% if user.role == 'admin' or user.is_superuser %}<a class="button button-secondary" href="{% url 'teacher_management' %}">O‘qituvchilar</a><a class="button button-primary" href="{% url 'lesson_create' %}">+ Dars qo‘shish</a>{% endif %}</div></div>
 {% if user.role == 'admin' or user.is_superuser %}
 <div class="stats-grid"><div class="stat-card"><div class="stat-icon navy">▦</div><span>Guruhlar</span><strong>{{ group_count|default:0 }}<small>/5</small></strong><small class="stat-foot">Maksimal guruh soni: 5</small></div><div class="stat-card"><div class="stat-icon blue">♙</div><span>O‘quvchilar</span><strong>{{ student_count|default:0 }}</strong><small class="stat-foot">Ro‘yxatdagi o‘quvchilar</small></div><div class="stat-card"><div class="stat-icon violet">▤</div><span>Darslar</span><strong>{{ lesson_count|default:0 }}</strong><small class="stat-foot">Tizimdagi jami darslar</small></div></div>
@@ -35,4 +36,5 @@
 {% elif user.role == 'parent' %}
 <div class="panel"><div class="panel-heading"><div><h3>Farzandlarim</h3><p class="muted">Baholar va davomat ma'lumotlari</p></div></div>{% for child in children %}<a class="list-row clickable" href="{% url 'student_detail' child.id %}"><div class="avatar avatar-light">{{ child.user.first_name|first|upper }}</div><div class="row-main"><b>{{ child.user.get_full_name|default:child.user.username }}</b><small>{{ child.group.name }} · {{ child.group.subject }}</small></div><span class="group-arrow">→</span></a>{% empty %}<p class="empty">Akkauntingizga hozircha farzand biriktirilmagan. Administrator bilan bog‘laning.</p>{% endfor %}</div>
 {% endif %}
+</div>
 {% endblock %}
