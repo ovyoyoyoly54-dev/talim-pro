@@ -14,7 +14,7 @@ from datetime import timedelta
 from unittest.mock import patch
 import requests
 from .models import User, StudyGroup, StudentProfile, Lesson, GradeReason, GradeRecord, Attendance, PhoneOTP, PlatformSettings
-from .forms import GradeRecordForm, LessonCreateForm
+from .forms import AccountSettingsForm, GradeRecordForm, LessonCreateForm
 from .admin import GradeRecordAdmin, GradeRecordAdminForm
 from .sms import send_parent_sms
 
