@@ -230,3 +230,52 @@ a,button{-webkit-tap-highlight-color:transparent}
 @media(prefers-reduced-motion:reduce){
   *,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
 }
+
+
+/* Dashboard refinement: consistent hierarchy, calm surfaces and accessible motion */
+.dashboard-page{display:grid;gap:22px;min-width:0}
+.dashboard-page>.welcome-row{position:relative;overflow:hidden;min-height:150px;padding:clamp(22px,3vw,34px);align-items:center}
+.dashboard-page>.welcome-row:after{content:"";position:absolute;width:220px;height:220px;right:7%;top:-130px;border:1px solid rgba(91,128,194,.12);border-radius:50%;box-shadow:0 0 0 24px rgba(91,128,194,.035),0 0 0 48px rgba(91,128,194,.025);pointer-events:none}
+.dashboard-page>.welcome-row>div{position:relative;z-index:1}
+.dashboard-page .welcome-row h2{font-size:clamp(22px,2.5vw,30px);line-height:1.2}
+.dashboard-page .welcome-row p{margin-top:9px;max-width:560px;line-height:1.65}
+.dashboard-page .welcome-actions{display:flex;align-items:center;justify-content:flex-end;gap:10px;flex-wrap:wrap}
+.dashboard-page .stats-grid{gap:16px}
+.dashboard-page .stat-card{position:relative;min-width:0;overflow:hidden;transition:transform .22s ease,box-shadow .22s ease}
+.dashboard-page .stat-card:hover{transform:translateY(-3px)}
+.dashboard-page .stat-card>span{font-size:12px;font-weight:700;letter-spacing:.01em}
+.dashboard-page .stat-card>strong{display:block;overflow-wrap:anywhere;line-height:1.2;margin-top:9px}
+.dashboard-page .stat-foot{display:block;margin-top:10px;line-height:1.5}
+.dashboard-page .panel{min-width:0}
+.dashboard-page .panel-heading{gap:14px;margin-bottom:18px}
+.dashboard-page .panel-heading h3{font-size:16px;letter-spacing:-.25px}
+.dashboard-page .panel-heading .muted{margin-top:5px;line-height:1.5}
+.dashboard-page .group-grid{gap:12px}
+.dashboard-page .group-card{min-width:0;transition:transform .2s ease,border-color .2s ease,box-shadow .2s ease}
+.dashboard-page a.group-card:hover{transform:translateY(-2px);border-color:#cbd9ef}
+.dashboard-page .list-row{min-width:0;gap:13px;padding-block:13px}
+.dashboard-page .row-main{min-width:0}
+.dashboard-page .row-main b{line-height:1.4}
+.dashboard-page .row-main small{line-height:1.5}
+.dashboard-page .date-tile{flex:0 0 48px}
+.dashboard-page .score-chip{flex:0 0 auto}
+.dashboard-page .two-column{gap:18px}
+.dashboard-page .empty{padding:22px 12px;line-height:1.6;text-align:center}
+.dashboard-page .button,.dashboard-page .text-link{white-space:nowrap}
+.dashboard-page a:focus-visible,.dashboard-page button:focus-visible{outline:3px solid rgba(76,119,210,.38);outline-offset:3px}
+@media(max-width:760px){
+ .dashboard-page{gap:15px}
+ .dashboard-page>.welcome-row{align-items:flex-start;gap:18px}
+ .dashboard-page .welcome-actions{justify-content:flex-start}
+ .dashboard-page .welcome-actions .button{flex:1}
+ .dashboard-page .panel-heading{align-items:flex-start}
+ .dashboard-page .panel-heading .text-link{white-space:nowrap;font-size:11px}
+}
+@media(max-width:480px){
+ .dashboard-page>.welcome-row{padding:19px}
+ .dashboard-page .welcome-actions{width:100%}
+ .dashboard-page .welcome-actions .button{width:100%}
+ .dashboard-page .panel-heading{flex-direction:column}
+ .dashboard-page .panel-heading .text-link{align-self:flex-start}
+ .dashboard-page .list-row{gap:9px}
+}
