@@ -35,7 +35,10 @@ class RateLimitedLoginView(auth_views.LoginView):
             for key in keys:
                 cache.set(key, attempts + 1, settings.AUTH_RATE_LIMIT_WINDOW)
         elif response.status_code in (301, 302):
-            cache.delete(keys[0])
+            # Muvaffaqiyatli kirishdan keyin username va IP hisoblagichlarini
+            # birgalikda tozalaymiz: eski IP limiti boshqa akkauntni bloklamasin.
+            for key in keys:
+                cache.delete(key)
         return response
 
 urlpatterns = [
