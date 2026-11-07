@@ -438,7 +438,9 @@ def group_detail(request, group_id):
     if request.method == "POST" and request.POST.get("action") == "assign_student":
                 # Faqat baho va davomati yo'q o'quvchini ko'chirish mumkin, aks holda eski
         # qaydlar boshqa guruh darsiga bog'liq bo'lib qoladi.
-        movable = StudentProfile.objects.exclude(group=group).exclude(grades__isnull=False).exclude(attendance__isnull=False)
+        movable = StudentProfile.objects.filter(
+            user__role=User.Role.STUDENT, user__is_active=True,
+        ).exclude(group=group).exclude(grades__isnull=False).exclude(attendance__isnull=False)
         student = get_object_or_404(movable, pk=request.POST.get("student_id"))
         student.group = group
         student.save(update_fields=["group"])
@@ -450,7 +452,9 @@ def group_detail(request, group_id):
         average_score=Avg("grades__score"), total_score=Sum("grades__score"),
         grade_count=Count("grades", distinct=True),
     ).order_by("-average_score", "-total_score", "user__last_name", "user__first_name")
-    average_score = GradeRecord.objects.filter(student__group=group).aggregate(value=Avg("score"))["value"]
+    average_score = GradeRecord.objects.filter(
+        student__group=group, student__user__role=User.Role.STUDENT, student__user__is_active=True,
+    ).aggregate(value=Avg("score"))["value"]
     lessons = group.lessons.select_related("teacher").order_by("starts_at")
     available_teachers = User.objects.filter(role=User.Role.TEACHER, is_active=True).exclude(
         pk__in=group.teachers.values("pk")
@@ -478,7 +482,9 @@ def dashboard(request):
                 user__role=User.Role.STUDENT, user__is_active=True,
             ).count(),
             "lesson_count": Lesson.objects.count(),
-            "recent_grades": GradeRecord.objects.select_related("student__user", "lesson").order_by("-updated_at")[:8],
+            "recent_grades": GradeRecord.objects.filter(
+                student__user__role=User.Role.STUDENT, student__user__is_active=True,
+            ).select_related("student__user", "lesson").order_by("-updated_at")[:8],
             "upcoming_lessons": Lesson.objects.select_related("group", "teacher").filter(starts_at__gte=timezone.now()).order_by("starts_at")[:8],
             "groups": StudyGroup.objects.annotate(
                 student_total=Count(
@@ -496,7 +502,9 @@ def dashboard(request):
                         "student_count": StudentProfile.objects.filter(
                             group__teachers=user, user__role=User.Role.STUDENT, user__is_active=True,
                         ).distinct().count(),
-                        "recent_grades": GradeRecord.objects.filter(teacher=user).select_related("student__user", "lesson").order_by("-updated_at")[:8]})
+                        "recent_grades": GradeRecord.objects.filter(
+                            teacher=user, student__user__role=User.Role.STUDENT, student__user__is_active=True,
+                        ).select_related("student__user", "lesson").order_by("-updated_at")[:8]})
     elif user.role == User.Role.STUDENT:
         profile = StudentProfile.objects.select_related("group").filter(user=user).first()
         if profile is None:
@@ -662,7 +670,9 @@ def lesson_reschedule(request, lesson_id):
 def ranking(request):
     if not (is_admin(request.user) or request.user.role in [User.Role.TEACHER, User.Role.STUDENT, User.Role.PARENT]):
         raise PermissionDenied
-    profiles = StudentProfile.objects.select_related("user", "group").annotate(
+    profiles = StudentProfile.objects.filter(
+        user__role=User.Role.STUDENT, user__is_active=True,
+    ).select_related("user", "group").annotate(
         average_score=Avg("grades__score"), total_score=Sum("grades__score"), graded_lessons=Count("grades", distinct=True)
     )
     if request.user.role == User.Role.TEACHER:
