@@ -419,7 +419,9 @@ def group_management(request):
                                Q(teachers__last_name__icontains=query)).distinct()
     return render(request, "school/group_management.html", {
         "groups": groups, "query": query, "total_groups": StudyGroup.objects.count(),
-        "total_students": StudentProfile.objects.count(), "total_lessons": Lesson.objects.count(),
+        "total_students": StudentProfile.objects.filter(
+            user__role=User.Role.STUDENT, user__is_active=True,
+        ).count(), "total_lessons": Lesson.objects.count(),
     })
 
 
@@ -457,7 +459,11 @@ def group_detail(request, group_id):
         "group": group, "students": students, "student_count": students.count(),
         "average_score": average_score, "lessons": lessons,
         "available_teachers": available_teachers,
-        "available_students": StudentProfile.objects.exclude(group=group).exclude(grades__isnull=False).exclude(attendance__isnull=False).select_related("user").order_by("user__last_name", "user__first_name"),
+        "available_students": StudentProfile.objects.filter(
+            user__role=User.Role.STUDENT, user__is_active=True,
+        ).exclude(group=group).exclude(grades__isnull=False).exclude(
+            attendance__isnull=False
+        ).select_related("user").order_by("user__last_name", "user__first_name"),
     })
 
 
@@ -474,7 +480,13 @@ def dashboard(request):
             "lesson_count": Lesson.objects.count(),
             "recent_grades": GradeRecord.objects.select_related("student__user", "lesson").order_by("-updated_at")[:8],
             "upcoming_lessons": Lesson.objects.select_related("group", "teacher").filter(starts_at__gte=timezone.now()).order_by("starts_at")[:8],
-            "groups": StudyGroup.objects.all(),
+            "groups": StudyGroup.objects.annotate(
+                student_total=Count(
+                    "students",
+                    filter=Q(students__user__role=User.Role.STUDENT, students__user__is_active=True),
+                    distinct=True,
+                )
+            ),
         })
     elif user.role == User.Role.TEACHER:
         lessons = teacher_lessons(user)
