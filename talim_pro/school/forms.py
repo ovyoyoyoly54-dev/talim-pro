@@ -45,6 +45,15 @@ class AccountSettingsForm(forms.ModelForm):
             raise ValidationError("Bu foydalanuvchi nomi band. Boshqasini tanlang.")
         return username
 
+    def clean_phone(self):
+        value = self.cleaned_data.get("phone", "").strip()
+        if not value:
+            return ""
+        phone = normalize_phone(value)
+        if not phone:
+            raise ValidationError("Telefon raqamini +998 formatida kiriting.")
+        return phone
+
 
 AdminAccountSettingsForm = AccountSettingsForm
 
