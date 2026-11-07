@@ -1144,3 +1144,25 @@ class ParentSMSGatewaySafetyTests(TestCase):
         )
         self.assertEqual(log.status, "disabled")
         post.assert_not_called()
+
+
+class AccountPhoneNormalizationTests(TestCase):
+    def test_account_settings_normalizes_uzbek_phone(self):
+        user = User.objects.create_user(
+            "phone_normalize",
+            password="StrongPassword123!",
+            role=User.Role.STUDENT,
+            phone="",
+        )
+        form = AccountSettingsForm(
+            data={
+                "username": user.username,
+                "first_name": "Ali",
+                "last_name": "Valiyev",
+                "email": "",
+                "phone": "90 123 45 67",
+            },
+            instance=user,
+        )
+        self.assertTrue(form.is_valid(), form.errors)
+        self.assertEqual(form.cleaned_data["phone"], "+998901234567")
