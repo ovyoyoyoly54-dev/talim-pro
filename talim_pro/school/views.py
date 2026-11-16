@@ -37,6 +37,8 @@ def robots_txt(request):
         "Disallow: /logout/", "Disallow: /dashboard/", "Disallow: /baholash/",
         "Disallow: /dars-qoshish/", "Disallow: /jadval/", "Disallow: /reyting/", "Disallow: /oquvchi/",
         "Disallow: /parolni-tiklash/", "Disallow: /akkauntni-yopish/",
+        "Disallow: /tolovlar/", "Disallow: /vazifalar/", "Disallow: /bildirishnomalar/", "Disallow: /hisobot/",
+        "Disallow: /arizalar/", "Disallow: /2fa/", "Disallow: /tolov/",
         "Disallow: /offline/", "Disallow: /service-worker.js", "Disallow: /manifest.webmanifest",
         f"Sitemap: {site_url}{reverse('sitemap_xml')}", "",
     ])
@@ -44,13 +46,21 @@ def robots_txt(request):
 
 @require_GET
 def sitemap_xml(request):
+    from .models import Course
     site_url = settings.PUBLIC_SITE_URL or request.build_absolute_uri("/").rstrip("/")
-    location = escape(f"{site_url}{reverse('home')}")
+    entries = [(reverse("home"), None)] + [
+        (reverse(name), None) for name in ("courses_list", "pricing", "apply")
+    ] + [
+        (reverse("course_detail", args=[c.slug]), c.updated_at)
+        for c in Course.objects.filter(is_published=True)
+    ]
+    urls = []
+    for path, modified in entries:
+        lastmod = f"<lastmod>{modified:%Y-%m-%d}</lastmod>" if modified else ""
+        urls.append(f"<url><loc>{escape(site_url + path)}</loc>{lastmod}</url>")
     body = (
         '<?xml version="1.0" encoding="UTF-8"?>'
-        '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'
-        f"<url><loc>{location}</loc></url>"
-        "</urlset>"
+        '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' + "".join(urls) + "</urlset>"
     )
     return HttpResponse(body, content_type="application/xml; charset=utf-8")
 
@@ -576,7 +586,13 @@ def grade_lesson(request):
                         lesson=lesson, student=student,
                         defaults={"status": form.cleaned_data["attendance"], "teacher": request.user}
                     )
-                if student.parent_phone:
+                from .notifications import family_users, has_push, notify
+                family = family_users(student)
+                push_covers = has_push(family)
+                notify(family, "Yangi baho", f"{lesson.title}: {grade.score}/10", "/dashboard/")
+                if push_covers:
+                    messages.success(request, "Baho va davomat saqlandi. Ota-onaga push bildirishnoma yuborildi.")
+                elif student.parent_phone:
                     reason_text = ", ".join(grade.reasons.values_list("title", flat=True))
                     body = (f"TA'LIM PRO: {student.user.get_full_name() or student.user.username} "
                             f"{lesson.title} darsidan {grade.score}/10 baho oldi. "

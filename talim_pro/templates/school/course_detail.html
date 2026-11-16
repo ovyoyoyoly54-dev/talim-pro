@@ -1,0 +1,11 @@
+{% extends "school/public_base.html" %}
+{% load i18n %}
+{% block title %}{{ course.title }} — {{ platform_settings.site_name|default:"TA’LIM PRO" }}{% endblock %}
+{% block meta_description %}{{ course.summary }}{% endblock %}
+{% block public_content %}
+<section class="feature-section"><div class="section-intro"><span class="eyebrow">{% trans "KURS" %}</span><h1>{{ course.title }}</h1><p class="muted">{{ course.summary }}</p></div>
+<div class="panel"><p>{{ course.description|linebreaksbr }}</p>
+<p><b>{{ course.price|floatformat:0 }} {% trans "so‘m / oy" %}</b>{% if course.duration %} · {{ course.duration }}{% endif %}</p>
+<a class="button button-primary" href="{% url 'apply' %}?kurs={{ course.slug }}">{% trans "Ariza qoldirish" %}</a>
+<a class="button button-outline" href="{% url 'courses_list' %}">{% trans "Barcha kurslar" %}</a></div></section>
+{% endblock %}

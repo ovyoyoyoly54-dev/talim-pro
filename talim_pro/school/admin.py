@@ -2,7 +2,11 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.models import Group
 from django import forms
-from .models import User, StudyGroup, StudentProfile, Lesson, GradeReason, GradeRecord, Attendance, SMSLog
+from .models import (
+    User, StudyGroup, StudentProfile, Lesson, GradeReason, GradeRecord, Attendance, SMSLog,
+    Invoice, Payment, Homework, HomeworkSubmission, Notification, Course, EnrollmentApplication,
+    AuditLog,
+)
 
 admin.site.site_header = "TA’LIM PRO — Boshqaruv"
 admin.site.site_title = "TA’LIM PRO"
@@ -24,7 +28,7 @@ class StudyGroupAdminForm(forms.ModelForm):
 
     class Meta:
         model = StudyGroup
-        fields = ("name", "subject", "teachers")
+        fields = ("name", "subject", "monthly_fee", "teachers")
         widgets = {
             "name": forms.TextInput(attrs={
                 "placeholder": "Masalan: IELTS Foundation A1",
@@ -53,7 +57,7 @@ class StudyGroupAdmin(admin.ModelAdmin):
     fieldsets = (
         ("Guruh haqida", {
             "description": "Avval guruh nomi va o‘qitiladigan fan yo‘nalishini belgilang.",
-            "fields": ("name", "subject"),
+            "fields": ("name", "subject", "monthly_fee"),
         }),
         ("O‘qituvchilar", {
             "description": "Guruhga dars beradigan o‘qituvchilarni biriktiring.",
@@ -151,3 +155,75 @@ class LessonAdmin(admin.ModelAdmin):
 
 
 admin.site.register(Attendance)
+
+
+@admin.register(Invoice)
+class InvoiceAdmin(admin.ModelAdmin):
+    list_display = ("student", "period", "amount", "due_date", "status")
+    list_filter = ("status", "period", "student__group")
+    search_fields = ("student__user__first_name", "student__user__last_name", "student__user__username")
+    date_hierarchy = "period"
+
+
+@admin.register(Payment)
+class PaymentAdmin(admin.ModelAdmin):
+    list_display = ("invoice", "amount", "method", "status", "paid_at", "created_at")
+    list_filter = ("method", "status")
+    search_fields = ("external_id", "invoice__student__user__last_name")
+    readonly_fields = ("external_id", "provider_state", "provider_create_ms", "provider_perform_ms",
+                       "provider_cancel_ms", "provider_reason", "created_at", "paid_at")
+
+
+@admin.register(Homework)
+class HomeworkAdmin(admin.ModelAdmin):
+    list_display = ("title", "group", "teacher", "due_at")
+    list_filter = ("group",)
+    search_fields = ("title",)
+
+
+@admin.register(HomeworkSubmission)
+class HomeworkSubmissionAdmin(admin.ModelAdmin):
+    list_display = ("homework", "student", "submitted_at", "is_late", "score")
+    list_filter = ("is_late", "homework__group")
+
+
+@admin.register(Notification)
+class NotificationAdmin(admin.ModelAdmin):
+    list_display = ("user", "title", "created_at", "read_at")
+    search_fields = ("user__username", "title")
+
+
+@admin.register(Course)
+class CourseAdmin(admin.ModelAdmin):
+    list_display = ("title", "price", "duration", "is_published", "order")
+    list_editable = ("is_published", "order")
+    prepopulated_fields = {"slug": ("title",)}
+
+
+@admin.register(EnrollmentApplication)
+class EnrollmentApplicationAdmin(admin.ModelAdmin):
+    list_display = ("full_name", "phone", "course", "status", "created_at")
+    list_filter = ("status", "course")
+    search_fields = ("full_name", "phone")
+    readonly_fields = ("ip_digest", "created_at")
+
+
+@admin.register(AuditLog)
+class AuditLogAdmin(admin.ModelAdmin):
+    """O‘zgarishlar jurnali faqat o‘qish uchun: uni tahrirlash yoki o‘chirish mumkin emas."""
+
+    list_display = ("created_at", "username", "action", "model", "object_repr", "ip_address")
+    list_filter = ("action", "model")
+    search_fields = ("username", "object_repr", "object_id")
+    date_hierarchy = "created_at"
+    list_per_page = 50
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+

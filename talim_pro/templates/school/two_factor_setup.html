@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}{% trans "2FA sozlash" %} — TA'LIM PRO{% endblock %}
+{% block page_heading %}{% trans "2 bosqichli tasdiqlash" %}{% endblock %}
+{% block content %}
+<div class="page-intro"><div><span class="eyebrow">{% trans "XAVFSIZLIK" %}</span><h2>{% trans "Administrator akkaunti uchun 2FA" %}</h2>
+<p class="muted">{% trans "1) Google Authenticator, Authy yoki shunga o‘xshash ilovada QR kodni skanerlang. 2) Ilovadagi 6 xonali kodni kiriting." %}</p></div></div>
+<form method="post" class="panel" novalidate>{% csrf_token %}<input type="hidden" name="next" value="{{ next }}">
+<img src="{{ qr }}" width="200" height="200" alt="{% trans 'QR kod' %}">
+<p class="muted">{% trans "QR ishlamasa, kalitni qo‘lda kiriting" %}: <code>{{ secret }}</code></p>
+<label class="lesson-field" for="code">{% trans "6 xonali kod" %}<input class="input" id="code" name="code" inputmode="numeric" autocomplete="one-time-code" maxlength="6" pattern="[0-9]{6}" required autofocus></label>
+<button class="button button-primary" type="submit">{% trans "Tasdiqlash" %}</button></form>
+{% endblock %}

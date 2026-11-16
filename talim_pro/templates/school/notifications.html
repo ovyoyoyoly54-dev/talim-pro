@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% load i18n static %}
+{% block title %}{% trans "Bildirishnomalar" %} — TA'LIM PRO{% endblock %}
+{% block page_heading %}{% trans "Bildirishnomalar" %}{% endblock %}
+{% block content %}
+<div class="page-intro">
+  <div><span class="eyebrow">{% trans "XABARLAR" %}</span><h2>{% trans "Bildirishnomalar" %}</h2>
+  <p class="muted">{% trans "Baho, vazifa va to‘lov haqidagi xabarlar. Push yoqilsa, SMS kerak bo‘lmaydi." %}</p></div>
+  <form method="post" action="{% url 'notifications_mark_read' %}">{% csrf_token %}<button class="button button-outline" type="submit">{% trans "Hammasini o‘qilgan deb belgilash" %}</button></form>
+</div>
+{% if push_enabled %}
+<div class="panel" id="push-panel" data-vapid="{{ vapid_public_key }}" data-subscribed="{{ has_subscription|yesno:'1,0' }}"
+     data-subscribe-url="{% url 'push_subscribe' %}" data-unsubscribe-url="{% url 'push_unsubscribe' %}">
+  <p class="muted" id="push-status" data-on-text="{% trans 'Push bildirishnomalar yoqilgan.' %}">{% trans "Brauzer bildirishnomalari o‘chiq." %}</p>
+  <button class="button button-primary" type="button" id="push-toggle" data-off-label="{% trans 'Push bildirishnomalarni o‘chirish' %}">{% trans "Push bildirishnomalarni yoqish" %}</button>
+</div>
+{% endif %}
+<div class="panel"><div class="table-wrap"><table>
+<thead><tr><th>{% trans "Vaqt" %}</th><th>{% trans "Xabar" %}</th></tr></thead><tbody>
+{% for n in items %}<tr><td>{{ n.created_at|date:"d.m.Y H:i" }}</td><td>{% if not n.read_at %}<span class="pill pill-blue">{% trans "Yangi" %}</span> {% endif %}<b>{{ n.title }}</b><br>{{ n.body }}{% if n.url %} <a href="{{ n.url }}">→</a>{% endif %}</td></tr>
+{% empty %}<tr><td colspan="2" class="empty">{% trans "Hozircha xabarlar yo‘q." %}</td></tr>{% endfor %}
+</tbody></table></div></div>
+{% endblock %}
+{% block scripts %}{% if push_enabled %}<script src="{% static 'school/push.js' %}"></script>{% endif %}{% endblock %}

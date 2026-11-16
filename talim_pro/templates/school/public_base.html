@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block robots_meta %}index,follow{% endblock %}
+{% block canonical_meta %}{% if canonical_url %}<link rel="canonical" href="{{ canonical_url }}">{% endif %}{% endblock %}
+{% block content %}
+<div class="public-home">
+  <header class="public-nav">
+    <a class="brand" href="{% url 'home' %}"><span class="brand-mark">T</span><span>{{ platform_settings.site_name|default:"TA’LIM PRO" }}<small>{% trans "O‘quv markazi" %}</small></span></a>
+    <nav class="public-links" aria-label="{% trans 'Asosiy menyu' %}">
+      <a href="{% url 'courses_list' %}">{% trans "Kurslar" %}</a>
+      <a href="{% url 'pricing' %}">{% trans "Narxlar" %}</a>
+      <a href="{% url 'apply' %}">{% trans "Ro‘yxatdan o‘tish" %}</a>
+      <form method="post" action="{% url 'set_language' %}" class="lang-switch">{% csrf_token %}<input type="hidden" name="next" value="{{ request.path }}"><button class="button button-outline" name="language" value="uz" type="submit">UZ</button><button class="button button-outline" name="language" value="ru" type="submit">RU</button></form>
+      <a class="button button-primary" href="{% if user.is_authenticated %}{% url 'dashboard' %}{% else %}{% url 'login' %}{% endif %}">{% if user.is_authenticated %}{% trans "Kabinet" %}{% else %}{% trans "Tizimga kirish" %}{% endif %}</a>
+    </nav>
+  </header>
+  {% block public_content %}{% endblock %}
+</div>
+{% endblock %}

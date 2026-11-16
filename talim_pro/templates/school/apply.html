@@ -1,0 +1,13 @@
+{% extends "school/public_base.html" %}
+{% load i18n %}
+{% block title %}{% trans "Ro‘yxatdan o‘tish" %} — {{ platform_settings.site_name|default:"TA’LIM PRO" }}{% endblock %}
+{% block meta_description %}{% trans "Kursga yozilish uchun ariza qoldiring, administrator siz bilan bog‘lanadi." %}{% endblock %}
+{% block public_content %}
+<section class="feature-section"><div class="section-intro"><span class="eyebrow">{% trans "ARIZA" %}</span><h1>{% trans "Kursga yozilish" %}</h1>
+<p class="muted">{% trans "Ma’lumotlaringizni qoldiring — administrator tez orada bog‘lanadi." %}</p></div>
+<form method="post" class="panel" novalidate>{% csrf_token %}
+{% if form.non_field_errors %}<div class="message error">{{ form.non_field_errors }}</div>{% endif %}
+{% for field in form.visible_fields %}{% if field.name != "website" %}<label class="lesson-field" for="{{ field.id_for_label }}">{{ field.label }}{% if field.field.required %} <span class="required">*</span>{% endif %}{{ field }}{% if field.errors %}<small class="field-error">{{ field.errors|striptags }}</small>{% endif %}</label>{% endif %}{% endfor %}
+<div style="position:absolute;left:-9999px" aria-hidden="true">{{ form.website }}</div>
+<button class="button button-primary" type="submit">{% trans "Ariza yuborish" %}</button></form></section>
+{% endblock %}

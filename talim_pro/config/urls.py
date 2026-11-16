@@ -8,7 +8,8 @@ from django.urls import path
 from django.contrib.auth import views as auth_views
 from django.views.decorators.debug import sensitive_post_parameters
 from django.utils.decorators import method_decorator
-from school import views
+from django.views.i18n import set_language
+from school import views, views_payments, views_homework, views_notifications, views_public, views_reports, views_security, gateways
 from school.utils import get_client_ip
 
 
@@ -68,4 +69,40 @@ urlpatterns = [
     path("reyting/", views.ranking, name="ranking"),
     path("oquvchi/<int:student_id>/", views.student_detail, name="student_detail"),
     path("guruh/<int:group_id>/oquvchi-qoshish/", views.add_student_to_group, name="add_student_to_group"),
+    # Til
+    path("til/", set_language, name="set_language"),
+    # To'lovlar
+    path("tolovlar/", views_payments.payments_entry, name="payments_overview"),
+    path("tolovlar/hisob-yaratish/", views_payments.generate_invoices_view, name="generate_invoices"),
+    path("tolovlar/qarzdorlar/", views_payments.debtors_list, name="debtors_list"),
+    path("tolovlar/qarzdorlar/eslatma/", views_payments.remind_debtors, name="remind_debtors"),
+    path("tolovlar/<int:invoice_id>/qabul/", views_payments.record_payment, name="record_payment"),
+    path("tolovlar/<int:invoice_id>/bekor/", views_payments.cancel_invoice, name="cancel_invoice"),
+    path("tolov/click/", gateways.click_webhook, name="click_webhook"),
+    path("tolov/payme/", gateways.payme_webhook, name="payme_webhook"),
+    # Uyga vazifa
+    path("vazifalar/", views_homework.homework_list, name="homework_list"),
+    path("vazifalar/yangi/", views_homework.homework_create, name="homework_create"),
+    path("vazifalar/<int:homework_id>/", views_homework.homework_detail, name="homework_detail"),
+    path("vazifalar/<int:homework_id>/fayl/", views_homework.homework_task_file, name="homework_task_file"),
+    path("vazifalar/javob/<int:submission_id>/fayl/", views_homework.homework_answer_file, name="homework_answer_file"),
+    # Bildirishnomalar
+    path("bildirishnomalar/", views_notifications.notification_list, name="notification_list"),
+    path("bildirishnomalar/oqildi/", views_notifications.notifications_mark_read, name="notifications_mark_read"),
+    path("bildirishnomalar/push/obuna/", views_notifications.push_subscribe, name="push_subscribe"),
+    path("bildirishnomalar/push/bekor/", views_notifications.push_unsubscribe, name="push_unsubscribe"),
+    # Ochiq sahifalar
+    path("kurslar/", views_public.courses_list, name="courses_list"),
+    path("kurslar/<slug:slug>/", views_public.course_detail, name="course_detail"),
+    path("narxlar/", views_public.pricing, name="pricing"),
+    path("ariza/", views_public.apply, name="apply"),
+    path("ariza/qabul-qilindi/", views_public.apply_done, name="apply_done"),
+    path("arizalar/", views_public.applications_list, name="applications_list"),
+    # Hisobotlar
+    path("hisobot/", views_reports.reports_home, name="reports_home"),
+    path("hisobot/davomat/", views_reports.attendance_report, name="attendance_report"),
+    path("hisobot/reyting/", views_reports.ranking_report, name="ranking_report"),
+    # 2FA
+    path("2fa/sozlash/", views_security.two_factor_setup, name="two_factor_setup"),
+    path("2fa/tekshirish/", views_security.two_factor_verify, name="two_factor_verify"),
 ]

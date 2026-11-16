@@ -34,3 +34,25 @@ self.addEventListener("fetch", (event) => {
     })));
   }
 });
+
+self.addEventListener("push", (event) => {
+  let data = {};
+  try { data = event.data ? event.data.json() : {}; } catch (e) { data = {}; }
+  const title = data.title || "TA'LIM PRO";
+  event.waitUntil(self.registration.showNotification(title, {
+    body: data.body || "",
+    icon: "/static/school/icon-192.png",
+    data: { url: typeof data.url === "string" && data.url.startsWith("/") ? data.url : "/" },
+  }));
+});
+
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  const target = (event.notification.data && event.notification.data.url) || "/";
+  event.waitUntil(self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((list) => {
+    for (const client of list) {
+      if (new URL(client.url).pathname === target && "focus" in client) return client.focus();
+    }
+    return self.clients.openWindow(target);
+  }));
+});

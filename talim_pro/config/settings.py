@@ -1,5 +1,6 @@
 import os
 import secrets
+import sys
 from pathlib import Path
 from urllib.parse import urlsplit
 from dotenv import load_dotenv
@@ -45,10 +46,13 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
+    "django.middleware.locale.LocaleMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
+    "school.twofactor.AuditMiddleware",
+    "school.twofactor.TwoFactorMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 if not DEBUG:
@@ -60,6 +64,7 @@ TEMPLATES = [{
     "APP_DIRS": True,
     "OPTIONS": {"context_processors": [
         "django.template.context_processors.request",
+        "django.template.context_processors.i18n",
         "django.contrib.auth.context_processors.auth",
         "django.contrib.messages.context_processors.messages",
         "school.context_processors.platform_settings",
@@ -82,6 +87,8 @@ AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
 ]
 LANGUAGE_CODE = "uz"
+LANGUAGES = [("uz", "O‘zbekcha"), ("ru", "Русский")]
+LANGUAGE_COOKIE_AGE = 60 * 60 * 24 * 365
 TIME_ZONE = "Asia/Tashkent"
 USE_I18N = True
 # Django'ning "uz" tarjimasi to'liq emas; loyiha tarjimalari ustidan yoziladi.
@@ -90,6 +97,10 @@ USE_TZ = True
 STATIC_URL = "/static/"
 STATICFILES_DIRS = [BASE_DIR / "static"]
 STATIC_ROOT = BASE_DIR / "staticfiles"
+# Yuklangan fayllar (uyga vazifa). Ular ochiq URL orqali berilmaydi: faqat ruxsat tekshiruvi
+# bor view orqali yuboriladi. Productionda MEDIA_ROOT doimiy diskka (volume) ulanishi kerak.
+MEDIA_ROOT = Path(os.getenv("MEDIA_ROOT", BASE_DIR / "media"))
+DATA_UPLOAD_MAX_MEMORY_SIZE = 12 * 1024 * 1024
 STORAGES = {"default": {"BACKEND": "django.core.files.storage.FileSystemStorage"}}
 if DEBUG:
     STORAGES["staticfiles"] = {"BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage"}
@@ -135,3 +146,22 @@ if not DEBUG:
     SECURE_HSTS_PRELOAD = os.getenv("DJANGO_HSTS_PRELOAD", "False").lower() == "true"
     SECURE_REFERRER_POLICY = "strict-origin-when-cross-origin"
     SECURE_CROSS_ORIGIN_OPENER_POLICY = "same-origin"
+
+
+# ── To'lov tizimlari (kalitlar faqat muhit o'zgaruvchilaridan olinadi) ──
+CLICK_SERVICE_ID = os.getenv("CLICK_SERVICE_ID", "").strip()
+CLICK_MERCHANT_ID = os.getenv("CLICK_MERCHANT_ID", "").strip()
+CLICK_SECRET_KEY = os.getenv("CLICK_SECRET_KEY", "").strip()
+PAYME_MERCHANT_ID = os.getenv("PAYME_MERCHANT_ID", "").strip()
+PAYME_KEY = os.getenv("PAYME_KEY", "").strip()
+PAYME_TEST = os.getenv("PAYME_TEST", "False").lower() == "true"
+# Oylik hisobning to'lov muddati (oyning nechanchi kuni, 1–28).
+INVOICE_DUE_DAY = int(os.getenv("INVOICE_DUE_DAY", "10"))
+
+# ── Web Push (VAPID). Kalitlar: `manage.py generate_vapid_keys` ──
+VAPID_PUBLIC_KEY = os.getenv("VAPID_PUBLIC_KEY", "").strip()
+VAPID_PRIVATE_KEY = os.getenv("VAPID_PRIVATE_KEY", "").strip()
+VAPID_CLAIM_EMAIL = os.getenv("VAPID_CLAIM_EMAIL", "admin@example.com").strip()
+
+# ── Administratorlar uchun 2FA (TOTP). Testlarda o'chiriladi, productionda yoqilgan ──
+ADMIN_2FA_REQUIRED = os.getenv("ADMIN_2FA_REQUIRED", "False" if "test" in sys.argv else "True").lower() == "true"

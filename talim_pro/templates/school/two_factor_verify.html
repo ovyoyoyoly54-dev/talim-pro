@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}{% trans "2FA tekshiruvi" %} — TA'LIM PRO{% endblock %}
+{% block page_heading %}{% trans "2 bosqichli tasdiqlash" %}{% endblock %}
+{% block content %}
+<div class="page-intro"><div><span class="eyebrow">{% trans "XAVFSIZLIK" %}</span><h2>{% trans "Tasdiqlash kodini kiriting" %}</h2>
+<p class="muted">{% trans "Autentifikator ilovasidagi 6 xonali kodni yoki zaxira kodni kiriting." %}</p></div></div>
+<form method="post" class="panel" novalidate>{% csrf_token %}<input type="hidden" name="next" value="{{ next }}">
+<label class="lesson-field" for="code">{% trans "Kod" %}<input class="input" id="code" name="code" autocomplete="one-time-code" maxlength="13" required autofocus></label>
+<button class="button button-primary" type="submit">{% trans "Tasdiqlash" %}</button></form>
+{% endblock %}

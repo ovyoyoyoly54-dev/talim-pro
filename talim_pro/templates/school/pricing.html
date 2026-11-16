@@ -1,0 +1,12 @@
+{% extends "school/public_base.html" %}
+{% load i18n %}
+{% block title %}{% trans "Narxlar" %} — {{ platform_settings.site_name|default:"TA’LIM PRO" }}{% endblock %}
+{% block meta_description %}{% trans "Kurslarning oylik to‘lov narxlari." %}{% endblock %}
+{% block public_content %}
+<section class="feature-section"><div class="section-intro"><span class="eyebrow">{% trans "NARXLAR" %}</span><h1>{% trans "Oylik to‘lov narxlari" %}</h1></div>
+<div class="panel"><div class="table-wrap"><table>
+<thead><tr><th>{% trans "Kurs" %}</th><th>{% trans "Davomiyligi" %}</th><th>{% trans "Narx (so‘m / oy)" %}</th><th></th></tr></thead><tbody>
+{% for course in courses %}<tr><td><a href="{% url 'course_detail' course.slug %}">{{ course.title }}</a></td><td>{{ course.duration|default:"—" }}</td><td><b>{{ course.price|floatformat:0 }}</b></td><td><a class="button button-outline" href="{% url 'apply' %}?kurs={{ course.slug }}">{% trans "Ariza" %}</a></td></tr>
+{% empty %}<tr><td colspan="4" class="empty">{% trans "Narxlar tez orada e’lon qilinadi." %}</td></tr>{% endfor %}
+</tbody></table></div></div></section>
+{% endblock %}

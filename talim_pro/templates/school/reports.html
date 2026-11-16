@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}{% trans "Hisobotlar" %} — TA'LIM PRO{% endblock %}
+{% block page_heading %}{% trans "Hisobotlar" %}{% endblock %}
+{% block content %}
+<div class="page-intro"><div><span class="eyebrow">{% trans "EKSPORT" %}</span><h2>{% trans "Hisobotlarni yuklab olish" %}</h2>
+<p class="muted">{% trans "Davomat va reytingni Excel yoki PDF ko‘rinishida oling." %}</p></div></div>
+<form method="get" class="panel" id="report-form">
+  <label class="lesson-field">{% trans "Guruh" %}<select class="input" name="group"><option value="">{% trans "Barcha guruhlar" %}</option>{% for g in groups %}<option value="{{ g.pk }}">{{ g.name }}</option>{% endfor %}</select></label>
+  <label class="lesson-field">{% trans "Davr boshi" %}<input class="input" type="date" name="from"></label>
+  <label class="lesson-field">{% trans "Davr oxiri" %}<input class="input" type="date" name="to" value="{{ today|date:'Y-m-d' }}"></label>
+  <h3>{% trans "Davomat" %}</h3>
+  <div class="form-actions">
+    <button class="button button-primary" type="submit" formaction="{% url 'attendance_report' %}" name="format" value="xlsx">Excel</button>
+    <button class="button button-outline" type="submit" formaction="{% url 'attendance_report' %}" name="format" value="pdf">PDF</button>
+  </div>
+  <h3>{% trans "Reyting" %}</h3>
+  <div class="form-actions">
+    <button class="button button-primary" type="submit" formaction="{% url 'ranking_report' %}" name="format" value="xlsx">Excel</button>
+    <button class="button button-outline" type="submit" formaction="{% url 'ranking_report' %}" name="format" value="pdf">PDF</button>
+  </div>
+</form>
+{% endblock %}

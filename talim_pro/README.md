@@ -202,3 +202,26 @@ Ommaviy bosh sahifa title, description, canonical va Open Graph metama'lumotlari
 Sayt telefon ekraniga moslashadi va qo‘llab-quvvatlanadigan brauzerlarda o‘rnatiladigan PWA sifatida ishlaydi. Internet bo‘lmaganda faqat offline ma'lumot sahifasi ko‘rsatiladi; baho, davomat va boshqa kirilgan sahifalar keshga yozilmaydi.
 
 Android Studio loyihasi `android/` papkasida. Hozircha `siteUrl=https://example.com` namuna qiymati; APK yig‘ishdan oldin uni hostingga chiqqan haqiqiy HTTPS domen bilan almashtiring. Hosting va domen tayyor bo‘lmaguncha APK ishlaydi deb bo‘lmaydi. Repository’da Gradle Wrapper (`gradlew`) yo‘q; Android Studio’da Gradle 8.13 va JDK 17 bilan sync/build qiling yoki loyiha uchun wrapper yarating. Android SDK Platform 36 kerak. **Build → Build Bundle(s) / APK(s) → Build APK(s)** ni tanlang. APK hosted Django saytiga ulanadi, lokal serverni ichiga olmaydi.
+
+## Yangi imkoniyatlar
+
+| Bo‘lim | Qayerda | Sozlash |
+| --- | --- | --- |
+| To‘lovlar (hisob, qarzdorlar, Click/Payme) | `/tolovlar/`, `/tolovlar/qarzdorlar/` | `CLICK_*`, `PAYME_*` (`.env.example`) |
+| Uyga vazifa | `/vazifalar/` | `MEDIA_ROOT` (doimiy diskka ulang) |
+| Push bildirishnomalar | `/bildirishnomalar/` | `python manage.py generate_vapid_keys` → `VAPID_*` |
+| Rus tili | yuqoridagi UZ/RU tugmasi | `locale/ru`, yangilash: `tools/extract_messages.py`, `tools/po2mo.py` |
+| Ochiq sahifalar | `/kurslar/`, `/narxlar/`, `/ariza/` | kurslar admin panelda (Kurslar) |
+| Hisobot eksporti | `/hisobot/` (Excel/PDF) | — |
+| Admin 2FA va jurnal | `/2fa/…`, admin panel → O‘zgarishlar jurnali | `ADMIN_2FA_REQUIRED` (standart: yoqilgan) |
+
+**To‘lov provayderlari.** Click va Payme kabinetida callback manzillarini kiriting:
+Click — `https://<domen>/tolov/click/` (Prepare va Complete), Payme — `https://<domen>/tolov/payme/`.
+Payme hisob maydoni: `invoice_id`. Kalitlar faqat `.env` da saqlanadi. Birinchi marta ishga tushirishdan
+oldin provayderning test rejimida (Payme: `PAYME_TEST=True`) sinab ko‘ring.
+
+**Oylik hisoblar.** Guruhga “oylik to‘lov” summasini kiriting, so‘ng `/tolovlar/` sahifasida
+“Shu oy uchun hisob yaratish” tugmasini bosing (qayta bosish dublikat yaratmaydi).
+
+**2FA.** Administrator birinchi kirishda QR kod orqali autentifikator ilovasini ulaydi va 8 ta zaxira
+kod oladi. Telefon va kodlar yo‘qolsa: `python manage.py reset_2fa <login>`.
