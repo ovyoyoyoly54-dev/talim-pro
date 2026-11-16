@@ -1,0 +1,9 @@
+{% extends "school/public_base.html" %}
+{% load i18n %}
+{% block robots_meta %}noindex,nofollow{% endblock %}
+{% block title %}{% trans "Ariza qabul qilindi" %} — {{ platform_settings.site_name|default:"TA’LIM PRO" }}{% endblock %}
+{% block public_content %}
+<section class="feature-section"><div class="section-intro"><h1>{% trans "Rahmat! Arizangiz qabul qilindi." %}</h1>
+<p class="muted">{% trans "Administrator tez orada siz bilan bog‘lanadi." %}</p></div>
+<a class="button button-primary" href="{% url 'home' %}">{% trans "Bosh sahifaga" %}</a></section>
+{% endblock %}

@@ -1,6 +1,6 @@
-{% load static %}
+{% load static i18n %}
 <!doctype html>
-<html lang="uz">
+<html lang="{{ LANGUAGE_CODE|default:'uz' }}">
 <head>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#102544">
@@ -16,35 +16,41 @@
   <link rel="stylesheet" href="{% static 'school/ui-polish.css' %}">
 </head>
 <body>
-<a class="skip-link" href="#main-content">Asosiy qismga o‘tish</a>
+<a class="skip-link" href="#main-content">{% trans "Asosiy qismga o‘tish" %}</a>
 <div class="app-shell">
   {% if user.is_authenticated %}
   <aside class="sidebar">
-    <a class="brand" href="{% url 'dashboard' %}"><span class="brand-mark">T</span><span>TA'LIM <b>PRO</b><small>O‘quv markazi</small></span></a>
-    <div class="nav-label">ASOSIY</div>
+    <a class="brand" href="{% url 'dashboard' %}"><span class="brand-mark">T</span><span>TA'LIM <b>PRO</b><small>{% trans "O‘quv markazi" %}</small></span></a>
+    <div class="nav-label">{% trans "ASOSIY" %}</div>
     <nav>
-      <a href="{% url 'dashboard' %}">◫ <span>Bosh sahifa</span></a>
-      {% if user.role == "student" %}<a href="{% url 'dashboard' %}#davomat">✓ <span>Davomatim</span></a>{% endif %}
-      {% if user.role == 'teacher' or user.role == 'admin' or user.is_superuser %}<a href="{% url 'grade_lesson' %}">✎ <span>Baho qo‘yish</span></a>{% endif %}
-      <a href="{% url 'ranking' %}">↗ <span>Reyting</span></a>
-      <a href="{% url 'schedule' %}">▦ <span>Dars jadvali</span></a>
-      {% if user.role == 'admin' or user.is_superuser %}<a href="{% url 'group_management' %}"{% if request.resolver_match.url_name == 'group_management' or request.resolver_match.url_name == 'group_detail' %} class="active" aria-current="page"{% endif %}>▦ <span>Guruhlar</span></a><a href="{% url 'teacher_management' %}"{% if request.resolver_match.url_name == 'teacher_management' %} class="active" aria-current="page"{% endif %}>👨‍🏫 <span>O‘qituvchilar</span></a><a href="{% url 'lesson_create' %}"{% if request.resolver_match.url_name == 'lesson_create' %} class="active" aria-current="page"{% endif %}>+ <span>Dars qo‘shish</span></a>{% endif %}
-      <a href="{% url 'settings_panel' %}"{% if request.resolver_match.url_name == 'settings_panel' %} class="active" aria-current="page"{% endif %}>⚙ <span>Sozlamalar</span></a>
-      {% if user.is_staff or user.is_superuser %}<a href="{% url 'admin:index' %}">▦ <span>Boshqaruv paneli</span></a>{% endif %}
+      <a href="{% url 'dashboard' %}">◫ <span>{% trans "Bosh sahifa" %}</span></a>
+      {% if user.role == "student" %}<a href="{% url 'dashboard' %}#davomat">✓ <span>{% trans "Davomatim" %}</span></a>{% endif %}
+      {% if user.role == 'teacher' or user.role == 'admin' or user.is_superuser %}<a href="{% url 'grade_lesson' %}">✎ <span>{% trans "Baho qo‘yish" %}</span></a>{% endif %}
+      <a href="{% url 'ranking' %}">↗ <span>{% trans "Reyting" %}</span></a>
+      <a href="{% url 'schedule' %}">▦ <span>{% trans "Dars jadvali" %}</span></a>
+      {% if user.role == 'admin' or user.is_superuser %}<a href="{% url 'group_management' %}"{% if request.resolver_match.url_name == 'group_management' or request.resolver_match.url_name == 'group_detail' %} class="active" aria-current="page"{% endif %}>▦ <span>{% trans "Guruhlar" %}</span></a><a href="{% url 'teacher_management' %}"{% if request.resolver_match.url_name == 'teacher_management' %} class="active" aria-current="page"{% endif %}>👨‍🏫 <span>{% trans "O‘qituvchilar" %}</span></a><a href="{% url 'lesson_create' %}"{% if request.resolver_match.url_name == 'lesson_create' %} class="active" aria-current="page"{% endif %}>+ <span>{% trans "Dars qo‘shish" %}</span></a>{% endif %}
+      <a href="{% url 'homework_list' %}">✎ <span>{% trans "Uyga vazifa" %}</span></a>
+      {% if user.role == 'admin' or user.is_superuser or user.role == 'student' or user.role == 'parent' %}<a href="{% url 'payments_overview' %}">₿ <span>{% trans "To‘lovlar" %}</span></a>{% endif %}
+      {% if user.role == 'admin' or user.is_superuser %}<a href="{% url 'applications_list' %}">✉ <span>{% trans "Arizalar" %}</span></a>{% endif %}
+      {% if user.role == 'admin' or user.is_superuser or user.role == 'teacher' %}<a href="{% url 'reports_home' %}">▤ <span>{% trans "Hisobotlar" %}</span></a>{% endif %}
+      <a href="{% url 'notification_list' %}">🔔 <span>{% trans "Bildirishnomalar" %}</span>{% if unread_notifications %} <b class="pill pill-red">{{ unread_notifications }}</b>{% endif %}</a>
+      <a href="{% url 'settings_panel' %}"{% if request.resolver_match.url_name == 'settings_panel' %} class="active" aria-current="page"{% endif %}>⚙ <span>{% trans "Sozlamalar" %}</span></a>
+      {% if user.is_staff or user.is_superuser %}<a href="{% url 'admin:index' %}">▦ <span>{% trans "Boshqaruv paneli" %}</span></a>{% endif %}
     </nav>
-    {% if user.role == "student" and user.must_change_credentials %}<a class="credential-alert" href="{% url 'first_login_credentials' %}"><span class="credential-alert-icon">!</span><span><b>Login va parolni almashtiring</b><small>Akkauntingizni himoyalang</small></span> ↗</a>{% endif %}
-    <div class="sidebar-bottom"><div class="avatar">{{ user.first_name|first|default:user.username|first|upper }}</div><div class="user-meta"><b>{{ user.get_full_name|default:user.username }}</b><small>{{ user.get_role_display|default:"Administrator" }}</small></div><form method="post" action="{% url 'logout' %}">{% csrf_token %}<button class="icon-button" type="submit" aria-label="Tizimdan chiqish" title="Tizimdan chiqish">↗</button></form></div>
+    {% if user.role == "student" and user.must_change_credentials %}<a class="credential-alert" href="{% url 'first_login_credentials' %}"><span class="credential-alert-icon">!</span><span><b>{% trans "Login va parolni almashtiring" %}</b><small>{% trans "Akkauntingizni himoyalang" %}</small></span> ↗</a>{% endif %}
+    <div class="sidebar-bottom"><div class="avatar">{{ user.first_name|first|default:user.username|first|upper }}</div><div class="user-meta"><b>{{ user.get_full_name|default:user.username }}</b><small>{{ user.get_role_display|default:"Administrator" }}</small></div><form method="post" action="{% url 'logout' %}">{% csrf_token %}<button class="icon-button" type="submit" aria-label="{% trans 'Tizimdan chiqish' %}" title="{% trans 'Tizimdan chiqish' %}">↗</button></form></div>
   </aside>
   {% endif %}
   <main class="main-area" id="main-content" tabindex="-1">
-    {% if user.is_authenticated %}<header class="topbar"><div><span class="eyebrow">TA'LIM BOSHQARUVI</span><h1>{% block page_heading %}Bosh sahifa{% endblock %}</h1></div><div class="top-actions"><span class="date-pill">◷ {% now "j F Y" %}</span><div class="avatar avatar-light">{{ user.first_name|first|default:user.username|first|upper }}</div></div></header>{% endif %}
+    {% if user.is_authenticated %}<header class="topbar"><div><span class="eyebrow">{% trans "TA'LIM BOSHQARUVI" %}</span><h1>{% block page_heading %}Bosh sahifa{% endblock %}</h1></div><div class="top-actions"><form method="post" action="{% url 'set_language' %}" class="lang-switch">{% csrf_token %}<input type="hidden" name="next" value="{{ request.path }}">{% get_current_language as CUR %}<button class="button button-outline" name="language" value="uz" type="submit"{% if CUR == 'uz' %} aria-current="true"{% endif %}>UZ</button><button class="button button-outline" name="language" value="ru" type="submit"{% if CUR == 'ru' %} aria-current="true"{% endif %}>RU</button></form><span class="date-pill">◷ {% now "j F Y" %}</span><div class="avatar avatar-light">{{ user.first_name|first|default:user.username|first|upper }}</div></div></header>{% endif %}
     <section class="content">
       {% for message in messages %}<div class="message {{ message.tags }}">{{ message }}</div>{% endfor %}
       {% block content %}{% endblock %}
-      <footer>© {% now "Y" %} TA'LIM PRO <span>Ta'limni boshqarishning sodda yo‘li</span></footer>
+      <footer>© {% now "Y" %} TA'LIM PRO <span>{% trans "Ta'limni boshqarishning sodda yo‘li" %}</span></footer>
     </section>
   </main>
 </div>
 <script src="{% static 'school/app.js' %}"></script>
+{% block scripts %}{% endblock %}
 <script>if ('serviceWorker' in navigator) { window.addEventListener('load', () => navigator.serviceWorker.register('{% url "service_worker" %}').catch(() => {})); }</script>
 </body></html>

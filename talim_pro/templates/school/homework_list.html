@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}{% trans "Uyga vazifa" %} — TA'LIM PRO{% endblock %}
+{% block page_heading %}{% trans "Uyga vazifa" %}{% endblock %}
+{% block content %}
+<div class="page-intro">
+  <div><span class="eyebrow">{% trans "O‘QUV JARAYONI" %}</span><h2>{% trans "Uyga vazifalar" %}</h2>
+  <p class="muted">{% trans "Topshiriqlar, javoblar va o‘qituvchi baholari." %}</p></div>
+  {% if can_create %}<a class="button button-primary" href="{% url 'homework_create' %}">{% trans "Yangi vazifa" %}</a>{% endif %}
+</div>
+<div class="panel"><div class="table-wrap"><table>
+<thead><tr><th>{% trans "Vazifa" %}</th><th>{% trans "Guruh" %}</th><th>{% trans "Muddat" %}</th><th>{% trans "Holati" %}</th></tr></thead><tbody>
+{% for hw in items %}<tr>
+<td><a class="student-link" href="{% url 'homework_detail' hw.pk %}">{{ hw.title }}</a></td><td>{{ hw.group.name }}</td><td>{{ hw.due_at|date:"d.m.Y H:i" }}</td>
+<td>{% if hw.my_submission %}{% if hw.my_submission.score is not None %}<span class="pill pill-green">{{ hw.my_submission.score }}/10</span>{% else %}<span class="pill pill-blue">{% trans "Topshirilgan" %}</span>{% endif %}
+{% elif hw.is_past_due %}<span class="pill pill-red">{% trans "Muddati o‘tgan" %}</span>{% else %}<span class="pill pill-blue">{% trans "Faol" %}</span>{% endif %}</td>
+</tr>{% empty %}<tr><td colspan="4" class="empty">{% trans "Hozircha vazifalar yo‘q." %}</td></tr>{% endfor %}
+</tbody></table></div></div>
+{% endblock %}

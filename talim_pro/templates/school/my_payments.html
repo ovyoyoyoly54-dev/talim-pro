@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}{% trans "Mening to‘lovlarim" %} — TA'LIM PRO{% endblock %}
+{% block page_heading %}{% trans "To‘lovlar" %}{% endblock %}
+{% block content %}
+<div class="page-intro"><div><span class="eyebrow">{% trans "MOLIYA" %}</span><h2>{% trans "Oylik to‘lovlar" %}</h2>
+<p class="muted">{% trans "Hisoblar va to‘lov tarixi. Click yoki Payme orqali onlayn to‘lash mumkin." %}</p></div></div>
+{% if debt %}<div class="message error">{% trans "Muddati o‘tgan qarz" %}: <b>{{ debt|floatformat:0 }}</b> {% trans "so‘m" %}</div>{% endif %}
+<div class="panel"><div class="table-wrap"><table>
+<thead><tr><th>{% trans "O‘quvchi" %}</th><th>{% trans "Davr" %}</th><th>{% trans "Summa" %}</th><th>{% trans "Qoldiq" %}</th><th>{% trans "Muddat" %}</th><th>{% trans "Holati" %}</th><th>{% trans "Onlayn to‘lash" %}</th></tr></thead><tbody>
+{% for inv in invoices %}<tr><td>{{ inv.student.user.get_full_name|default:inv.student.user.username }}</td><td>{{ inv.period|date:"F Y" }}</td><td>{{ inv.amount|floatformat:0 }}</td><td>{{ inv.balance|floatformat:0 }}</td><td>{{ inv.due_date|date:"d.m.Y" }}</td>
+<td><span class="pill {% if inv.status == 'paid' %}pill-green{% elif inv.is_overdue %}pill-red{% else %}pill-blue{% endif %}">{{ inv.get_status_display }}</span></td>
+<td>{% if inv.click_url %}<a class="button button-primary" href="{{ inv.click_url }}" rel="noopener">Click</a> {% endif %}{% if inv.payme_url %}<a class="button button-primary" href="{{ inv.payme_url }}" rel="noopener">Payme</a>{% endif %}{% if not inv.click_url and not inv.payme_url %}—{% endif %}</td></tr>
+{% empty %}<tr><td colspan="7" class="empty">{% trans "Hisoblar hali yo‘q." %}</td></tr>{% endfor %}
+</tbody></table></div></div>
+<div class="panel"><h3>{% trans "To‘lov tarixi" %}</h3><div class="table-wrap"><table>
+<thead><tr><th>{% trans "Sana" %}</th><th>{% trans "Davr" %}</th><th>{% trans "Summa" %}</th><th>{% trans "Usul" %}</th></tr></thead><tbody>
+{% for p in payments %}<tr><td>{{ p.paid_at|date:"d.m.Y H:i" }}</td><td>{{ p.invoice.period|date:"F Y" }}</td><td>{{ p.amount|floatformat:0 }}</td><td>{{ p.get_method_display }}</td></tr>
+{% empty %}<tr><td colspan="4" class="empty">{% trans "To‘lovlar hali yo‘q." %}</td></tr>{% endfor %}
+</tbody></table></div></div>
+{% endblock %}

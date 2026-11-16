@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}{% trans "Zaxira kodlar" %} — TA'LIM PRO{% endblock %}
+{% block page_heading %}{% trans "Zaxira kodlar" %}{% endblock %}
+{% block content %}
+<div class="page-intro"><div><span class="eyebrow">{% trans "XAVFSIZLIK" %}</span><h2>{% trans "2FA yoqildi" %}</h2>
+<p class="muted">{% trans "Telefon yo‘qolsa kirish uchun bu bir martalik kodlarni xavfsiz joyda saqlang. Ular qayta ko‘rsatilmaydi." %}</p></div></div>
+<div class="panel"><ul>{% for code in codes %}<li><code>{{ code }}</code></li>{% endfor %}</ul>
+<a class="button button-primary" href="{{ next }}">{% trans "Saqladim, davom etish" %}</a></div>
+{% endblock %}

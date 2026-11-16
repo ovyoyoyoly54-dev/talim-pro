@@ -775,13 +775,15 @@ class PlatformRulesTests(TestCase):
         self.assertRedirects(client.get(reverse("dashboard")), f"{reverse('login')}?next={reverse('dashboard')}")
 
     @override_settings(PUBLIC_SITE_URL="")
-    def test_sitemap_contains_only_public_home_and_robots_excludes_private_urls(self):
+    def test_sitemap_contains_only_public_pages_and_robots_excludes_private_urls(self):
         client = Client()
         sitemap = client.get(reverse("sitemap_xml"))
         self.assertEqual(sitemap.status_code, 200)
         self.assertEqual(sitemap["Content-Type"], "application/xml; charset=utf-8")
-        self.assertEqual(sitemap.content.count(b"<url>"), 1)
+        # Bosh sahifa, kurslar, narxlar va ariza sahifasi (kurslar yo'q bo'lsa shular).
+        self.assertEqual(sitemap.content.count(b"<url>"), 4)
         self.assertIn(b"<loc>http://testserver/</loc>", sitemap.content)
+        self.assertNotIn(b"/dashboard/", sitemap.content)
         robots = client.get(reverse("robots_txt"))
         self.assertContains(robots, "Disallow: /oquvchi/")
         self.assertContains(robots, "Disallow: /dars-qoshish/")
@@ -882,7 +884,7 @@ class ParentSMSPhoneTests(TestCase):
         profile = StudentProfile.objects.create(user=student, group=group, parent_phone="+998901234567")
         with patch.dict("os.environ", {"SMS_API_URL": "https://provider.example/send", "SMS_API_TOKEN": "test-token"}), \
              patch("school.sms.requests.post") as post:
-            post.return_value.raise_for_status.return_value = None
+            post.return_value.status_code = 200
             log = send_parent_sms(parent=None, student=profile, phone=profile.parent_phone, body="Baho 9/10")
         self.assertEqual(log.status, "sent")
         self.assertIsNone(log.parent_id)

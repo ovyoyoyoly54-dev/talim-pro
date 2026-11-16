@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}{% trans "Arizalar" %} — TA'LIM PRO{% endblock %}
+{% block page_heading %}{% trans "Arizalar" %}{% endblock %}
+{% block content %}
+<div class="page-intro"><div><span class="eyebrow">{% trans "QABUL" %}</span><h2>{% trans "Ro‘yxatdan o‘tish arizalari" %}</h2></div>
+<form method="get" class="form-actions"><select class="input" name="status"><option value="">{% trans "Barcha holatlar" %}</option>{% for value, label in statuses %}<option value="{{ value }}"{% if value == status %} selected{% endif %}>{{ label }}</option>{% endfor %}</select><button class="button button-outline" type="submit">{% trans "Ko‘rsatish" %}</button></form></div>
+<div class="panel"><div class="table-wrap"><table>
+<thead><tr><th>{% trans "Sana" %}</th><th>{% trans "Ism-familiya" %}</th><th>{% trans "Telefon" %}</th><th>{% trans "Kurs" %}</th><th>{% trans "Izoh" %}</th><th>{% trans "Holati" %}</th></tr></thead><tbody>
+{% for a in items %}<tr><td>{{ a.created_at|date:"d.m.Y H:i" }}</td><td>{{ a.full_name }}</td><td><a href="tel:{{ a.phone }}">{{ a.phone }}</a></td><td>{{ a.course.title|default:"—" }}</td><td>{{ a.message }}</td>
+<td><form method="post" class="form-actions">{% csrf_token %}<input type="hidden" name="application_id" value="{{ a.pk }}"><select class="input" name="status" aria-label="{% trans 'Holati' %}">{% for value, label in statuses %}<option value="{{ value }}"{% if value == a.status %} selected{% endif %}>{{ label }}</option>{% endfor %}</select><button class="button button-outline" type="submit">{% trans "Saqlash" %}</button></form></td></tr>
+{% empty %}<tr><td colspan="6" class="empty">{% trans "Arizalar yo‘q." %}</td></tr>{% endfor %}
+</tbody></table></div></div>
+{% endblock %}

@@ -1,0 +1,14 @@
+{% extends "school/public_base.html" %}
+{% load i18n %}
+{% block title %}{% trans "Kurslar" %} — {{ platform_settings.site_name|default:"TA’LIM PRO" }}{% endblock %}
+{% block meta_description %}{% trans "O‘quv markazimizdagi kurslar, davomiyligi va narxlari." %}{% endblock %}
+{% block public_content %}
+<section class="feature-section"><div class="section-intro"><span class="eyebrow">{% trans "KURSLAR" %}</span><h1>{% trans "Bizning kurslar" %}</h1>
+<p class="muted">{% trans "O‘zingizga mos yo‘nalishni tanlang va ariza qoldiring." %}</p></div>
+<div class="feature-grid">
+{% for course in courses %}<article class="feature-card"><h3><a href="{% url 'course_detail' course.slug %}">{{ course.title }}</a></h3><p>{{ course.summary }}</p>
+<p><b>{{ course.price|floatformat:0 }} {% trans "so‘m / oy" %}</b>{% if course.duration %} · {{ course.duration }}{% endif %}</p>
+<a class="button button-outline" href="{% url 'apply' %}?kurs={{ course.slug }}">{% trans "Ariza qoldirish" %}</a></article>
+{% empty %}<p class="muted">{% trans "Kurslar tez orada e’lon qilinadi." %}</p>{% endfor %}
+</div></section>
+{% endblock %}

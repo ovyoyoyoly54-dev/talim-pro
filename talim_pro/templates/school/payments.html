@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}{% trans "To‘lovlar" %} — TA'LIM PRO{% endblock %}
+{% block page_heading %}{% trans "To‘lovlar" %}{% endblock %}
+{% block content %}
+<div class="page-intro">
+  <div><span class="eyebrow">{% trans "MOLIYA" %}</span><h2>{{ period|date:"F Y" }}</h2>
+  <p class="muted">{% trans "Oylik hisoblar, qabul qilingan to‘lovlar va qoldiq." %}</p></div>
+  <div class="form-actions"><a class="button button-outline" href="{% url 'debtors_list' %}">{% trans "Qarzdorlar ro‘yxati" %}</a></div>
+</div>
+<div class="stats-grid">
+  <div class="stat-card"><span>{% trans "Hisoblangan" %}</span><strong>{{ summary.billed|floatformat:0 }}</strong><small class="stat-foot">{{ summary.count }} {% trans "ta hisob" %}</small></div>
+  <div class="stat-card"><span>{% trans "To‘langan" %}</span><strong>{{ summary.paid|floatformat:0 }}</strong><small class="stat-foot">{% trans "so‘m" %}</small></div>
+  <div class="stat-card"><span>{% trans "Qoldiq" %}</span><strong>{{ summary.left|floatformat:0 }}</strong><small class="stat-foot">{% trans "so‘m" %}</small></div>
+</div>
+<form method="get" class="panel form-actions">
+  <input class="input" type="month" name="period" value="{{ period|date:'Y-m' }}">
+  <select class="input" name="status"><option value="">{% trans "Barcha holatlar" %}</option>{% for value, label in statuses %}<option value="{{ value }}"{% if value == status %} selected{% endif %}>{{ label }}</option>{% endfor %}</select>
+  <button class="button button-outline" type="submit">{% trans "Ko‘rsatish" %}</button>
+</form>
+<form method="post" action="{% url 'generate_invoices' %}" class="panel form-actions">{% csrf_token %}
+  <input type="hidden" name="period" value="{{ period|date:'Y-m' }}">
+  <select class="input" name="group"><option value="">{% trans "Barcha guruhlar" %}</option>{% for g in groups %}<option value="{{ g.pk }}">{{ g.name }}</option>{% endfor %}</select>
+  <button class="button button-primary" type="submit">{% trans "Shu oy uchun hisob yaratish" %}</button>
+  <small class="field-help">{% trans "Faqat oylik to‘lovi belgilangan guruhlar uchun; mavjud hisoblar qayta yaratilmaydi." %}</small>
+</form>
+<div class="panel"><div class="table-wrap"><table>
+<thead><tr><th>{% trans "O‘quvchi" %}</th><th>{% trans "Guruh" %}</th><th>{% trans "Summa" %}</th><th>{% trans "To‘langan" %}</th><th>{% trans "Muddat" %}</th><th>{% trans "Holati" %}</th><th>{% trans "To‘lov qabul qilish" %}</th></tr></thead><tbody>
+{% for inv in invoices %}<tr>
+<td><a class="student-link" href="{% url 'student_detail' inv.student_id %}">{{ inv.student.user.get_full_name|default:inv.student.user.username }}</a></td>
+<td>{{ inv.student.group.name }}</td><td>{{ inv.amount|floatformat:0 }}</td><td>{{ inv.paid_amount|floatformat:0 }}</td><td>{{ inv.due_date|date:"d.m.Y" }}</td>
+<td><span class="pill {% if inv.status == 'paid' %}pill-green{% elif inv.is_overdue %}pill-red{% else %}pill-blue{% endif %}">{{ inv.get_status_display }}</span></td>
+<td>{% if inv.balance > 0 %}<form method="post" action="{% url 'record_payment' inv.pk %}" class="form-actions">{% csrf_token %}
+<input class="input" type="number" name="amount" min="1" max="{{ inv.balance|floatformat:0 }}" value="{{ inv.balance|floatformat:0 }}" required aria-label="{% trans 'Summa' %}">
+<select class="input" name="method" aria-label="{% trans 'Usul' %}">{% for value, label in manual_methods %}<option value="{{ value }}">{{ label }}</option>{% endfor %}</select>
+<button class="button button-primary" type="submit">{% trans "Qabul qilish" %}</button></form>
+<form method="post" action="{% url 'cancel_invoice' inv.pk %}">{% csrf_token %}<button class="button button-outline" type="submit">{% trans "Hisobni bekor qilish" %}</button></form>{% else %}—{% endif %}</td>
+</tr>{% empty %}<tr><td colspan="7" class="empty">{% trans "Bu oy uchun hisoblar yo‘q." %}</td></tr>{% endfor %}
+</tbody></table></div></div>
+{% endblock %}

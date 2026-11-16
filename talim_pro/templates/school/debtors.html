@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}{% trans "Qarzdorlar" %} — TA'LIM PRO{% endblock %}
+{% block page_heading %}{% trans "Qarzdorlar" %}{% endblock %}
+{% block content %}
+<div class="page-intro">
+  <div><span class="eyebrow">{% trans "MOLIYA" %}</span><h2>{% trans "Qarzdorlik ro‘yxati" %}</h2>
+  <p class="muted">{% trans "To‘lov muddati o‘tgan va to‘liq to‘lanmagan hisoblar." %}</p></div>
+  <div class="form-actions"><a class="button button-outline" href="{% url 'payments_overview' %}">{% trans "To‘lovlarga qaytish" %}</a>
+  {% if rows %}<form method="post" action="{% url 'remind_debtors' %}">{% csrf_token %}<button class="button button-primary" type="submit">{% trans "Hammasiga eslatma yuborish" %}</button></form>{% endif %}</div>
+</div>
+<div class="stats-grid"><div class="stat-card"><span>{% trans "Jami qarz" %}</span><strong>{{ total_debt|floatformat:0 }}</strong><small class="stat-foot">{{ rows|length }} {% trans "ta qarzdor" %}</small></div></div>
+<div class="panel"><div class="table-wrap"><table>
+<thead><tr><th>{% trans "O‘quvchi" %}</th><th>{% trans "Guruh" %}</th><th>{% trans "Hisoblar" %}</th><th>{% trans "Eng eski muddat" %}</th><th>{% trans "Qarz (so‘m)" %}</th></tr></thead><tbody>
+{% for row in rows %}<tr><td><a class="student-link" href="{% url 'student_detail' row.student.pk %}">{{ row.student.user.get_full_name|default:row.student.user.username }}</a></td><td>{{ row.student.group.name }}</td><td>{{ row.invoices }}</td><td>{{ row.oldest|date:"d.m.Y" }}</td><td><span class="pill pill-red">{{ row.debt|floatformat:0 }}</span></td></tr>
+{% empty %}<tr><td colspan="5" class="empty">{% trans "Qarzdorlar yo‘q." %}</td></tr>{% endfor %}
+</tbody></table></div></div>
+{% endblock %}

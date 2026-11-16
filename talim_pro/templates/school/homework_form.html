@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}{% trans "Yangi vazifa" %} — TA'LIM PRO{% endblock %}
+{% block page_heading %}{% trans "Yangi vazifa" %}{% endblock %}
+{% block content %}
+<div class="page-intro"><div><span class="eyebrow">{% trans "UYGA VAZIFA" %}</span><h2>{% trans "Yangi topshiriq" %}</h2></div>
+<a class="button button-outline" href="{% url 'homework_list' %}">{% trans "Ro‘yxatga qaytish" %}</a></div>
+<form method="post" enctype="multipart/form-data" class="panel" novalidate>{% csrf_token %}
+{% if form.non_field_errors %}<div class="message error">{{ form.non_field_errors }}</div>{% endif %}
+{% for field in form %}<label class="lesson-field" for="{{ field.id_for_label }}">{{ field.label }}{% if field.field.required %} <span class="required">*</span>{% endif %}
+{{ field }}{% if field.errors %}<small class="field-error">{{ field.errors|striptags }}</small>{% endif %}</label>{% endfor %}
+<small class="field-help">{% trans "Ruxsat etilgan fayllar: PDF, Office, rasm, TXT, ZIP. Hajmi 10 MB gacha." %}</small>
+<button class="button button-primary" type="submit">{% trans "Saqlash" %}</button></form>
+{% endblock %}
