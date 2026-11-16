@@ -34,7 +34,7 @@
 <input class="input" type="number" name="amount" min="1" max="{{ inv.balance|floatformat:0 }}" value="{{ inv.balance|floatformat:0 }}" required aria-label="{% trans 'Summa' %}">
 <select class="input" name="method" aria-label="{% trans 'Usul' %}">{% for value, label in manual_methods %}<option value="{{ value }}">{{ label }}</option>{% endfor %}</select>
 <button class="button button-primary" type="submit">{% trans "Qabul qilish" %}</button></form>
-<form method="post" action="{% url 'cancel_invoice' inv.pk %}">{% csrf_token %}<button class="button button-outline" type="submit">{% trans "Hisobni bekor qilish" %}</button></form>{% else %}—{% endif %}</td>
+<form method="post" action="{% url 'cancel_invoice' inv.pk %}" data-confirm="{% trans 'Bu hisob bekor qilinadi va uni qayta tiklab bo‘lmaydi. Davom etasizmi?' %}">{% csrf_token %}<button class="button button-outline" type="submit">{% trans "Hisobni bekor qilish" %}</button></form>{% else %}—{% endif %}</td>
 </tr>{% empty %}<tr><td colspan="7" class="empty">{% trans "Bu oy uchun hisoblar yo‘q." %}</td></tr>{% endfor %}
 </tbody></table></div></div>
 {% endblock %}

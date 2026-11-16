@@ -10,14 +10,14 @@ from django.core.exceptions import PermissionDenied, ValidationError
 from django.db import IntegrityError, transaction
 from django.db.models import Avg, Sum, Count, Q
 from django.shortcuts import render, redirect, get_object_or_404
-from django.http import FileResponse, JsonResponse, HttpResponse
+from django.http import FileResponse, Http404, JsonResponse, HttpResponse
 from django.conf import settings
 from django.templatetags.static import static
 from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.http import require_GET
 from xml.sax.saxutils import escape
-from .forms import GradeRecordForm, PhoneResetRequestForm, PhoneOTPForm, PhonePasswordResetForm, SignupRequestForm, SignupCompleteForm, AccountClosureConfirmForm, PlatformSettingsForm, AccountSettingsForm, StyledPasswordChangeForm, AddStudentToGroupForm, CreateStudentInGroupForm, CreateTeacherForm, FirstLoginCredentialsForm, LessonCreateForm, LessonRescheduleForm
+from .forms import GradeRecordForm, PhoneResetRequestForm, PhoneOTPForm, PhonePasswordResetForm, SignupRequestForm, SignupCompleteForm, AccountClosureConfirmForm, PlatformSettingsForm, AccountSettingsForm, StyledPasswordChangeForm, AddStudentToGroupForm, CreateStudentInGroupForm, StudyGroupForm, CreateTeacherForm, FirstLoginCredentialsForm, LessonCreateForm, LessonRescheduleForm
 from .models import User, StudyGroup, StudentProfile, Lesson, GradeRecord, Attendance, SMSLog, PhoneOTP, PlatformSettings
 from .phone_auth import consume_phone_otp, issue_phone_otp, normalize_phone
 from .sms import send_parent_sms
@@ -113,6 +113,15 @@ def signup(request):
         consumed_at__isnull=True,
     ).first() if pending_user and challenge_id else None
 
+    if request.method == "POST" and request.POST.get("action") == "restart":
+        # Noto‘g‘ri raqam kiritilgan yoki kod kelmagan bo‘lsa, formani qaytadan to‘ldirish imkoni.
+        if pending_user:
+            pending_user.delete()
+        for key in ("signup_user_id", "signup_otp_id", "signup_group_id", "signup_started_at"):
+            request.session.pop(key, None)
+        messages.info(request, "Ro‘yxatdan o‘tish qaytadan boshlandi. Ma’lumotlarni tekshirib, yangi kod so‘rang.")
+        return redirect("signup")
+
     if request.method == "POST" and request.POST.get("action") == "send_code":
         if pending_user:
             pending_user.delete()
@@ -171,7 +180,13 @@ def signup(request):
             else:
                 complete_form.add_error("code", "Kod noto‘g‘ri yoki muddati tugagan.")
         elif not challenge or not fresh:
-            complete_form.add_error(None, "Tasdiqlash so‘rovi muddati tugagan. Yangi kod so‘rang.")
+            # Bu holatda kod formasi ko‘rsatilmaydi, shuning uchun xato umumiy xabar sifatida chiqadi.
+            if pending_user:
+                pending_user.delete()
+            for key in ("signup_user_id", "signup_otp_id", "signup_group_id", "signup_started_at"):
+                request.session.pop(key, None)
+            challenge = None
+            messages.error(request, "Tasdiqlash so‘rovi muddati tugagan. Ma’lumotlarni kiritib, yangi kod so‘rang.")
 
     return render(request, "school/signup.html", {
         "request_form": SignupRequestForm(), "complete_form": complete_form,
@@ -186,6 +201,11 @@ def password_reset(request):
     challenge = PhoneOTP.objects.filter(
         pk=challenge_id, purpose=PhoneOTP.Purpose.RESET_PASSWORD, consumed_at__isnull=True
     ).select_related("user").first() if challenge_id else None
+
+    if request.method == "POST" and request.POST.get("action") == "restart":
+        request.session.pop("password_reset_otp_id", None)
+        messages.info(request, "Yangi kod so‘rash uchun login va telefon raqamingizni qayta kiriting.")
+        return redirect("password_reset")
 
     if request.method == "POST" and request.POST.get("action") == "send_code":
         request_form = PhoneResetRequestForm(request.POST)
@@ -220,7 +240,8 @@ def password_reset(request):
                 request.session.pop("password_reset_otp_id", None)
             otp_form.add_error("code", "Kod noto‘g‘ri yoki muddati tugagan. Yangi kod so‘rang.")
         elif not challenge:
-            otp_form.add_error(None, "Faol tasdiqlash so‘rovi topilmadi. Avval yangi kod so‘rang.")
+            request.session.pop("password_reset_otp_id", None)
+            messages.error(request, "Faol tasdiqlash so‘rovi topilmadi. Avval yangi kod so‘rang.")
 
     return render(request, "school/password_reset.html", {
         "request_form": request_form,
@@ -282,7 +303,8 @@ def close_account(request):
                 request.session.pop("close_account_otp_id", None)
             otp_form.add_error("code", "Kod noto‘g‘ri yoki muddati tugagan. Yangi kod so‘rang.")
         elif not challenge:
-            otp_form.add_error(None, "Faol tasdiqlash so‘rovi topilmadi. Avval yangi kod so‘rang.")
+            request.session.pop("close_account_otp_id", None)
+            messages.error(request, "Faol tasdiqlash so‘rovi topilmadi. Avval yangi kod so‘rang.")
 
     if request.method == "POST" and request.POST.get("action") == "confirm_close":
         password_form = AccountClosureConfirmForm(request.POST, user=user)
@@ -297,7 +319,8 @@ def close_account(request):
             messages.success(request, "Akkaunt yopildi. Ta’lim tarixi saqlanadi.")
             return redirect("home")
         if not password_step:
-            password_form.add_error(None, "Tasdiqlash muddati tugagan. SMS kodni yangidan so‘rang.")
+            # Parol formasi endi ko‘rsatilmaydi: xato umumiy xabar sifatida chiqadi.
+            messages.error(request, "Tasdiqlash muddati tugagan. SMS kodni yangidan so‘rang.")
         else:
             attempts += 1
             request.session["close_account_password_attempts"] = attempts
@@ -305,7 +328,7 @@ def close_account(request):
                 request.session.pop("close_account_otp_verified_at", None)
                 request.session.pop("close_account_password_attempts", None)
                 password_step = False
-                password_form.add_error(None, "Ko‘p noto‘g‘ri urinish bo‘ldi. Yangi SMS kod so‘rang.")
+                messages.error(request, "Ko‘p noto‘g‘ri urinish bo‘ldi. Yangi SMS kod so‘rang.")
 
     return render(request, "school/close_account.html", {
         "otp_form": otp_form,
@@ -315,6 +338,13 @@ def close_account(request):
     })
 
 def is_admin(user): return user.is_authenticated and (user.is_superuser or user.role == User.Role.ADMIN)
+
+
+def posted_object_or_404(queryset, value):
+    """POST orqali kelgan ID bo‘yicha obyektni oladi; bo‘sh yoki raqam bo‘lmagan qiymat 500 emas, 404 beradi."""
+    if not str(value or "").isdigit():
+        raise Http404
+    return get_object_or_404(queryset, pk=int(value))
 
 
 @login_required
@@ -412,16 +442,27 @@ def teacher_assign_group(request, teacher_id):
     teacher = get_object_or_404(User, pk=teacher_id, role=User.Role.TEACHER)
     if request.method != "POST":
         return redirect("teacher_management")
-    group_id = request.POST.get("group_id")
-    group = get_object_or_404(StudyGroup, pk=group_id)
-    group.teachers.add(teacher)
-    messages.success(request, f"{teacher.get_full_name()} “{group.name}” guruhiga biriktirildi.")
+    group = posted_object_or_404(StudyGroup, request.POST.get("group_id"))
+    name = teacher.get_full_name() or teacher.username
+    if group.teachers.filter(pk=teacher.pk).exists():
+        messages.info(request, f"{name} allaqachon “{group.name}” guruhiga biriktirilgan.")
+    else:
+        group.teachers.add(teacher)
+        messages.success(request, f"{name} “{group.name}” guruhiga biriktirildi.")
     return redirect("teacher_management")
 
 @login_required
 def group_management(request):
     if not is_admin(request.user):
         raise PermissionDenied
+    group_form = StudyGroupForm(request.POST or None)
+    if request.method == "POST":
+        if group_form.is_valid():
+            group = group_form.save()
+            messages.success(request, f"“{group.name}” guruhi yaratildi. Endi o‘qituvchi va o‘quvchilarni biriktiring.")
+            return redirect("group_detail", group_id=group.pk)
+    max_groups = settings.MAX_STUDY_GROUPS
+    limit_reached = bool(max_groups) and StudyGroup.objects.count() >= max_groups
     query = request.GET.get("q", "").strip()
     groups = StudyGroup.objects.all().prefetch_related("teachers").annotate(
         student_total=Count(
@@ -440,6 +481,9 @@ def group_management(request):
         "total_students": StudentProfile.objects.filter(
             user__role=User.Role.STUDENT, user__is_active=True,
         ).count(), "total_lessons": Lesson.objects.count(),
+        "group_form": group_form, "max_groups": max_groups, "limit_reached": limit_reached,
+        # Xato bo‘lsa yoki bosh sahifadagi «Yangi guruh yarating» havolasidan kelinsa, oyna ochiq turadi.
+        "open_group_dialog": bool(group_form.errors) or (request.GET.get("yangi") == "1" and not limit_reached),
     })
 
 
@@ -449,7 +493,7 @@ def group_detail(request, group_id):
         raise PermissionDenied
     group = get_object_or_404(StudyGroup.objects.prefetch_related("teachers"), pk=group_id)
     if request.method == "POST" and request.POST.get("action") == "assign_teacher":
-        teacher = get_object_or_404(User, pk=request.POST.get("teacher_id"), role=User.Role.TEACHER)
+        teacher = posted_object_or_404(User.objects.filter(role=User.Role.TEACHER), request.POST.get("teacher_id"))
         group.teachers.add(teacher)
         messages.success(request, f"{teacher.get_full_name() or teacher.username} guruhga biriktirildi.")
         return redirect("group_detail", group_id=group.pk)
@@ -459,10 +503,13 @@ def group_detail(request, group_id):
         movable = StudentProfile.objects.filter(
             user__role=User.Role.STUDENT, user__is_active=True,
         ).exclude(group=group).exclude(grades__isnull=False).exclude(attendance__isnull=False)
-        student = get_object_or_404(movable, pk=request.POST.get("student_id"))
+        student = posted_object_or_404(movable, request.POST.get("student_id"))
         student.group = group
         student.save(update_fields=["group"])
         messages.success(request, f"{student.user.get_full_name() or student.user.username} guruhga biriktirildi.")
+        return redirect("group_detail", group_id=group.pk)
+    if request.method == "POST":
+        messages.error(request, "So‘rov turi aniqlanmadi.")
         return redirect("group_detail", group_id=group.pk)
     students = group.students.filter(
         user__role=User.Role.STUDENT, user__is_active=True,
@@ -496,6 +543,7 @@ def dashboard(request):
     if is_admin(user):
         context.update({
             "group_count": StudyGroup.objects.count(),
+            "max_groups": settings.MAX_STUDY_GROUPS,
             "student_count": StudentProfile.objects.filter(
                 user__role=User.Role.STUDENT, user__is_active=True,
             ).count(),
@@ -514,7 +562,13 @@ def dashboard(request):
         })
     elif user.role == User.Role.TEACHER:
         lessons = teacher_lessons(user)
-        teaching_groups = StudyGroup.objects.filter(teachers=user).distinct()
+        teaching_groups = StudyGroup.objects.filter(teachers=user).annotate(
+            student_total=Count(
+                "students",
+                filter=Q(students__user__role=User.Role.STUDENT, students__user__is_active=True),
+                distinct=True,
+            )
+        )
         context.update({"lessons": lessons.filter(starts_at__date__gte=timezone.localdate())[:8],
                         "groups": teaching_groups,
                         "student_count": StudentProfile.objects.filter(
@@ -611,7 +665,12 @@ def grade_lesson(request):
         form = GradeRecordForm(teacher=request.user, allow_all=is_admin(request.user))
 
     # Invalid POST requests must re-render the bound form with validation errors.
-    return render(request, "school/grade_form.html", {"form": form})
+    # Dars tanlanganda faqat o‘sha guruh o‘quvchilari ko‘rsatilishi uchun moslik jadvali.
+    return render(request, "school/grade_form.html", {
+        "form": form,
+        "lesson_groups": {str(pk): group_id for pk, group_id in form.fields["lesson"].queryset.values_list("pk", "group_id")},
+        "student_groups": {str(pk): group_id for pk, group_id in form.fields["student"].queryset.values_list("pk", "group_id")},
+    })
 
 @login_required
 def schedule(request):

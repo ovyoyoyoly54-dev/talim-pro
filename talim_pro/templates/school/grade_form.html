@@ -6,7 +6,7 @@
 <div class="panel grade-panel"><div class="panel-heading"><div><h3>Asosiy ma'lumotlar</h3><p class="muted">Dars va o‘quvchini tanlang</p></div><span class="step-number">01</span></div>
 {% if form.non_field_errors %}<div class="message error">{{ form.non_field_errors }}</div>{% endif %}
 <label>Dars {{ form.lesson }}{% if form.lesson.errors %}<small class="field-error">{{ form.lesson.errors|striptags }}</small>{% endif %}</label>
-<label>O‘quvchi {{ form.student }}{% if form.student.errors %}<small class="field-error">{{ form.student.errors|striptags }}</small>{% endif %}</label>
+<label>O‘quvchi {{ form.student }}<small class="field-help" id="student-filter-note">Dars tanlanganda shu guruh o‘quvchilari ko‘rsatiladi.</small>{% if form.student.errors %}<small class="field-error">{{ form.student.errors|striptags }}</small>{% endif %}</label>
 <div class="score-entry"><div class="score-title"><label for="{{ form.score.id_for_label }}">Dars bahosi</label><span class="score-value" id="score-value">—<small>/10</small></span></div>{{ form.score }}<div class="score-scale"><span>0 — Boshlang‘ich</span><span>10 — A'lo</span></div>{% if form.score.errors %}<small class="field-error">{{ form.score.errors|striptags }}</small>{% endif %}</div>
 <div class="reason-modal-backdrop" id="reason-modal" hidden>
 <section class="reason-modal" role="dialog" aria-modal="true" aria-labelledby="reason-modal-title">
@@ -18,9 +18,44 @@
 <div class="reason-modal-actions"><button class="button button-secondary" type="button" id="reason-modal-cancel">Bekor qilish</button><button class="button button-primary" type="button" id="reason-modal-confirm">Tanlovni tasdiqlash</button></div>
 </section></div>
 </div>
-<div class="panel attendance-panel"><div class="panel-heading"><div><h3>Davomat</h3><p class="muted">Bugungi qatnashuv holati</p></div><span class="step-number">03</span></div><div class="attendance-options">{% for radio in form.attendance %}<label class="attendance-option">{{ radio.tag }}<span>{{ radio.choice_label }}</span></label>{% endfor %}</div><div class="sms-info"><span class="sms-icon">✉</span><div><b>Ota-onaga xabarnoma</b><p class="muted">8 yoki undan past baho saqlanganda SMS sozlangan bo‘lsa, ota-onaga sabab va davomat bilan xabar yuboriladi.</p></div></div><button class="button button-primary button-wide" type="submit">Bahoni saqlash <span>→</span></button><p class="muted tiny center">Saqlashdan oldin ma'lumotlarni tekshiring.</p></div>
+<div class="panel attendance-panel"><div class="panel-heading"><div><h3>Davomat</h3><p class="muted">Bugungi qatnashuv holati</p></div><span class="step-number">02</span></div><div class="attendance-options">{% for radio in form.attendance %}<label class="attendance-option">{{ radio.tag }}<span>{{ radio.choice_label }}</span></label>{% endfor %}</div><div class="sms-info"><span class="sms-icon">✉</span><div><b>Ota-onaga xabarnoma</b><p class="muted">8 yoki undan past baho saqlanganda SMS sozlangan bo‘lsa, ota-onaga sabab va davomat bilan xabar yuboriladi.</p></div></div><button class="button button-primary button-wide" type="submit">Bahoni saqlash <span>→</span></button><p class="muted tiny center">Saqlashdan oldin ma'lumotlarni tekshiring.</p></div>
 </form>
+{{ lesson_groups|json_script:"lesson-group-map" }}
+{{ student_groups|json_script:"student-group-map" }}
 <script>
+document.addEventListener("DOMContentLoaded", () => {
+  // Dars tanlanganda faqat o‘sha guruh o‘quvchilari qoladi.
+  const lessonSelect = document.getElementById("id_lesson");
+  const studentSelect = document.getElementById("id_student");
+  const note = document.getElementById("student-filter-note");
+  if (!lessonSelect || !studentSelect) return;
+  const lessonGroups = JSON.parse(document.getElementById("lesson-group-map").textContent || "{}");
+  const studentGroups = JSON.parse(document.getElementById("student-group-map").textContent || "{}");
+  const studentOptions = Array.from(studentSelect.options);
+  function filterStudents() {
+    const group = lessonGroups[lessonSelect.value];
+    let available = 0;
+    let selectedHidden = false;
+    studentOptions.forEach((option) => {
+      if (!option.value) return;
+      const visible = group === undefined || studentGroups[option.value] === group;
+      option.hidden = !visible;
+      option.disabled = !visible;
+      if (visible) available += 1;
+      if (option.selected && !visible) selectedHidden = true;
+    });
+    if (selectedHidden) studentSelect.value = "";
+    if (note) {
+      note.textContent = group === undefined
+        ? "Dars tanlanganda shu guruh o‘quvchilari ko‘rsatiladi."
+        : available
+          ? `Bu dars guruhida ${available} nafar o‘quvchi bor.`
+          : "Bu dars guruhida o‘quvchi yo‘q. Avval guruhga o‘quvchi qo‘shing.";
+    }
+  }
+  lessonSelect.addEventListener("change", filterStudents);
+  filterStudents();
+});
 document.addEventListener("DOMContentLoaded", () => {
   const form = document.querySelector("form.grade-layout");
   const score = document.getElementById("id_score");
@@ -28,7 +63,7 @@ document.addEventListener("DOMContentLoaded", () => {
   if (!form || !score || !modal) return;
   const boxes = Array.from(modal.querySelectorAll('input[type="checkbox"]'));
   let confirmed = false;
-  const open = () => { modal.hidden = false; document.body.classList.add("modal-open"); };
+  const open = () => { modal.hidden = false; document.body.classList.add("modal-open"); (boxes[0] || document.getElementById("reason-modal-close")).focus(); };
   const close = () => { modal.hidden = true; document.body.classList.remove("modal-open"); };
 
   form.addEventListener("submit", event => {
@@ -58,6 +93,9 @@ document.addEventListener("DOMContentLoaded", () => {
     form.requestSubmit();
   });
   modal.addEventListener("click", event => { if (event.target === modal) close(); });
+  document.addEventListener("keydown", event => { if (event.key === "Escape" && !modal.hidden) close(); });
+  // Baho o‘zgarsa, sabab tasdig‘i qaytadan so‘raladi.
+  score.addEventListener("input", () => { confirmed = false; });
   if (score.value !== "" && Number(score.value) <= 8 && modal.querySelector(".field-error")) open();
 });
 </script>

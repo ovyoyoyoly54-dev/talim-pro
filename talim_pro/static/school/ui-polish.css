@@ -309,3 +309,60 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
 @media(prefers-reduced-motion:reduce){
  .dashboard-page .stat-card:hover,.dashboard-page a.group-card:hover,.settings-menu a:hover{transform:none}
 }
+
+/* ── Tugma javobi: «yuklanmoqda» holati, o'chirilgan tugma ── */
+.button.is-loading{position:relative;pointer-events:none;opacity:.78;cursor:progress}
+.button.is-loading::after{content:"";width:14px;height:14px;flex:0 0 14px;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;animation:tp-spin .7s linear infinite}
+.button:disabled,.button[disabled]{opacity:.55;cursor:not-allowed;box-shadow:none;transform:none}
+@keyframes tp-spin{to{transform:rotate(360deg)}}
+.button-secondary{background:#edf2fb;color:#17385f;border-color:#dce5f0}
+.button-secondary:hover{background:#e2eaf7;color:#102544}
+.inline-form{display:inline-flex;margin:0}
+.link-button{border:0;background:none;padding:0;font:inherit;font-weight:700;color:#356ce0;cursor:pointer;text-decoration:underline}
+.link-button.is-loading{opacity:.6;pointer-events:none}
+
+/* ── Xabarni yopish ── */
+.message{position:relative}
+.message-close{margin-left:auto;flex:0 0 auto;width:28px;height:28px;border:0;border-radius:50%;background:transparent;color:inherit;font-size:20px;line-height:1;cursor:pointer;opacity:.7}
+.message-close:hover{opacity:1;background:rgba(0,0,0,.06)}
+.score-value-low{color:#c2410c}
+
+/* ── Oynalar (dialog) ── */
+dialog.app-dialog{width:min(520px,calc(100vw - 32px));max-height:calc(100vh - 40px);padding:0;border:1px solid #e5eaf4;border-radius:20px;background:#fff;color:inherit;box-shadow:0 24px 80px rgba(12,22,42,.28);overflow:auto}
+dialog.app-dialog::backdrop{background:rgba(12,22,42,.58);backdrop-filter:blur(4px)}
+.app-dialog-body{padding:26px}
+.app-dialog-body h3{margin:0 0 6px;font-size:20px;color:#102544}
+.app-dialog-body .stack-form{margin-top:16px}
+.app-dialog-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:20px;padding-top:16px;border-top:1px solid #edf0f5}
+.confirm-dialog-text{margin:0;color:#4a5a70;line-height:1.6}
+@media(max-width:560px){.app-dialog-body{padding:20px 16px}.app-dialog-actions{flex-direction:column-reverse}.app-dialog-actions .button{width:100%}}
+@media(prefers-reduced-motion:reduce){.button.is-loading::after{animation-duration:2s}}
+
+/* ── Yon menyu past ekranlarda (masalan, 1366×768 noutbuk) aylantiriladi:
+      aks holda pastdagi bo'limlar va «chiqish» tugmasi ekrandan tashqarida qolib ketadi ── */
+@media(min-width:769px){
+  .sidebar{overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.28) transparent}
+  .sidebar::-webkit-scrollbar{width:6px}
+  .sidebar::-webkit-scrollbar-thumb{background:rgba(255,255,255,.28);border-radius:6px}
+  .sidebar nav{flex:0 0 auto}
+  /* Foydalanuvchi bloki va «chiqish» tugmasi doim ko'rinib turadi */
+  .sidebar-bottom{margin-top:auto;flex:0 0 auto;position:sticky;bottom:-22px;z-index:1;margin-left:-18px;margin-right:-18px;padding:16px 24px 22px;background:#0d1d33}
+}
+/* Sahifa ichidagi bo'limga o'tganda sarlavha yuqori panel ostida qolib ketmasin */
+#davomat,#imkoniyatlar{scroll-margin-top:96px}
+
+/* ── Telefon: menyu ikki qatorli — yuqorida brend va «chiqish», pastida yozuvli,
+      yonga suriladigan bo'limlar (avval faqat tushunarsiz belgilar ko'rinardi) ── */
+@media(max-width:768px){
+  .sidebar{flex-wrap:wrap;row-gap:10px;padding:12px 14px 8px;overflow:visible}
+  .sidebar .brand{padding-bottom:0;flex:1 1 auto;min-width:0}
+  .sidebar nav{order:3;flex:1 0 100%;gap:6px;padding:2px 0 6px;overflow-x:auto;scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+  .sidebar nav::-webkit-scrollbar{display:none}
+  .sidebar nav a{flex:0 0 auto;min-height:38px;padding:8px 12px;white-space:nowrap;scroll-snap-align:start;font-size:12.5px}
+  .sidebar nav a span:not(.nav-icon){display:inline}
+  .sidebar nav a.active::after{display:none}
+  .sidebar-bottom{display:flex;order:2;flex:0 0 auto;margin:0;padding:0;border:0;background:none;position:static}
+  .sidebar-bottom .avatar,.sidebar-bottom .user-meta{display:none}
+  .sidebar .credential-alert{order:4;flex:1 0 100%;margin:0 0 6px}
+  .top-actions{flex-wrap:wrap;justify-content:flex-end}
+}

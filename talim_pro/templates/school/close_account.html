@@ -7,7 +7,7 @@
   <h2>Akkauntni yopish</h2>
   <p class="muted">Avval telefoningizga yuborilgan SMS kodni, keyin login va joriy parolingizni kiriting. Akkaunt yopilgach, unga kira olmaysiz; o‘quv tarixi va baholar saqlanadi.</p>
   {% if password_step %}
-  <form method="post" class="stack-form">
+  <form method="post" class="stack-form" data-confirm="Akkauntingiz yopiladi va unga qayta kira olmaysiz. Davom etasizmi?">
     {% csrf_token %}<input type="hidden" name="action" value="confirm_close">
     {{ password_form.non_field_errors }}
     <label>Login {{ password_form.username }}{{ password_form.username.errors }}</label>
@@ -25,6 +25,9 @@
     {{ otp_form.non_field_errors }}
     <label>SMS tasdiqlash kodi {{ otp_form.code }}{{ otp_form.code.errors }}</label>
     <button class="button button-primary" type="submit">Kodni tasdiqlash</button>
+  </form>
+  <form method="post" class="security-note">{% csrf_token %}<input type="hidden" name="action" value="send_code">
+    <span class="muted">Kod kelmadimi?</span> <button class="link-button" type="submit">Kodni qayta yuborish</button>
   </form>
   {% endif %}
   <p class="security-note"><a href="{% url 'dashboard' %}">Bekor qilish</a></p>

@@ -10,7 +10,7 @@ from django.utils.translation import gettext as _
 
 from .models import Homework, HomeworkSubmission, StudentProfile, StudyGroup, User
 from .notifications import notify
-from .views import is_admin
+from .views import is_admin, posted_object_or_404
 
 
 class HomeworkForm(forms.ModelForm):
@@ -129,7 +129,7 @@ def homework_detail(request, homework_id):
 
     if manage:
         if request.method == "POST" and request.POST.get("action") == "grade":
-            submission = get_object_or_404(HomeworkSubmission, pk=request.POST.get("submission_id"), homework=homework)
+            submission = posted_object_or_404(homework.submissions.all(), request.POST.get("submission_id"))
             form = GradeForm(request.POST)
             if form.is_valid():
                 submission.score = form.cleaned_data["score"]

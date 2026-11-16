@@ -13,9 +13,8 @@
   <title>{% block title %}TA'LIM PRO{% endblock %}</title>
   <link rel="stylesheet" href="{% static 'school/app.css' %}">
   <link rel="stylesheet" href="{% static 'school/ui-polish.css' %}">
-  <link rel="stylesheet" href="{% static 'school/ui-polish.css' %}">
 </head>
-<body>
+<body data-confirm-title="{% trans 'Amalni tasdiqlang' %}" data-confirm-label="{% trans 'Tasdiqlash' %}" data-cancel-label="{% trans 'Bekor qilish' %}" data-close-label="{% trans 'Yopish' %}">
 <a class="skip-link" href="#main-content">{% trans "Asosiy qismga o‘tish" %}</a>
 <div class="app-shell">
   {% if user.is_authenticated %}
@@ -38,11 +37,11 @@
       {% if user.is_staff or user.is_superuser %}<a href="{% url 'admin:index' %}">▦ <span>{% trans "Boshqaruv paneli" %}</span></a>{% endif %}
     </nav>
     {% if user.role == "student" and user.must_change_credentials %}<a class="credential-alert" href="{% url 'first_login_credentials' %}"><span class="credential-alert-icon">!</span><span><b>{% trans "Login va parolni almashtiring" %}</b><small>{% trans "Akkauntingizni himoyalang" %}</small></span> ↗</a>{% endif %}
-    <div class="sidebar-bottom"><div class="avatar">{{ user.first_name|first|default:user.username|first|upper }}</div><div class="user-meta"><b>{{ user.get_full_name|default:user.username }}</b><small>{{ user.get_role_display|default:"Administrator" }}</small></div><form method="post" action="{% url 'logout' %}">{% csrf_token %}<button class="icon-button" type="submit" aria-label="{% trans 'Tizimdan chiqish' %}" title="{% trans 'Tizimdan chiqish' %}">↗</button></form></div>
+    <div class="sidebar-bottom"><div class="avatar">{{ user.first_name|first|default:user.username|first|upper }}</div><div class="user-meta"><b>{{ user.get_full_name|default:user.username }}</b><small>{{ user.get_role_display|default:"Administrator" }}</small></div><form method="post" action="{% url 'logout' %}" data-confirm="{% trans 'Tizimdan chiqmoqchimisiz?' %}">{% csrf_token %}<button class="icon-button" type="submit" aria-label="{% trans 'Tizimdan chiqish' %}" title="{% trans 'Tizimdan chiqish' %}">↗</button></form></div>
   </aside>
   {% endif %}
   <main class="main-area" id="main-content" tabindex="-1">
-    {% if user.is_authenticated %}<header class="topbar"><div><span class="eyebrow">{% trans "TA'LIM BOSHQARUVI" %}</span><h1>{% block page_heading %}Bosh sahifa{% endblock %}</h1></div><div class="top-actions"><form method="post" action="{% url 'set_language' %}" class="lang-switch">{% csrf_token %}<input type="hidden" name="next" value="{{ request.path }}">{% get_current_language as CUR %}<button class="button button-outline" name="language" value="uz" type="submit"{% if CUR == 'uz' %} aria-current="true"{% endif %}>UZ</button><button class="button button-outline" name="language" value="ru" type="submit"{% if CUR == 'ru' %} aria-current="true"{% endif %}>RU</button></form><span class="date-pill">◷ {% now "j F Y" %}</span><div class="avatar avatar-light">{{ user.first_name|first|default:user.username|first|upper }}</div></div></header>{% endif %}
+    {% if user.is_authenticated %}<header class="topbar"><div><span class="eyebrow">{% trans "TA'LIM BOSHQARUVI" %}</span><h1>{% block page_heading %}{% trans "Bosh sahifa" %}{% endblock %}</h1></div><div class="top-actions"><form method="post" action="{% url 'set_language' %}" class="lang-switch">{% csrf_token %}<input type="hidden" name="next" value="{{ request.path }}">{% get_current_language as CUR %}<button class="button button-outline" name="language" value="uz" type="submit"{% if CUR == 'uz' %} aria-current="true"{% endif %}>UZ</button><button class="button button-outline" name="language" value="ru" type="submit"{% if CUR == 'ru' %} aria-current="true"{% endif %}>RU</button></form><span class="date-pill">◷ {% now "j F Y" %}</span><div class="avatar avatar-light">{{ user.first_name|first|default:user.username|first|upper }}</div></div></header>{% endif %}
     <section class="content">
       {% for message in messages %}<div class="message {{ message.tags }}">{{ message }}</div>{% endfor %}
       {% block content %}{% endblock %}

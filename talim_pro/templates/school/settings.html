@@ -24,7 +24,7 @@
   <div class="settings-content">
     <section class="panel settings-card" id="profil">
       <div class="panel-heading"><div><h3>Akkaunt ma’lumotlari</h3><p class="muted">Bu ma’lumotlar faqat sizga va markaz administratoriga ko‘rinadi.</p></div></div>
-      <form method="post" class="stack-form settings-form-grid">{% csrf_token %}<input type="hidden" name="action" value="account_settings">
+      <form method="post" action="{% url 'settings_panel' %}#profil" class="stack-form settings-form-grid">{% csrf_token %}<input type="hidden" name="action" value="account_settings">
         {% for field in account_form %}<label>{{ field.label }}{{ field }}{% for error in field.errors %}<span class="field-error">{{ error }}</span>{% endfor %}</label>{% endfor %}
         {% for error in account_form.non_field_errors %}<span class="field-error">{{ error }}</span>{% endfor %}
         <div class="form-actions"><button class="button button-primary" type="submit">Akkauntni saqlash</button><span class="muted tiny">Telefon raqami ommaviy sahifalarda ko‘rsatilmaydi.</span></div>
@@ -33,7 +33,7 @@
 
     <section class="panel settings-card" id="parol">
       <div class="panel-heading"><div><h3>Parolni almashtirish</h3><p class="muted">Davom etish uchun joriy parolni kiriting. Parol o‘zgargach sessiyangiz saqlanadi.</p></div></div>
-      <form method="post" class="stack-form">{% csrf_token %}<input type="hidden" name="action" value="password_change">
+      <form method="post" action="{% url 'settings_panel' %}#parol" class="stack-form">{% csrf_token %}<input type="hidden" name="action" value="password_change">
         {% for field in password_form %}<label>{{ field.label }}{{ field }}{% for error in field.errors %}<span class="field-error">{{ error }}</span>{% endfor %}</label>{% endfor %}
         {% for error in password_form.non_field_errors %}<span class="field-error">{{ error }}</span>{% endfor %}
         <div class="form-actions"><button class="button button-primary" type="submit">Yangi parolni saqlash</button></div>
@@ -43,7 +43,7 @@
     {% if is_admin_user %}
     <section class="panel settings-card" id="sayt">
       <div class="panel-heading"><div><h3>Sayt sozlamalari</h3><p class="muted">Ommaviy tanishtiruv sahifasida ko‘rinadigan ma’lumotlar</p></div></div>
-      <form method="post" class="stack-form">{% csrf_token %}<input type="hidden" name="action" value="site_settings">
+      <form method="post" action="{% url 'settings_panel' %}#sayt" class="stack-form">{% csrf_token %}<input type="hidden" name="action" value="site_settings">
         {% for field in site_form %}<label>{{ field.label }}{{ field }}{% for error in field.errors %}<span class="field-error">{{ error }}</span>{% endfor %}</label>{% endfor %}
         {% for error in site_form.non_field_errors %}<span class="field-error">{{ error }}</span>{% endfor %}
         <p class="muted tiny">Hosting manzili va maxfiy server kalitlari bu sahifada saqlanmaydi.</p>
@@ -55,7 +55,7 @@
     <section class="panel settings-card" id="xavfsizlik">
       <div class="panel-heading"><div><h3>Xavfsizlik va chiqish</h3><p class="muted">Akkauntdan xavfsiz chiqing yoki kerak bo‘lsa akkauntni yoping.</p></div></div>
       <div class="settings-actions">
-        <form method="post" action="{% url 'logout' %}">{% csrf_token %}<button class="button button-outline" type="submit">↗ Tizimdan chiqish</button></form>
+        <form method="post" action="{% url 'logout' %}" data-confirm="Tizimdan chiqmoqchimisiz?">{% csrf_token %}<button class="button button-outline" type="submit">↗ Tizimdan chiqish</button></form>
         {% if not is_admin_user %}<a class="button button-outline" href="{% url 'close_account' %}">⌁ Akkauntni yopish</a>{% endif %}
       </div>
       <p class="muted tiny">Umumiy kompyuterdan foydalansangiz, ishni tugatgach albatta tizimdan chiqing.</p>

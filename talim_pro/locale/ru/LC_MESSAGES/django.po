@@ -720,3 +720,39 @@ msgstr "Резервный код использован. Осталось ко�
 
 msgid "Kod noto‘g‘ri."
 msgstr "Неверный код."
+
+msgid "Amalni tasdiqlang"
+msgstr "Подтвердите действие"
+
+msgid "Bekor qilish"
+msgstr "Отмена"
+
+msgid "Yopish"
+msgstr "Закрыть"
+
+msgid "Tizimdan chiqmoqchimisiz?"
+msgstr "Выйти из системы?"
+
+msgid "Bu hisob bekor qilinadi va uni qayta tiklab bo‘lmaydi. Davom etasizmi?"
+msgstr "Счёт будет отменён, восстановить его нельзя. Продолжить?"
+
+msgid "Barcha qarzdorlarga eslatma (bildirishnoma yoki SMS) yuboriladi. Davom etasizmi?"
+msgstr "Всем должникам будет отправлено напоминание (уведомление или SMS). Продолжить?"
+
+msgid "Ruxsat berilmadi. Brauzer sozlamalarida bildirishnomalarga ruxsat bering."
+msgstr "Разрешение не получено. Разрешите уведомления в настройках браузера."
+
+msgid "Amal bajarilmadi. Internet aloqasini tekshirib, qayta urinib ko‘ring."
+msgstr "Не удалось выполнить действие. Проверьте интернет и попробуйте снова."
+
+msgid "Brauzeringiz push bildirishnomalarni qo‘llamaydi."
+msgstr "Ваш браузер не поддерживает push-уведомления."
+
+msgid "Barcha xabarlar o‘qilgan deb belgilandi."
+msgstr "Все сообщения отмечены как прочитанные."
+
+msgid "Yangi xabarlar yo‘q."
+msgstr "Новых сообщений нет."
+
+msgid "Holat noto‘g‘ri tanlangan."
+msgstr "Выбран неверный статус."

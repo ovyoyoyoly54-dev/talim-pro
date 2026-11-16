@@ -1,4 +1,4 @@
-const CACHE_NAME = "talim-pro-shell-v1";
+const CACHE_NAME = "talim-pro-shell-v2";
 const OFFLINE_PAGE = "/offline/";
 
 self.addEventListener("install", (event) => {
@@ -24,13 +24,19 @@ self.addEventListener("fetch", (event) => {
   }
 
   // Only public static assets are eligible for cache. Authenticated HTML stays network-only.
+  // Stale-while-revalidate: keshdagi nusxa darhol beriladi, fonda yangisi olinadi —
+  // shu sababli yangilangan CSS/JS keyingi ochilishda albatta ko'rinadi.
   if (url.pathname.startsWith("/static/")) {
-    event.respondWith(caches.match(request).then((cached) => cached || fetch(request).then((response) => {
-      if (response.ok) {
-        const copy = response.clone();
-        caches.open(CACHE_NAME).then((cache) => cache.put(request, copy));
+    event.respondWith(caches.open(CACHE_NAME).then((cache) => cache.match(request).then((cached) => {
+      const fresh = fetch(request).then((response) => {
+        if (response.ok) cache.put(request, response.clone());
+        return response;
+      });
+      if (cached) {
+        event.waitUntil(fresh.catch(() => {}));
+        return cached;
       }
-      return response;
+      return fresh;
     })));
   }
 });

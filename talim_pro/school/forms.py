@@ -421,3 +421,32 @@ class FirstLoginCredentialsForm(forms.Form):
         if password and password != data.get("new_password2"):
             self.add_error("new_password2", "Parollar bir xil emas.")
         return data
+
+
+class StudyGroupForm(forms.ModelForm):
+    """Guruhlar sahifasidagi «Yangi guruh» oynasi uchun forma."""
+
+    class Meta:
+        model = StudyGroup
+        fields = ("name", "subject", "monthly_fee")
+        labels = {"name": "Guruh nomi", "subject": "Fan", "monthly_fee": "Oylik to‘lov (so‘m)"}
+        widgets = {
+            "name": forms.TextInput(attrs={"class": "input", "placeholder": "Masalan: IELTS A1", "autocomplete": "off"}),
+            "subject": forms.TextInput(attrs={"class": "input", "placeholder": "Masalan: Ingliz tili", "autocomplete": "off"}),
+            "monthly_fee": forms.NumberInput(attrs={"class": "input", "min": 0, "step": 1000}),
+        }
+
+    def clean_name(self):
+        name = self.cleaned_data["name"].strip()
+        if StudyGroup.objects.filter(name__iexact=name).exclude(pk=self.instance.pk).exists():
+            raise ValidationError("Bu nomdagi guruh allaqachon mavjud.")
+        return name
+
+    def clean_subject(self):
+        return self.cleaned_data["subject"].strip()
+
+    def clean_monthly_fee(self):
+        fee = self.cleaned_data.get("monthly_fee") or 0
+        if fee < 0:
+            raise ValidationError("Oylik to‘lov manfiy bo‘lishi mumkin emas.")
+        return fee

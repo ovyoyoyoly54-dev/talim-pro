@@ -1,10 +1,12 @@
 import json
 
 from django.conf import settings
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.shortcuts import redirect, render
 from django.utils import timezone
+from django.utils.translation import gettext as _
 from django.views.decorators.http import require_POST
 
 from .models import Notification, PushSubscription
@@ -24,7 +26,11 @@ def notification_list(request):
 @login_required
 @require_POST
 def notifications_mark_read(request):
-    Notification.objects.filter(user=request.user, read_at__isnull=True).update(read_at=timezone.now())
+    updated = Notification.objects.filter(user=request.user, read_at__isnull=True).update(read_at=timezone.now())
+    if updated:
+        messages.success(request, _("Barcha xabarlar o‘qilgan deb belgilandi."))
+    else:
+        messages.info(request, _("Yangi xabarlar yo‘q."))
     return redirect("notification_list")
 
 

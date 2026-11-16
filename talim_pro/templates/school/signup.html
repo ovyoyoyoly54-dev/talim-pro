@@ -23,6 +23,9 @@
     <label>Parolni takrorlang {{ complete_form.confirm_password }}{{ complete_form.confirm_password.errors }}</label>
     <button class="button button-primary button-wide" type="submit">Tasdiqlash va tizimga kirish</button>
   </form>
+  <form method="post" class="security-note">{% csrf_token %}<input type="hidden" name="action" value="restart">
+    <span class="muted">Kod kelmadimi yoki raqam noto‘g‘rimi?</span> <button class="link-button" type="submit">Qaytadan boshlash</button>
+  </form>
   {% endif %}
   <p class="security-note"><a href="{% url 'login' %}">Kirish sahifasiga qaytish</a></p>
 </div>

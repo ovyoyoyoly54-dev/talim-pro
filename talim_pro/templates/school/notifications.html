@@ -6,12 +6,15 @@
 <div class="page-intro">
   <div><span class="eyebrow">{% trans "XABARLAR" %}</span><h2>{% trans "Bildirishnomalar" %}</h2>
   <p class="muted">{% trans "Baho, vazifa va to‘lov haqidagi xabarlar. Push yoqilsa, SMS kerak bo‘lmaydi." %}</p></div>
-  <form method="post" action="{% url 'notifications_mark_read' %}">{% csrf_token %}<button class="button button-outline" type="submit">{% trans "Hammasini o‘qilgan deb belgilash" %}</button></form>
+  <form method="post" action="{% url 'notifications_mark_read' %}">{% csrf_token %}<button class="button button-outline" type="submit"{% if not unread_notifications %} disabled{% endif %}>{% trans "Hammasini o‘qilgan deb belgilash" %}</button></form>
 </div>
 {% if push_enabled %}
 <div class="panel" id="push-panel" data-vapid="{{ vapid_public_key }}" data-subscribed="{{ has_subscription|yesno:'1,0' }}"
-     data-subscribe-url="{% url 'push_subscribe' %}" data-unsubscribe-url="{% url 'push_unsubscribe' %}">
-  <p class="muted" id="push-status" data-on-text="{% trans 'Push bildirishnomalar yoqilgan.' %}">{% trans "Brauzer bildirishnomalari o‘chiq." %}</p>
+     data-subscribe-url="{% url 'push_subscribe' %}" data-unsubscribe-url="{% url 'push_unsubscribe' %}"
+     data-denied-text="{% trans 'Ruxsat berilmadi. Brauzer sozlamalarida bildirishnomalarga ruxsat bering.' %}"
+     data-error-text="{% trans 'Amal bajarilmadi. Internet aloqasini tekshirib, qayta urinib ko‘ring.' %}"
+     data-unsupported-text="{% trans 'Brauzeringiz push bildirishnomalarni qo‘llamaydi.' %}">{% csrf_token %}
+  <p class="muted" id="push-status" role="status" aria-live="polite" data-on-text="{% trans 'Push bildirishnomalar yoqilgan.' %}">{% trans "Brauzer bildirishnomalari o‘chiq." %}</p>
   <button class="button button-primary" type="button" id="push-toggle" data-off-label="{% trans 'Push bildirishnomalarni o‘chirish' %}">{% trans "Push bildirishnomalarni yoqish" %}</button>
 </div>
 {% endif %}

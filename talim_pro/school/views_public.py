@@ -16,7 +16,7 @@ from .models import Course, EnrollmentApplication, User
 from .notifications import notify
 from .phone_auth import normalize_phone
 from .utils import get_client_ip
-from .views import is_admin
+from .views import is_admin, posted_object_or_404
 
 APPLICATIONS_PER_HOUR = 5
 
@@ -113,12 +113,14 @@ def applications_list(request):
     if not is_admin(request.user):
         raise PermissionDenied
     if request.method == "POST":
-        application = get_object_or_404(EnrollmentApplication, pk=request.POST.get("application_id"))
+        application = posted_object_or_404(EnrollmentApplication, request.POST.get("application_id"))
         status = request.POST.get("status")
         if status in EnrollmentApplication.Status.values:
             application.status = status
             application.save(update_fields=["status"])
             messages.success(request, _("Ariza holati yangilandi."))
+        else:
+            messages.error(request, _("Holat noto‘g‘ri tanlangan."))
         return redirect("applications_list")
     status = request.GET.get("status", "")
     items = EnrollmentApplication.objects.select_related("course")

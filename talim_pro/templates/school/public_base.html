@@ -10,7 +10,7 @@
       <a href="{% url 'courses_list' %}">{% trans "Kurslar" %}</a>
       <a href="{% url 'pricing' %}">{% trans "Narxlar" %}</a>
       <a href="{% url 'apply' %}">{% trans "Ro‘yxatdan o‘tish" %}</a>
-      <form method="post" action="{% url 'set_language' %}" class="lang-switch">{% csrf_token %}<input type="hidden" name="next" value="{{ request.path }}"><button class="button button-outline" name="language" value="uz" type="submit">UZ</button><button class="button button-outline" name="language" value="ru" type="submit">RU</button></form>
+      <form method="post" action="{% url 'set_language' %}" class="lang-switch">{% csrf_token %}<input type="hidden" name="next" value="{{ request.path }}">{% get_current_language as CUR %}<button class="button button-outline" name="language" value="uz" type="submit"{% if CUR == 'uz' %} aria-current="true"{% endif %}>UZ</button><button class="button button-outline" name="language" value="ru" type="submit"{% if CUR == 'ru' %} aria-current="true"{% endif %}>RU</button></form>
       <a class="button button-primary" href="{% if user.is_authenticated %}{% url 'dashboard' %}{% else %}{% url 'login' %}{% endif %}">{% if user.is_authenticated %}{% trans "Kabinet" %}{% else %}{% trans "Tizimga kirish" %}{% endif %}</a>
     </nav>
   </header>

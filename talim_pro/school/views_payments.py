@@ -11,7 +11,7 @@ from django.views.decorators.http import require_POST
 
 from . import billing
 from .models import Invoice, Payment, StudyGroup, StudentProfile, User
-from .views import is_admin
+from .views import is_admin, posted_object_or_404
 
 MANUAL_METHODS = {Payment.Method.CASH, Payment.Method.CARD, Payment.Method.TRANSFER}
 
@@ -50,11 +50,15 @@ def generate_invoices_view(request):
         return redirect("payments_overview")
     group = None
     if request.POST.get("group"):
-        group = get_object_or_404(StudyGroup, pk=request.POST["group"])
+        group = posted_object_or_404(StudyGroup, request.POST["group"])
     created, skipped = billing.generate_invoices(period, group=group)
     from .notifications import notify_invoice_created
     notify_invoice_created(created)
-    messages.success(request, f"{len(created)} ta hisob yaratildi, {skipped} tasi avvaldan mavjud.")
+    if created or skipped:
+        messages.success(request, f"{len(created)} ta hisob yaratildi, {skipped} tasi avvaldan mavjud.")
+    else:
+        messages.warning(request, "Hisob yaratilmadi: oylik to‘lovi belgilangan guruhda faol o‘quvchi topilmadi. "
+                                  "Guruhning oylik to‘lov summasini kiriting.")
     return redirect(f"{reverse('payments_overview')}?period={period:%Y-%m}")
 
 
@@ -69,6 +73,8 @@ def record_payment(request, invoice_id):
         try:
             amount = Decimal(request.POST.get("amount", "").replace(" ", "").replace(",", "."))
         except InvalidOperation:
+            amount = Decimal("0")
+        if not amount.is_finite():  # "NaN" / "Infinity" taqqoslashda xato beradi
             amount = Decimal("0")
         if method not in MANUAL_METHODS:
             messages.error(request, "To‘lov usuli noto‘g‘ri.")
