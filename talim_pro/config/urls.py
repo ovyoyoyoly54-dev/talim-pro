@@ -1,9 +1,15 @@
-from django.contrib import admin
+import hashlib
+import hmac
+
+from django.conf import settings
+from django.contrib import admin, messages
+from django.core.cache import cache
 from django.urls import path
 from django.contrib.auth import views as auth_views
 from django.views.decorators.debug import sensitive_post_parameters
 from django.utils.decorators import method_decorator
 from school import views
+from school.utils import get_client_ip
 
 
 @method_decorator(sensitive_post_parameters(), name="post")
@@ -14,20 +20,14 @@ class RateLimitedLoginView(auth_views.LoginView):
     redirect_authenticated_user = True
 
     def post(self, request, *args, **kwargs):
-        from django.core.cache import cache
-        from django.conf import settings
-        import hashlib
-        import hmac
-
         username = request.POST.get("username", "").strip().casefold()[:150]
-        ip = request.META.get("REMOTE_ADDR", "")
+        ip = get_client_ip(request)
         secret = settings.SECRET_KEY.encode()
         identity = hmac.new(secret, f"{username}|{ip}".encode(), hashlib.sha256).hexdigest()
         ip_identity = hmac.new(secret, ip.encode(), hashlib.sha256).hexdigest()
         keys = (f"login-rate:user:{identity}", f"login-rate:ip:{ip_identity}")
         attempts = max(cache.get(key, 0) for key in keys)
         if attempts >= settings.AUTH_RATE_LIMIT_ATTEMPTS:
-            from django.contrib import messages
             messages.error(request, "Juda ko‘p urinish bo‘ldi. Birozdan so‘ng qayta urinib ko‘ring.")
             return self.get(request, *args, **kwargs)
         response = super().post(request, *args, **kwargs)

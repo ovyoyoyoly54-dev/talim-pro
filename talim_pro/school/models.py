@@ -62,8 +62,9 @@ class StudyGroup(models.Model):
         verbose_name_plural = "O‘quv guruhlari"
 
     def clean(self):
-        if not self.pk and StudyGroup.objects.count() >= 5:
-            raise ValidationError("Ko‘pi bilan 5 ta guruh yaratish mumkin.")
+        limit = getattr(settings, "MAX_STUDY_GROUPS", 5)
+        if limit and not self.pk and StudyGroup.objects.count() >= limit:
+            raise ValidationError(f"Ko‘pi bilan {limit} ta guruh yaratish mumkin.")
 
     def save(self, *args, **kwargs):
         self.full_clean()

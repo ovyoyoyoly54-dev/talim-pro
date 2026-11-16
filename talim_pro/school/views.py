@@ -2,6 +2,7 @@ from django.contrib import messages
 from django.contrib.auth import logout, login as auth_login, update_session_auth_hash
 from django.contrib.auth.hashers import make_password
 import secrets
+from datetime import timedelta
 from django.utils.text import slugify
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied, ValidationError
@@ -109,6 +110,13 @@ def signup(request):
                 request.session.pop(key, None)
             pending_user = None
             challenge = None
+        # Tasdiqlanmagan eski ro'yxatdan o'tish urinishlari login va raqamni band qilib
+        # qolmasligi uchun 1 soatdan eski, profilsiz va faolsiz akkauntlar o'chiriladi.
+        User.objects.filter(
+            is_active=False, role=User.Role.STUDENT, student_profile__isnull=True,
+            last_login__isnull=True, date_joined__lt=timezone.now() - timedelta(hours=1),
+            phone_otps__purpose=PhoneOTP.Purpose.SIGNUP,
+        ).delete()
         form = SignupRequestForm(request.POST)
         if form.is_valid():
             data = form.cleaned_data
@@ -436,7 +444,7 @@ def group_detail(request, group_id):
         messages.success(request, f"{teacher.get_full_name() or teacher.username} guruhga biriktirildi.")
         return redirect("group_detail", group_id=group.pk)
     if request.method == "POST" and request.POST.get("action") == "assign_student":
-                # Faqat baho va davomati yo'q o'quvchini ko'chirish mumkin, aks holda eski
+        # Faqat baho va davomati yo'q o'quvchini ko'chirish mumkin, aks holda eski
         # qaydlar boshqa guruh darsiga bog'liq bo'lib qoladi.
         movable = StudentProfile.objects.filter(
             user__role=User.Role.STUDENT, user__is_active=True,

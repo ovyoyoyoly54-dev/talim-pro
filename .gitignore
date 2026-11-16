@@ -1,4 +1,18 @@
 .venv/
+venv/
 __pycache__/
 *.py[cod]
 *.log
+.env
+*.sqlite3
+*.sqlite3.*
+*.backup
+*.zip
+staticfiles/
+media/
+.DS_Store
+# Local test/debug output
+out.txt
+*_out.txt
+test_output.txt
+test_detail.txt

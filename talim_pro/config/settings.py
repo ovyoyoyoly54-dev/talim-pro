@@ -108,6 +108,22 @@ SECURE_CROSS_ORIGIN_OPENER_POLICY = "same-origin"
 AUTHENTICATION_BACKENDS = ["django.contrib.auth.backends.ModelBackend"]
 AUTH_RATE_LIMIT_ATTEMPTS = int(os.getenv("AUTH_RATE_LIMIT_ATTEMPTS", "10"))
 AUTH_RATE_LIMIT_WINDOW = int(os.getenv("AUTH_RATE_LIMIT_WINDOW", "900"))
+# Proksi (Nginx, Render va h.k.) orqasida mijoz IP manzilini X-Forwarded-For dan
+# olish uchun ishonchli proksilar soni. 0 bo'lsa faqat REMOTE_ADDR ishlatiladi.
+TRUSTED_PROXY_COUNT = int(os.getenv("TRUSTED_PROXY_COUNT", "0"))
+# Ko'pi bilan nechta o'quv guruhi yaratish mumkin (0 — cheklovsiz).
+MAX_STUDY_GROUPS = int(os.getenv("MAX_STUDY_GROUPS", "5"))
+# Urinishlar hisoblagichi uchun kesh. Bir nechta gunicorn ishchisi orasida umumiy
+# bo'lishi uchun standart holatda ma'lumotlar bazasi keshi ishlatiladi
+# (jadval `manage.py createcachetable` bilan yaratiladi).
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.db.DatabaseCache",
+        "LOCATION": "django_cache",
+    } if os.getenv("DJANGO_DB_CACHE", "False").lower() == "true" else {
+        "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+    }
+}
 if not DEBUG:
     CSRF_TRUSTED_ORIGINS = [x.strip() for x in os.getenv("DJANGO_CSRF_TRUSTED_ORIGINS", "").split(",") if x.strip()]
     SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")

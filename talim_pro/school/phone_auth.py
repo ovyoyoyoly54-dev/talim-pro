@@ -13,6 +13,7 @@ from django.utils import timezone
 from datetime import timedelta
 
 from .models import PhoneOTP, User
+from .utils import get_client_ip
 
 OTP_TTL = timedelta(minutes=10)
 OTP_RESEND_WAIT = timedelta(minutes=1)
@@ -70,7 +71,7 @@ def _send_code(phone, code):
 def issue_phone_otp(*, user, purpose, request):
     """Create a short-lived OTP, rate limit it, and send it without logging its body."""
     now = timezone.now()
-    ip_digest = _ip_digest(request.META.get("REMOTE_ADDR", ""))
+    ip_digest = _ip_digest(get_client_ip(request))
     code = f"{secrets.randbelow(1_000_000):06d}"
     with transaction.atomic():
         user = User.objects.select_for_update().get(pk=user.pk)

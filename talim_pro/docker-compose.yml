@@ -23,9 +23,10 @@ services:
     environment:
       DATABASE_URL: "${DATABASE_URL:-postgresql://talimpro:${POSTGRES_PASSWORD}@db:5432/talimpro}"
       DATABASE_SSL_REQUIRE: ${DATABASE_SSL_REQUIRE:-false}
-      DJANGO_DEBUG: ${DJANGO_DEBUG:-True}
+      DJANGO_DEBUG: ${DJANGO_DEBUG:-False}
       DJANGO_ALLOWED_HOSTS: ${DJANGO_ALLOWED_HOSTS:-localhost,127.0.0.1}
-      DJANGO_SECURE_SSL_REDIRECT: ${DJANGO_SECURE_SSL_REDIRECT:-False}
+      DJANGO_SECURE_SSL_REDIRECT: ${DJANGO_SECURE_SSL_REDIRECT:-True}
+      DJANGO_DB_CACHE: ${DJANGO_DB_CACHE:-True}
     ports:
       - "${PORT:-8000}:${PORT:-8000}"
     depends_on:
