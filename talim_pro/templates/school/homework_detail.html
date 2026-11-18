@@ -7,13 +7,13 @@
 <p class="muted">{% trans "Muddat" %}: {{ homework.due_at|date:"d.m.Y H:i" }} · {{ homework.teacher.get_full_name|default:homework.teacher.username }}</p></div>
 <a class="button button-outline" href="{% url 'homework_list' %}">{% trans "Ro‘yxatga qaytish" %}</a></div>
 <div class="panel"><p>{{ homework.description|linebreaksbr|default:"—" }}</p>
-{% if homework.attachment %}<a class="button button-outline" href="{% url 'homework_task_file' homework.pk %}">{% trans "Biriktirilgan faylni yuklab olish" %}</a>{% endif %}</div>
+{% if homework.attachment %}<a class="button button-outline" data-no-progress href="{% url 'homework_task_file' homework.pk %}">{% trans "Biriktirilgan faylni yuklab olish" %}</a>{% endif %}</div>
 
 {% if manage %}
 <div class="panel"><div class="table-wrap"><table>
 <thead><tr><th>{% trans "O‘quvchi" %}</th><th>{% trans "Javob" %}</th><th>{% trans "Baho" %}</th></tr></thead><tbody>
 {% for row in rows %}<tr><td>{{ row.student.user.get_full_name|default:row.student.user.username }}</td>
-<td>{% if row.submission %}{{ row.submission.text|truncatechars:200 }}{% if row.submission.file %} <a href="{% url 'homework_answer_file' row.submission.pk %}">{% trans "Fayl" %}</a>{% endif %}
+<td>{% if row.submission %}{{ row.submission.text|truncatechars:200 }}{% if row.submission.file %} <a data-no-progress href="{% url 'homework_answer_file' row.submission.pk %}">{% trans "Fayl" %}</a>{% endif %}
 {% if row.submission.is_late %}<span class="pill pill-red">{% trans "Kechikkan" %}</span>{% endif %}<br><small>{{ row.submission.submitted_at|date:"d.m.Y H:i" }}</small>{% else %}<span class="muted">{% trans "Topshirmagan" %}</span>{% endif %}</td>
 <td>{% if row.submission %}<form method="post" class="form-actions">{% csrf_token %}<input type="hidden" name="action" value="grade"><input type="hidden" name="submission_id" value="{{ row.submission.pk }}">
 <input class="input" type="number" name="score" min="0" max="10" value="{{ row.submission.score|default_if_none:'' }}" required aria-label="{% trans 'Baho' %}">
@@ -25,7 +25,7 @@
 {% elif form %}
 <div class="panel"><h3>{% trans "Mening javobim" %}</h3>
 {% if submission and submission.score is not None %}<div class="message success">{% trans "Baho" %}: <b>{{ submission.score }}/10</b>{% if submission.feedback %} — {{ submission.feedback }}{% endif %}</div>{% endif %}
-{% if submission.file %}<p><a href="{% url 'homework_answer_file' submission.pk %}">{% trans "Yuborilgan fayl" %}</a></p>{% endif %}
+{% if submission.file %}<p><a data-no-progress href="{% url 'homework_answer_file' submission.pk %}">{% trans "Yuborilgan fayl" %}</a></p>{% endif %}
 {% if not submission or submission.score is None %}
 <form method="post" enctype="multipart/form-data" novalidate>{% csrf_token %}
 {% if homework.is_past_due %}<div class="message warning">{% trans "Muddat o‘tgan: javob kechikkan deb belgilanadi." %}</div>{% endif %}

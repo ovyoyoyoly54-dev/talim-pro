@@ -337,7 +337,7 @@ class NotificationTests(TestCase):
 
     def test_push_subscribe_requires_configuration_and_valid_payload(self):
         self.client.force_login(self.student)
-        payload = {"endpoint": "https://push.example/abc", "keys": {"p256dh": "k", "auth": "a"}}
+        payload = {"endpoint": "https://fcm.googleapis.com/fcm/send/abc", "keys": {"p256dh": "k", "auth": "a"}}
         response = self.client.post(reverse("push_subscribe"), json.dumps(payload), content_type="application/json")
         self.assertEqual(response.status_code, 503)
         with override_settings(VAPID_PUBLIC_KEY="pub", VAPID_PRIVATE_KEY="priv"):
@@ -567,3 +567,107 @@ class LanguageTests(TestCase):
         self.assertContains(response, 'lang="ru"')
         self.client.post(reverse("set_language"), {"language": "uz", "next": "/kurslar/"})
         self.assertContains(self.client.get(reverse("courses_list")), "Bizning kurslar")
+
+
+class ResponseAndHardeningTests(TestCase):
+    """Har bir so'rovga tushunarli javob va qo'shimcha xavfsizlik chorasi."""
+
+    def setUp(self):
+        cache.clear()
+        self.group, self.teacher, self.admin, self.parent, self.student, self.profile = make_world()
+
+    # --- sarlavhalar -------------------------------------------------------
+    def test_security_headers_and_csp_nonce(self):
+        response = self.client.get(reverse("login"))
+        csp = response["Content-Security-Policy"]
+        self.assertIn("frame-ancestors 'none'", csp)
+        self.assertIn("object-src 'none'", csp)
+        self.assertNotIn("script-src 'self' 'unsafe-inline'", csp)
+        nonce = csp.split("'nonce-")[1].split("'")[0]
+        # Inline skript faqat shu so'rov nonce'i bilan chiqadi.
+        self.assertContains(response, f'<script nonce="{nonce}">')
+        self.assertIn("camera=()", response["Permissions-Policy"])
+        other_nonce = self.client.get(reverse("login"))["Content-Security-Policy"].split("'nonce-")[1].split("'")[0]
+        self.assertNotEqual(nonce, other_nonce)
+
+    def test_authenticated_pages_are_not_cached(self):
+        self.client.force_login(self.student)
+        self.assertIn("no-store", self.client.get(reverse("dashboard"))["Cache-Control"])
+        self.client.logout()
+        self.assertNotIn("no-store", self.client.get(reverse("courses_list")).get("Cache-Control", ""))
+
+    # --- xato sahifalari ---------------------------------------------------
+    def test_friendly_error_pages(self):
+        missing = self.client.get("/bunday-sahifa-yoq/")
+        self.assertContains(missing, "Sahifa topilmadi", status_code=404)
+        self.client.force_login(self.student)
+        forbidden = self.client.get(reverse("group_management"))
+        self.assertContains(forbidden, "Ruxsat yo‘q", status_code=403)
+        self.assertContains(forbidden, "data-history-back", status_code=403)
+
+    def test_csrf_failure_has_friendly_page(self):
+        client = Client(enforce_csrf_checks=True)
+        response = client.post(reverse("login"), {"username": "x", "password": "y"})
+        self.assertContains(response, "Sahifa muddati tugagan", status_code=403)
+
+    def test_error_templates_render_standalone(self):
+        from django.template.loader import render_to_string
+        self.assertIn("500", render_to_string("500.html"))
+        self.assertIn("400", render_to_string("400.html"))
+
+    def test_non_finite_payment_amount_is_rejected_without_server_error(self):
+        invoice = Invoice.objects.create(student=self.profile, period=date(2026, 11, 1), amount=Decimal("1000"), due_date=date(2026, 11, 10))
+        self.client.force_login(self.admin)
+        for bad in ("NaN", "Infinity", "-Infinity", "sNaN", "1e999999"):
+            response = self.client.post(reverse("record_payment", args=[invoice.pk]), {"amount": bad, "method": "cash"})
+            self.assertEqual(response.status_code, 302, bad)
+        self.assertEqual(Payment.objects.count(), 0)
+
+    def test_notification_buttons_always_answer(self):
+        self.client.force_login(self.student)
+        empty = self.client.post(reverse("notifications_mark_read"), follow=True)
+        self.assertContains(empty, "Yangi xabarlar yo‘q")
+        Notification.objects.create(user=self.student, title="t", body="b")
+        done = self.client.post(reverse("notifications_mark_read"), follow=True)
+        self.assertContains(done, "o‘qilgan deb belgilandi")
+
+    def test_application_status_invalid_gives_error_message(self):
+        application = EnrollmentApplication.objects.create(full_name="A", phone="+998901234567")
+        self.client.force_login(self.admin)
+        response = self.client.post(reverse("applications_list"), {"application_id": application.pk, "status": "nope"}, follow=True)
+        self.assertContains(response, "Holat noto‘g‘ri tanlangan")
+
+    # --- push SSRF ----------------------------------------------------------
+    def test_push_endpoint_must_be_known_push_service(self):
+        self.client.force_login(self.student)
+        keys = {"p256dh": "k", "auth": "a"}
+        with override_settings(VAPID_PUBLIC_KEY="pub", VAPID_PRIVATE_KEY="priv"):
+            for endpoint in (
+                "https://169.254.169.254/latest/meta-data", "https://localhost/x", "https://evil.example/push",
+                "https://fcm.googleapis.com.evil.example/x", "https://user@fcm.googleapis.com/x",
+                "https://fcm.googleapis.com:8443/x", "http://fcm.googleapis.com/x",
+            ):
+                response = self.client.post(reverse("push_subscribe"), json.dumps({"endpoint": endpoint, "keys": keys}), content_type="application/json")
+                self.assertEqual(response.status_code, 400, endpoint)
+            ok = self.client.post(reverse("push_subscribe"), json.dumps(
+                {"endpoint": "https://updates.push.services.mozilla.com/wpush/v2/abc", "keys": keys}), content_type="application/json")
+            self.assertEqual(ok.status_code, 200)
+            bad = self.client.post(reverse("push_unsubscribe"), "not json", content_type="application/json")
+            self.assertEqual(bad.status_code, 400)
+
+    # --- admin kirish sahifasi urinishlarni cheklaydi ----------------------
+    @override_settings(AUTH_RATE_LIMIT_ATTEMPTS=3)
+    def test_admin_login_is_rate_limited(self):
+        url = "/admin/login/?next=/admin/"
+        for _ in range(3):
+            response = self.client.post(url, {"username": "admin1", "password": "wrong-password"})
+            self.assertEqual(response.status_code, 200)
+        blocked = self.client.post(url, {"username": "admin1", "password": "Pass12345!x"})
+        self.assertContains(blocked, "Juda ko‘p urinish")
+        self.assertNotIn("_auth_user_id", self.client.session)
+
+    def test_admin_login_page_has_no_redirect_loop_for_non_staff(self):
+        self.client.force_login(self.student)
+        response = self.client.get("/admin/", follow=True)
+        self.assertEqual(response.status_code, 200)
+        self.assertLess(len(response.redirect_chain), 3)

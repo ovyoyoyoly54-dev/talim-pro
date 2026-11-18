@@ -16,7 +16,8 @@ if STATIC_BUILD and not SECRET_KEY:
     SECRET_KEY = secrets.token_urlsafe(64)
 elif not SECRET_KEY:
     SECRET_KEY = "dev-only-change-this-secret-before-deployment"
-DEBUG = os.getenv("DJANGO_DEBUG", "True").lower() == "true"
+# Xavfsiz standart: DEBUG faqat DJANGO_DEBUG=True aniq yozilganda yoqiladi.
+DEBUG = os.getenv("DJANGO_DEBUG", "False").lower() == "true"
 ALLOWED_HOSTS = [x.strip() for x in os.getenv("DJANGO_ALLOWED_HOSTS", "127.0.0.1,localhost").split(",") if x.strip()]
 PUBLIC_SITE_URL = os.getenv("PUBLIC_SITE_URL", "").strip().rstrip("/")
 if PUBLIC_SITE_URL:
@@ -33,7 +34,10 @@ if not DEBUG and not STATIC_BUILD and (not os.getenv("DJANGO_SECRET_KEY") or SEC
     "change-this-to-a-long-random-secret-before-production",
 }):
     from django.core.exceptions import ImproperlyConfigured
-    raise ImproperlyConfigured("Production muhitida DJANGO_SECRET_KEY sozlanishi shart.")
+    raise ImproperlyConfigured(
+        "DJANGO_SECRET_KEY sozlanishi shart (DEBUG o‘chiq). Lokal ishlab chiqish uchun .env ichiga "
+        "DJANGO_DEBUG=True va random DJANGO_SECRET_KEY yozing."
+    )
 if not DEBUG and not os.getenv("DJANGO_ALLOWED_HOSTS", "").strip():
     from django.core.exceptions import ImproperlyConfigured
     raise ImproperlyConfigured("Production muhitida DJANGO_ALLOWED_HOSTS aniq ko‘rsatilishi shart.")
@@ -45,6 +49,7 @@ INSTALLED_APPS = [
 ]
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "school.security.SecurityHeadersMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.locale.LocaleMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -68,6 +73,7 @@ TEMPLATES = [{
         "django.contrib.auth.context_processors.auth",
         "django.contrib.messages.context_processors.messages",
         "school.context_processors.platform_settings",
+    "school.context_processors.csp_nonce",
     ]},
 }]
 WSGI_APPLICATION = "config.wsgi.application"
@@ -112,6 +118,8 @@ LOGIN_REDIRECT_URL = "dashboard"
 LOGOUT_REDIRECT_URL = "login"
 SESSION_COOKIE_HTTPONLY = True
 CSRF_COOKIE_HTTPONLY = True
+SESSION_COOKIE_SAMESITE = "Lax"
+CSRF_COOKIE_SAMESITE = "Lax"
 SECURE_CONTENT_TYPE_NOSNIFF = True
 X_FRAME_OPTIONS = "DENY"
 SECURE_REFERRER_POLICY = "same-origin"
@@ -162,6 +170,12 @@ INVOICE_DUE_DAY = int(os.getenv("INVOICE_DUE_DAY", "10"))
 VAPID_PUBLIC_KEY = os.getenv("VAPID_PUBLIC_KEY", "").strip()
 VAPID_PRIVATE_KEY = os.getenv("VAPID_PRIVATE_KEY", "").strip()
 VAPID_CLAIM_EMAIL = os.getenv("VAPID_CLAIM_EMAIL", "admin@example.com").strip()
+# Push endpoint server tomonidan chaqiriladi, shuning uchun faqat ishonchli push xizmatlari
+# (SSRF himoyasi). Qo'shimcha domenlar: PUSH_EXTRA_HOSTS=push.example.com,...
+PUSH_ALLOWED_HOSTS = [
+    "fcm.googleapis.com", "android.googleapis.com", "push.services.mozilla.com",
+    "notify.windows.com", "push.apple.com",
+] + [x.strip().lower() for x in os.getenv("PUSH_EXTRA_HOSTS", "").split(",") if x.strip()]
 
 # ── Administratorlar uchun 2FA (TOTP). Testlarda o'chiriladi, productionda yoqilgan ──
 ADMIN_2FA_REQUIRED = os.getenv("ADMIN_2FA_REQUIRED", "False" if "test" in sys.argv else "True").lower() == "true"

@@ -762,3 +762,96 @@ msgstr "Почему другие страницы не открываются?"
 
 msgid "Administrator akkaunti uchun 2 bosqichli tasdiqlash majburiy. Shu qadamni tugatmaguncha boshqa sahifalar (yon paneldagi tugmalar) ochilmaydi va shu sahifaga qaytaradi."
 msgstr "Для аккаунта администратора двухэтапная проверка обязательна. Пока этот шаг не завершён, другие страницы (кнопки боковой панели) не открываются, и вы возвращаетесь на эту страницу."
+
+msgid "Noto‘g‘ri so‘rov"
+msgstr "Некорректный запрос"
+
+msgid "So‘rovni tushunib bo‘lmadi. Sahifani yangilab, qayta urinib ko‘ring."
+msgstr "Запрос не удалось обработать. Обновите страницу и повторите попытку."
+
+msgid "Bosh sahifaga qaytish"
+msgstr "Вернуться на главную"
+
+msgid "Ruxsat yo‘q"
+msgstr "Доступ запрещён"
+
+msgid "Bu sahifani ko‘rish uchun sizda ruxsat yo‘q. Boshqa akkaunt bilan kirgan bo‘lsangiz, avval tizimdan chiqing."
+msgstr "У вас нет доступа к этой странице. Если вы вошли под другим аккаунтом, сначала выйдите из системы."
+
+msgid "Orqaga"
+msgstr "Назад"
+
+msgid "Sahifa muddati tugagan"
+msgstr "Срок действия страницы истёк"
+
+msgid "Xavfsizlik tekshiruvi muvaffaqiyatsiz tugadi (sahifa uzoq vaqt ochiq turgan bo‘lishi mumkin). Sahifani yangilab, amalni qaytadan bajaring."
+msgstr "Проверка безопасности не пройдена (возможно, страница долго была открыта). Обновите страницу и повторите действие."
+
+msgid "Sahifa topilmadi"
+msgstr "Страница не найдена"
+
+msgid "Siz izlagan sahifa mavjud emas yoki ko‘chirilgan. Manzilni tekshiring."
+msgstr "Страница не существует или была перемещена. Проверьте адрес."
+
+msgid "Server xatosi"
+msgstr "Ошибка сервера"
+
+msgid "Kutilmagan xatolik yuz berdi. Xato qayd etildi; birozdan so‘ng qayta urinib ko‘ring."
+msgstr "Произошла непредвиденная ошибка. Она зарегистрирована; повторите попытку чуть позже."
+
+msgid "Yuborilmoqda…"
+msgstr "Отправка…"
+
+msgid "Yuklanmoqda…"
+msgstr "Загрузка…"
+
+msgid "Internet aloqasi yo‘q. Ulanish tiklanmaguncha amallar bajarilmaydi."
+msgstr "Нет подключения к интернету. Действия не будут выполняться, пока связь не восстановится."
+
+msgid "Internet aloqasi tiklandi."
+msgstr "Подключение к интернету восстановлено."
+
+msgid "Server javobi kechikmoqda. Internetni tekshirib, qayta urinib ko‘ring."
+msgstr "Сервер отвечает слишком долго. Проверьте интернет и повторите попытку."
+
+msgid "Tarmoq xatosi. Internetni tekshirib, qayta urinib ko‘ring."
+msgstr "Ошибка сети. Проверьте интернет и повторите попытку."
+
+msgid "Ruxsat yo‘q yoki sessiya muddati tugagan. Sahifani yangilang."
+msgstr "Нет доступа или сессия истекла. Обновите страницу."
+
+msgid "Juda ko‘p so‘rov. Birozdan so‘ng qayta urinib ko‘ring."
+msgstr "Слишком много запросов. Повторите попытку чуть позже."
+
+msgid "Server xatosi. Birozdan so‘ng qayta urinib ko‘ring."
+msgstr "Ошибка сервера. Повторите попытку чуть позже."
+
+msgid "Xabarlar"
+msgstr "Сообщения"
+
+msgid "Barcha qarzdorlarga eslatma yuborilsinmi?"
+msgstr "Отправить напоминание всем должникам?"
+
+msgid "Push bildirishnomalar yoqildi."
+msgstr "Push-уведомления включены."
+
+msgid "Push bildirishnomalar o‘chirildi."
+msgstr "Push-уведомления отключены."
+
+msgid "Bildirishnoma brauzer sozlamalarida bloklangan. Ruxsatni sozlamalardan yoqing."
+msgstr "Уведомления заблокированы в настройках браузера. Разрешите их в настройках."
+
+msgid "Ruxsat berilmadi."
+msgstr "Разрешение не получено."
+
+msgid "Amalni bajarib bo‘lmadi. Qayta urinib ko‘ring."
+msgstr "Не удалось выполнить действие. Повторите попытку."
+
+msgid "Hisobni bekor qilishni tasdiqlaysizmi?"
+msgstr "Подтверждаете отмену счёта?"
+
+msgid "Xabarlar o‘qilgan deb belgilandi."
+msgstr "Сообщения отмечены как прочитанные."
+
+msgid "Ariza holati noto‘g‘ri."
+msgstr "Некорректный статус заявки."

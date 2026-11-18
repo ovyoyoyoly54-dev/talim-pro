@@ -11,13 +11,13 @@
   <label class="lesson-field">{% trans "Davr oxiri" %}<input class="input" type="date" name="to" value="{{ today|date:'Y-m-d' }}"></label>
   <h3>{% trans "Davomat" %}</h3>
   <div class="form-actions">
-    <button class="button button-primary" type="submit" formaction="{% url 'attendance_report' %}" name="format" value="xlsx">Excel</button>
-    <button class="button button-outline" type="submit" formaction="{% url 'attendance_report' %}" name="format" value="pdf">PDF</button>
+    <button class="button button-primary" type="submit" data-busy-reset="4000" formaction="{% url 'attendance_report' %}" name="format" value="xlsx">Excel</button>
+    <button class="button button-outline" type="submit" data-busy-reset="4000" formaction="{% url 'attendance_report' %}" name="format" value="pdf">PDF</button>
   </div>
   <h3>{% trans "Reyting" %}</h3>
   <div class="form-actions">
-    <button class="button button-primary" type="submit" formaction="{% url 'ranking_report' %}" name="format" value="xlsx">Excel</button>
-    <button class="button button-outline" type="submit" formaction="{% url 'ranking_report' %}" name="format" value="pdf">PDF</button>
+    <button class="button button-primary" type="submit" data-busy-reset="4000" formaction="{% url 'ranking_report' %}" name="format" value="xlsx">Excel</button>
+    <button class="button button-outline" type="submit" data-busy-reset="4000" formaction="{% url 'ranking_report' %}" name="format" value="pdf">PDF</button>
   </div>
 </form>
 {% endblock %}

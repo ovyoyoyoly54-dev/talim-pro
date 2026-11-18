@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}{% trans "Sahifa topilmadi" %} — TA'LIM PRO{% endblock %}
+{% block page_heading %}{% trans "Sahifa topilmadi" %}{% endblock %}
+{% block content %}
+<section class="panel error-page" role="alert">
+  <span class="eyebrow">404</span>
+  <h2>{% trans "Sahifa topilmadi" %}</h2>
+  <p class="muted">{% trans "Siz izlagan sahifa mavjud emas yoki ko‘chirilgan. Manzilni tekshiring." %}</p>
+  <div class="form-actions">
+    <a class="button button-primary" href="{% if user.is_authenticated %}{% url 'dashboard' %}{% else %}{% url 'home' %}{% endif %}">{% trans "Bosh sahifaga qaytish" %}</a>
+    <button class="button button-outline" type="button" data-history-back>{% trans "Orqaga" %}</button>
+  </div>
+</section>
+{% endblock %}

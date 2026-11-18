@@ -43,6 +43,12 @@ class RateLimitedLoginView(auth_views.LoginView):
         return response
 
 urlpatterns = [
+    # Django admin kirish sahifasi urinishlarni cheklamaydi; shuning uchun /admin/login/
+    # ham xuddi shu cheklovli kirish ko'rinishiga yo'naltiriladi. Admin 2FA baribir
+    # TwoFactorMiddleware orqali majburlanadi. Kirgan, lekin staff bo'lmagan foydalanuvchi
+    # uchun aylanma yo'naltirish bo'lmasligi uchun redirect_authenticated_user o'chirilgan.
+    path("admin/login/", RateLimitedLoginView.as_view(
+        template_name="school/login.html", redirect_authenticated_user=False), name="admin_login"),
     path("admin/", admin.site.urls),
     path("robots.txt", views.robots_txt, name="robots_txt"),
     path("sitemap.xml", views.sitemap_xml, name="sitemap_xml"),

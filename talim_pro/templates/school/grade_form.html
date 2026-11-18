@@ -22,7 +22,7 @@
 </form>
 {{ lesson_groups|json_script:"lesson-group-map" }}
 {{ student_groups|json_script:"student-group-map" }}
-<script>
+<script nonce="{{ csp_nonce }}">
 document.addEventListener("DOMContentLoaded", () => {
   // Dars tanlanganda faqat o‘sha guruh o‘quvchilari qoladi.
   const lessonSelect = document.getElementById("id_lesson");

@@ -12,7 +12,7 @@
     {{ password_form.non_field_errors }}
     <label>Login {{ password_form.username }}{{ password_form.username.errors }}</label>
     <label>Joriy parol {{ password_form.password }}{{ password_form.password.errors }}</label>
-    <button class="button button-danger" type="submit">Akkauntni yopishni tasdiqlash</button>
+    <button class="button button-danger" type="submit" data-confirm="Akkauntingiz yopiladi va tizimga kira olmaysiz. Davom etasizmi?">Akkauntni yopishni tasdiqlash</button>
   </form>
   {% elif not has_challenge %}
   <form method="post" class="stack-form">

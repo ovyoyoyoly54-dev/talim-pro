@@ -32,7 +32,7 @@ Agar PowerShell skript ishga tushishiga ruxsat bermasa, terminalda `cmd` ochib q
 ```powershell
 Copy-Item .env.example .env
 ```
-Lokal ishga tushirish uchun `.env` ichida `DJANGO_DEBUG=True`, `DJANGO_SECURE_SSL_REDIRECT=False`, random `DJANGO_SECRET_KEY` va bo‘sh `DATABASE_URL` qo‘ying. `DJANGO_SECRET_KEY` yaratish: `python -c "import secrets; print(secrets.token_urlsafe(64))"`. PostgreSQL ishlatmoqchi bo‘lsangiz, `DATABASE_URL` ni o‘zingiz yaratgan baza va parolga moslang.
+`DJANGO_DEBUG` ning standart qiymati xavfsizlik uchun `False`: lokal ishlab chiqishda uni `.env` ichida aniq `True` qiling. Lokal ishga tushirish uchun `.env` ichida `DJANGO_DEBUG=True`, `DJANGO_SECURE_SSL_REDIRECT=False`, random `DJANGO_SECRET_KEY` va bo‘sh `DATABASE_URL` qo‘ying. `DJANGO_SECRET_KEY` yaratish: `python -c "import secrets; print(secrets.token_urlsafe(64))"`. PostgreSQL ishlatmoqchi bo‘lsangiz, `DATABASE_URL` ni o‘zingiz yaratgan baza va parolga moslang.
 
 ### 5. PostgreSQL (ixtiyoriy Docker usuli)
 Docker Desktop ishga tushgach:

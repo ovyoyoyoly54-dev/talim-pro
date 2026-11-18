@@ -79,7 +79,7 @@
 </form>
 
 {{ teacher_group_map|json_script:"teacher-group-map" }}
-<script>
+<script nonce="{{ csp_nonce }}">
 document.addEventListener("DOMContentLoaded", () => {
   const groupSelect = document.getElementById("id_group");
   const teacherSelect = document.getElementById("id_teacher");

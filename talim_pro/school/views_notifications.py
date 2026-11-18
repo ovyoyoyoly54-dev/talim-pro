@@ -1,4 +1,5 @@
 import json
+from urllib.parse import urlsplit
 
 from django.conf import settings
 from django.contrib import messages
@@ -11,6 +12,19 @@ from django.views.decorators.http import require_POST
 
 from .models import Notification, PushSubscription
 from .notifications import push_enabled
+
+
+def is_allowed_push_endpoint(endpoint):
+    """Push endpoint serverdan so'rov yuboriladigan manzil bo'lgani uchun (SSRF) faqat
+    ma'lum brauzer push xizmatlariga ruxsat beriladi."""
+    try:
+        parts = urlsplit(endpoint)
+        host = (parts.hostname or "").lower()
+    except ValueError:
+        return False
+    if parts.scheme != "https" or not host or parts.username or parts.password or parts.port not in (None, 443):
+        return False
+    return any(host == suffix or host.endswith("." + suffix) for suffix in settings.PUSH_ALLOWED_HOSTS)
 
 
 @login_required
@@ -46,7 +60,7 @@ def push_subscribe(request):
         p256dh, auth = keys["p256dh"], keys["auth"]
     except (ValueError, KeyError, TypeError):
         return JsonResponse({"ok": False, "error": "bad_request"}, status=400)
-    if not (isinstance(endpoint, str) and endpoint.startswith("https://") and len(endpoint) <= 600
+    if not (isinstance(endpoint, str) and len(endpoint) <= 600 and is_allowed_push_endpoint(endpoint)
             and isinstance(p256dh, str) and isinstance(auth, str)):
         return JsonResponse({"ok": False, "error": "bad_request"}, status=400)
     PushSubscription.objects.update_or_create(
@@ -61,6 +75,8 @@ def push_unsubscribe(request):
     try:
         endpoint = json.loads(request.body).get("endpoint", "")
     except (ValueError, AttributeError):
-        endpoint = ""
+        return JsonResponse({"ok": False, "error": "bad_request"}, status=400)
+    if not isinstance(endpoint, str):
+        return JsonResponse({"ok": False, "error": "bad_request"}, status=400)
     PushSubscription.objects.filter(user=request.user, endpoint=endpoint).delete()
     return JsonResponse({"ok": True})

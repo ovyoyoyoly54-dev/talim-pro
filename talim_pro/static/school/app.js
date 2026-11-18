@@ -195,7 +195,19 @@
     window.addEventListener("pageshow", () => document.querySelectorAll("form").forEach(release));
   }
 
+  /* ── Orqaga tugmasi (xato sahifalari: data-history-back) ── */
+  function initHistoryBack() {
+    document.addEventListener("click", (event) => {
+      const back = event.target.closest("[data-history-back]");
+      if (!back) return;
+      event.preventDefault();
+      if (window.history.length > 1) window.history.back();
+      else window.location.href = "/";
+    });
+  }
+
   function init() {
+    initHistoryBack();
     initScore();
     initNav();
     initAnimations();

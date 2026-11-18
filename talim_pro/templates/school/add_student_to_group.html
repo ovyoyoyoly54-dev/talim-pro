@@ -39,7 +39,7 @@
 </div>
 {% endif %}
 {% if credentials %}
-<script>
+<script nonce="{{ csp_nonce }}">
 document.addEventListener("DOMContentLoaded", function () {
   const button = document.getElementById("save-student-credentials");
   const card = document.getElementById("student-credential-card");

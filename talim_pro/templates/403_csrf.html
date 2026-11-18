@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}{% trans "Sahifa muddati tugagan" %} — TA'LIM PRO{% endblock %}
+{% block page_heading %}{% trans "Sahifa muddati tugagan" %}{% endblock %}
+{% block content %}
+<section class="panel error-page" role="alert">
+  <span class="eyebrow">403</span>
+  <h2>{% trans "Sahifa muddati tugagan" %}</h2>
+  <p class="muted">{% trans "Xavfsizlik tekshiruvi muvaffaqiyatsiz tugadi (sahifa uzoq vaqt ochiq turgan bo‘lishi mumkin). Sahifani yangilab, amalni qaytadan bajaring." %}</p>
+  <div class="form-actions">
+    <a class="button button-primary" href="{% if user.is_authenticated %}{% url 'dashboard' %}{% else %}{% url 'home' %}{% endif %}">{% trans "Bosh sahifaga qaytish" %}</a>
+    <button class="button button-outline" type="button" data-history-back>{% trans "Orqaga" %}</button>
+  </div>
+</section>
+{% endblock %}

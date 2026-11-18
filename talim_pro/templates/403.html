@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}{% trans "Ruxsat yo‘q" %} — TA'LIM PRO{% endblock %}
+{% block page_heading %}{% trans "Ruxsat yo‘q" %}{% endblock %}
+{% block content %}
+<section class="panel error-page" role="alert">
+  <span class="eyebrow">403</span>
+  <h2>{% trans "Ruxsat yo‘q" %}</h2>
+  <p class="muted">{% trans "Bu sahifani ko‘rish uchun sizda ruxsat yo‘q. Boshqa akkaunt bilan kirgan bo‘lsangiz, avval tizimdan chiqing." %}</p>
+  <div class="form-actions">
+    <a class="button button-primary" href="{% if user.is_authenticated %}{% url 'dashboard' %}{% else %}{% url 'home' %}{% endif %}">{% trans "Bosh sahifaga qaytish" %}</a>
+    <button class="button button-outline" type="button" data-history-back>{% trans "Orqaga" %}</button>
+  </div>
+</section>
+{% endblock %}

@@ -38,7 +38,7 @@
 {% empty %}<p class="empty">Hozircha o‘qituvchi qo‘shilmagan.</p>{% endfor %}
 </section></div>
 {% endif %}
-<script>
+<script nonce="{{ csp_nonce }}">
 document.addEventListener("DOMContentLoaded", function () {
   const button = document.getElementById("save-teacher-credentials");
   const card = document.getElementById("teacher-credential-card");
