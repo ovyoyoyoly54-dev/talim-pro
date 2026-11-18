@@ -29,9 +29,13 @@ services:
       DJANGO_DB_CACHE: ${DJANGO_DB_CACHE:-True}
     ports:
       - "${PORT:-8000}:${PORT:-8000}"
+    volumes:
+      # Uyga vazifa fayllari (MEDIA_ROOT) konteyner qayta yaratilganda yo‘qolmasin.
+      - talimpro_media:/app/media
     depends_on:
       db:
         condition: service_healthy
 
 volumes:
   talimpro_pgdata:
+  talimpro_media:

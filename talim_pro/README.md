@@ -129,7 +129,7 @@ Foydalanuvchilar dashboard’i `/dashboard/`, kirish sahifasi `/login/`. Render 
 2. Loyiha Dockerfile orqali deploy qilinsa, start command avval migratsiyani, keyin `ensure_admin` buyrug‘ini bajaradi. Agar native Python service ishlatilsa, **Start Command**’ni quyidagicha sozlang:
 
 ```sh
-python manage.py migrate --noinput && python manage.py ensure_admin && gunicorn config.wsgi:application --bind 0.0.0.0:$PORT --workers ${WEB_CONCURRENCY:-3}
+python manage.py migrate --noinput && python manage.py createcachetable && python manage.py ensure_admin && gunicorn config.wsgi:application --bind 0.0.0.0:$PORT --workers ${WEB_CONCURRENCY:-3}
 ```
 
 3. Deploy muvaffaqiyatli bo‘lib, `/login/` orqali kirganingizdan so‘ng Render Environment’dan `DJANGO_ADMIN_PASSWORD` (shuningdek `DJANGO_ADMIN_USERNAME`, `DJANGO_ADMIN_EMAIL`) qiymatlarini o‘chirib, service’ni qayta deploy qiling. Yaratilgan admin hisobi bazada saqlanadi; keyingi restart’da parol qayta o‘rnatilmaydi.

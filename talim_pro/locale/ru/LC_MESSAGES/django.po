@@ -756,3 +756,9 @@ msgstr "Новых сообщений нет."
 
 msgid "Holat noto‘g‘ri tanlangan."
 msgstr "Выбран неверный статус."
+
+msgid "Nega boshqa sahifalar ochilmayapti?"
+msgstr "Почему другие страницы не открываются?"
+
+msgid "Administrator akkaunti uchun 2 bosqichli tasdiqlash majburiy. Shu qadamni tugatmaguncha boshqa sahifalar (yon paneldagi tugmalar) ochilmaydi va shu sahifaga qaytaradi."
+msgstr "Для аккаунта администратора двухэтапная проверка обязательна. Пока этот шаг не завершён, другие страницы (кнопки боковой панели) не открываются, и вы возвращаетесь на эту страницу."

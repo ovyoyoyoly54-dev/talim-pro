@@ -1,1 +1,0 @@
-/talim_pro/Dockerfile

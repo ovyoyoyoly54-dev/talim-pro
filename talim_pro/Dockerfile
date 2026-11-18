@@ -8,7 +8,8 @@ WORKDIR /app
 COPY requirements.txt ./
 RUN pip install --upgrade pip && pip install -r requirements.txt
 COPY . ./
-RUN groupadd --system app && useradd --system --gid app --create-home app
+RUN groupadd --system app && useradd --system --gid app --create-home app \
+    && mkdir -p /app/media && chown -R app:app /app/media
 
 # Static assets are collected at image build time. Runtime secrets are injected separately.
 RUN DJANGO_STATIC_BUILD=True DJANGO_DEBUG=False DJANGO_ALLOWED_HOSTS=localhost python manage.py collectstatic --noinput
