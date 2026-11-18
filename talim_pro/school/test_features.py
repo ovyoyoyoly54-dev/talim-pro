@@ -526,6 +526,76 @@ class TwoFactorTests(TestCase):
         self.assertFalse(TwoFactorDevice.objects.exists())
 
 
+class OptionalTwoFactorTests(TestCase):
+    """2FA ixtiyoriy: standart holatda hech kim majburlanmaydi, lekin har kim yoqishi va o'chirishi mumkin."""
+
+    def setUp(self):
+        cache.clear()
+        self.admin = User.objects.create_user("boss", password="Pass12345!x", role=User.Role.ADMIN, is_staff=True)
+        self.student = User.objects.create_user("stud", password="Pass12345!x", role=User.Role.STUDENT)
+
+    def login(self, user):
+        self.client.logout()
+        self.assertTrue(self.client.login(username=user, password="Pass12345!x"))
+
+    def test_admin_is_not_forced_by_default(self):
+        self.login("boss")
+        self.assertEqual(self.client.get(reverse("dashboard")).status_code, 200)
+
+    def test_student_can_enable_then_must_enter_code_on_next_login(self):
+        self.login("stud")
+        self.assertEqual(self.client.get(reverse("two_factor_setup")).status_code, 200)
+        secret = self.client.session["2fa_pending_secret"]
+        done = self.client.post(reverse("two_factor_setup"), {"code": pyotp.TOTP(secret).now()})
+        self.assertContains(done, "<code>")  # zaxira kodlar ko'rsatildi
+        self.assertEqual(self.client.get(reverse("dashboard")).status_code, 200)
+        self.login("stud")
+        self.assertRedirects(self.client.get(reverse("dashboard")), f"{reverse('two_factor_verify')}?next={reverse('dashboard')}", fetch_redirect_response=False)
+        # setup vaqtidagi kod replay bo'ladi; oynani qayta ochib, yangi kod bilan tekshiramiz
+        TwoFactorDevice.objects.filter(user=self.student).update(last_counter=0)
+        self.client.post(reverse("two_factor_verify"), {"code": pyotp.TOTP(secret).now()})
+        self.assertEqual(self.client.get(reverse("dashboard")).status_code, 200)
+
+    def test_settings_show_optional_two_factor_section_for_everyone(self):
+        self.login("stud")
+        page = self.client.get(reverse("settings_panel"))
+        self.assertContains(page, 'id="ikki-bosqich"')
+        self.assertContains(page, reverse("two_factor_setup"))
+        self.assertNotContains(page, reverse("two_factor_disable"))
+
+    def test_enabled_user_sees_disable_form_in_settings(self):
+        secret = twofactor.new_secret()
+        TwoFactorDevice.objects.create(user=self.student, secret=secret, confirmed=True)
+        self.login("stud")
+        self.client.post(reverse("two_factor_verify"), {"code": pyotp.TOTP(secret).now()})
+        page = self.client.get(reverse("settings_panel"))
+        self.assertContains(page, reverse("two_factor_disable"))
+
+    def test_user_disables_with_password_and_code(self):
+        secret = twofactor.new_secret()
+        TwoFactorDevice.objects.create(user=self.student, secret=secret, confirmed=True)
+        self.login("stud")
+        # noto'g'ri parol: o'chirilmaydi
+        self.client.post(reverse("two_factor_disable"), {"password": "wrong", "code": pyotp.TOTP(secret).now()})
+        self.assertTrue(TwoFactorDevice.objects.filter(user=self.student).exists())
+        # noto'g'ri kod: o'chirilmaydi
+        self.client.post(reverse("two_factor_disable"), {"password": "Pass12345!x", "code": "000000"})
+        self.assertTrue(TwoFactorDevice.objects.filter(user=self.student).exists())
+        # to'g'ri parol va kod: o'chiriladi
+        self.client.post(reverse("two_factor_disable"), {"password": "Pass12345!x", "code": pyotp.TOTP(secret).now()})
+        self.assertFalse(TwoFactorDevice.objects.filter(user=self.student).exists())
+        self.login("stud")
+        self.assertEqual(self.client.get(reverse("dashboard")).status_code, 200)
+
+    def test_forced_admin_cannot_disable_two_factor(self):
+        secret = twofactor.new_secret()
+        TwoFactorDevice.objects.create(user=self.admin, secret=secret, confirmed=True)
+        self.login("boss")
+        with self.settings(ADMIN_2FA_REQUIRED=True):
+            self.client.post(reverse("two_factor_disable"), {"password": "Pass12345!x", "code": pyotp.TOTP(secret).now()})
+        self.assertTrue(TwoFactorDevice.objects.filter(user=self.admin).exists())
+
+
 class AuditLogTests(TestCase):
     def setUp(self):
         self.group, self.teacher, self.admin, *_ = make_world()

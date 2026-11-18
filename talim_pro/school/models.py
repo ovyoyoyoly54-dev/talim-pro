@@ -558,7 +558,7 @@ class EnrollmentApplication(models.Model):
 
 
 class TwoFactorDevice(models.Model):
-    """Administrator uchun TOTP (Google Authenticator va shu kabi ilovalar) qurilmasi."""
+    """Foydalanuvchi uchun ixtiyoriy TOTP (Google Authenticator va shu kabi ilovalar) qurilmasi."""
 
     user = models.OneToOneField(settings.AUTH_USER_MODEL, verbose_name="foydalanuvchi", on_delete=models.CASCADE, related_name="two_factor")
     secret = models.CharField("maxfiy kalit", max_length=64)

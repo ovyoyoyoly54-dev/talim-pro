@@ -20,11 +20,21 @@ LOCK_SECONDS = 600
 SESSION_KEY = "2fa_ok"
 
 
-def requires_two_factor(user):
+def is_enforced(user):
+    """Administrator uchun 2FA majburiymi (faqat ADMIN_2FA_REQUIRED=True bo'lganda)."""
     return bool(
         settings.ADMIN_2FA_REQUIRED and user.is_authenticated
         and (user.is_superuser or user.is_staff or user.role == User.Role.ADMIN)
     )
+
+
+def is_enrolled(user):
+    """Foydalanuvchi 2FA ni ixtiyoriy yoqqan (tasdiqlangan qurilmasi bor)."""
+    return bool(user.is_authenticated and TwoFactorDevice.objects.filter(user=user, confirmed=True).exists())
+
+
+def requires_two_factor(user):
+    return is_enforced(user) or is_enrolled(user)
 
 
 def new_secret():
@@ -108,9 +118,10 @@ class TwoFactorMiddleware:
     def __call__(self, request):
         user = getattr(request, "user", None)
         if (
-            user is not None and requires_two_factor(user)
+            user is not None and user.is_authenticated
             and not request.session.get(SESSION_KEY)
             and not request.path.startswith(EXEMPT_PREFIXES)
+            and requires_two_factor(user)
         ):
             device = TwoFactorDevice.objects.filter(user=user, confirmed=True).first()
             target = reverse("two_factor_verify" if device else "two_factor_setup")

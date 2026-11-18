@@ -3,7 +3,7 @@
 {% block title %}{% trans "2FA tekshiruvi" %} — TA'LIM PRO{% endblock %}
 {% block page_heading %}{% trans "2 bosqichli tasdiqlash" %}{% endblock %}
 {% block content %}
-<div class="message warning credential-notice"><b>{% trans "Nega boshqa sahifalar ochilmayapti?" %}</b> {% trans "Administrator akkaunti uchun 2 bosqichli tasdiqlash majburiy. Shu qadamni tugatmaguncha boshqa sahifalar (yon paneldagi tugmalar) ochilmaydi va shu sahifaga qaytaradi." %}</div>
+{% if two_factor_enforced %}<div class="message warning credential-notice"><b>{% trans "Nega boshqa sahifalar ochilmayapti?" %}</b> {% trans "Administrator akkaunti uchun 2 bosqichli tasdiqlash majburiy. Shu qadamni tugatmaguncha boshqa sahifalar (yon paneldagi tugmalar) ochilmaydi va shu sahifaga qaytaradi." %}</div>{% endif %}
 <div class="page-intro"><div><span class="eyebrow">{% trans "XAVFSIZLIK" %}</span><h2>{% trans "Tasdiqlash kodini kiriting" %}</h2>
 <p class="muted">{% trans "Autentifikator ilovasidagi 6 xonali kodni yoki zaxira kodni kiriting." %}</p></div></div>
 <form method="post" class="panel" novalidate>{% csrf_token %}<input type="hidden" name="next" value="{{ next }}">

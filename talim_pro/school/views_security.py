@@ -6,6 +6,7 @@ from django.urls import reverse
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.utils.translation import gettext as _
 from django.views.decorators.cache import never_cache
+from django.views.decorators.http import require_POST
 
 from . import audit, twofactor
 from .models import AuditLog, TwoFactorDevice
@@ -29,8 +30,6 @@ def _passed(request, user, how):
 @login_required
 def two_factor_setup(request):
     user = request.user
-    if not twofactor.requires_two_factor(user):
-        return redirect("dashboard")
     device = TwoFactorDevice.objects.filter(user=user).first()
     if device and device.confirmed:
         # Allaqachon sozlangan: faqat tekshiruv sahifasiga yo'naltiramiz.
@@ -60,6 +59,7 @@ def two_factor_setup(request):
     uri = twofactor.provisioning_uri(user, secret)
     return render(request, "school/two_factor_setup.html", {
         "secret": secret, "qr": twofactor.qr_data_uri(uri), "next": _next_url(request),
+        "two_factor_enforced": twofactor.is_enforced(user),
     })
 
 
@@ -91,4 +91,38 @@ def two_factor_verify(request):
                 return redirect(_next_url(request))
             twofactor.register_failure(user)
             messages.error(request, _("Kod noto‘g‘ri."))
-    return render(request, "school/two_factor_verify.html", {"next": _next_url(request)})
+    return render(request, "school/two_factor_verify.html", {"next": _next_url(request), "two_factor_enforced": twofactor.is_enforced(user)})
+
+
+@never_cache
+@login_required
+@require_POST
+def two_factor_disable(request):
+    """Ixtiyoriy 2FA ni o'chirish: joriy parol va joriy kod (yoki zaxira kod) talab qilinadi."""
+    user = request.user
+    section = reverse("settings_panel") + "#ikki-bosqich"
+    device = TwoFactorDevice.objects.filter(user=user, confirmed=True).first()
+    if device is None:
+        messages.info(request, _("Sizda 2FA yoqilmagan."))
+        return redirect(section)
+    if twofactor.is_enforced(user):
+        messages.error(request, _("Administrator uchun 2FA majburiy, uni o‘chirib bo‘lmaydi."))
+        return redirect(section)
+    if twofactor.is_locked(user):
+        messages.error(request, _("Juda ko‘p noto‘g‘ri urinish. 10 daqiqadan so‘ng qayta urinib ko‘ring."))
+        return redirect(section)
+    password = request.POST.get("password", "")
+    code = request.POST.get("code", "")
+    if not user.check_password(password):
+        twofactor.register_failure(user)
+        messages.error(request, _("Parol noto‘g‘ri."))
+        return redirect(section)
+    if twofactor.check_totp(device.secret, code, device.last_counter) is None and not twofactor.use_backup_code(device, code):
+        twofactor.register_failure(user)
+        messages.error(request, _("Kod noto‘g‘ri."))
+        return redirect(section)
+    device.delete()
+    twofactor.clear_failures(user)
+    audit.record(AuditLog.Action.TWO_FACTOR, request=request, user=user, object_repr="disabled")
+    messages.success(request, _("2FA o‘chirildi."))
+    return redirect(section)

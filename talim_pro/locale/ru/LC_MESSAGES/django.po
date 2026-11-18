@@ -855,3 +855,18 @@ msgstr "Сообщения отмечены как прочитанные."
 
 msgid "Ariza holati noto‘g‘ri."
 msgstr "Некорректный статус заявки."
+
+msgid "Ikki bosqichli tasdiqlash (2FA)"
+msgstr "Двухэтапная проверка (2FA)"
+
+msgid "Sizda 2FA yoqilmagan."
+msgstr "У вас не включена двухэтапная проверка."
+
+msgid "Administrator uchun 2FA majburiy, uni o‘chirib bo‘lmaydi."
+msgstr "Для администратора двухэтапная проверка обязательна, её нельзя отключить."
+
+msgid "Parol noto‘g‘ri."
+msgstr "Неверный пароль."
+
+msgid "2FA o‘chirildi."
+msgstr "Двухэтапная проверка отключена."

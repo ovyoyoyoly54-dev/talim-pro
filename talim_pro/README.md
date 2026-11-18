@@ -213,7 +213,7 @@ Android Studio loyihasi `android/` papkasida. Hozircha `siteUrl=https://example.
 | Rus tili | yuqoridagi UZ/RU tugmasi | `locale/ru`, yangilash: `tools/extract_messages.py`, `tools/po2mo.py` |
 | Ochiq sahifalar | `/kurslar/`, `/narxlar/`, `/ariza/` | kurslar admin panelda (Kurslar) |
 | Hisobot eksporti | `/hisobot/` (Excel/PDF) | — |
-| Admin 2FA va jurnal | `/2fa/…`, admin panel → O‘zgarishlar jurnali | `ADMIN_2FA_REQUIRED` (standart: yoqilgan) |
+| 2FA (ixtiyoriy) va jurnal | `/sozlamalar/#ikki-bosqich`, admin panel → O‘zgarishlar jurnali | `ADMIN_2FA_REQUIRED=True` administratorlar uchun majburiy qiladi (standart: o‘chiq) |
 
 **To‘lov provayderlari.** Click va Payme kabinetida callback manzillarini kiriting:
 Click — `https://<domen>/tolov/click/` (Prepare va Complete), Payme — `https://<domen>/tolov/payme/`.
@@ -223,5 +223,4 @@ oldin provayderning test rejimida (Payme: `PAYME_TEST=True`) sinab ko‘ring.
 **Oylik hisoblar.** Guruhga “oylik to‘lov” summasini kiriting, so‘ng `/tolovlar/` sahifasida
 “Shu oy uchun hisob yaratish” tugmasini bosing (qayta bosish dublikat yaratmaydi).
 
-**2FA.** Administrator birinchi kirishda QR kod orqali autentifikator ilovasini ulaydi va 8 ta zaxira
-kod oladi. Telefon va kodlar yo‘qolsa: `python manage.py reset_2fa <login>`.
+**2FA.** Har qanday foydalanuvchi Sozlamalar sahifasida 2FA ni ixtiyoriy yoqishi mumkin: QR kodni autentifikator ilovasiga ulaydi va 8 ta zaxira kod oladi. O‘chirish uchun joriy parol va kod kerak. `ADMIN_2FA_REQUIRED=True` bo‘lsa, administratorlar uchun 2FA majburiy bo‘ladi. Telefon va kodlar yo‘qolsa: `python manage.py reset_2fa <login>`.

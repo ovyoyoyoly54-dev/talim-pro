@@ -177,5 +177,5 @@ PUSH_ALLOWED_HOSTS = [
     "notify.windows.com", "push.apple.com",
 ] + [x.strip().lower() for x in os.getenv("PUSH_EXTRA_HOSTS", "").split(",") if x.strip()]
 
-# ── Administratorlar uchun 2FA (TOTP). Testlarda o'chiriladi, productionda yoqilgan ──
-ADMIN_2FA_REQUIRED = os.getenv("ADMIN_2FA_REQUIRED", "False" if "test" in sys.argv else "True").lower() == "true"
+# ── 2FA (TOTP). Standart: ixtiyoriy. ADMIN_2FA_REQUIRED=True administratorlar uchun majburiy qiladi ──
+ADMIN_2FA_REQUIRED = os.getenv("ADMIN_2FA_REQUIRED", "False").lower() == "true"

@@ -16,6 +16,7 @@
       {% if is_admin_user %}
       <a href="#sayt">⚙ <span>Sayt sozlamalari</span></a>
       {% endif %}
+      <a href="#ikki-bosqich">✓ <span>2FA (ixtiyoriy)</span></a>
       <a href="#xavfsizlik">⎋ <span>Xavfsizlik va chiqish</span></a>
     </nav>
     <div class="settings-role"><span class="pill pill-blue">{{ user.get_role_display|default:"Foydalanuvchi" }}</span></div>
@@ -51,6 +52,24 @@
       </form>
     </section>
     {% endif %}
+
+    <section class="panel settings-card" id="ikki-bosqich">
+      <div class="panel-heading"><div><h3>Ikki bosqichli tasdiqlash (2FA)</h3><p class="muted">Autentifikator ilovasi (Google Authenticator va shu kabi) orqali qo‘shimcha himoya. Ixtiyoriy.</p></div></div>
+      {% if two_factor_enforced %}<p class="muted tiny">Administrator uchun 2FA sayt sozlamasi bo‘yicha majburiy, shuning uchun o‘chirib bo‘lmaydi.</p>{% endif %}
+      {% if two_factor_enabled %}
+        <p><span class="pill pill-blue">Yoqilgan</span></p>
+        {% if not two_factor_enforced %}
+        <form method="post" action="{% url 'two_factor_disable' %}" class="stack-form" data-confirm="2FA o‘chirilsinmi?">{% csrf_token %}
+          <label>Joriy parol<input class="input" type="password" name="password" autocomplete="current-password" required></label>
+          <label>Autentifikator kodi yoki zaxira kod<input class="input" name="code" autocomplete="one-time-code" maxlength="13" required></label>
+          <div class="form-actions"><button class="button button-outline" type="submit">2FA ni o‘chirish</button></div>
+        </form>
+        {% endif %}
+      {% else %}
+        <p><span class="pill">O‘chirilgan</span></p>
+        <div class="form-actions"><a class="button button-primary" href="{% url 'two_factor_setup' %}">2FA ni yoqish</a></div>
+      {% endif %}
+    </section>
 
     <section class="panel settings-card" id="xavfsizlik">
       <div class="panel-heading"><div><h3>Xavfsizlik va chiqish</h3><p class="muted">Akkauntdan xavfsiz chiqing yoki kerak bo‘lsa akkauntni yoping.</p></div></div>

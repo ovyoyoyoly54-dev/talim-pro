@@ -17,6 +17,7 @@ from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.http import require_GET
 from xml.sax.saxutils import escape
+from . import twofactor
 from .forms import GradeRecordForm, PhoneResetRequestForm, PhoneOTPForm, PhonePasswordResetForm, SignupRequestForm, SignupCompleteForm, AccountClosureConfirmForm, PlatformSettingsForm, AccountSettingsForm, StyledPasswordChangeForm, AddStudentToGroupForm, CreateStudentInGroupForm, StudyGroupForm, CreateTeacherForm, FirstLoginCredentialsForm, LessonCreateForm, LessonRescheduleForm
 from .models import User, StudyGroup, StudentProfile, Lesson, GradeRecord, Attendance, SMSLog, PhoneOTP, PlatformSettings
 from .phone_auth import consume_phone_otp, issue_phone_otp, normalize_phone
@@ -388,6 +389,8 @@ def settings_panel(request):
         "account_form": account_form,
         "password_form": password_form,
         "is_admin_user": admin_user,
+        "two_factor_enabled": twofactor.is_enrolled(user),
+        "two_factor_enforced": twofactor.is_enforced(user),
     })
 
 def teacher_lessons(user):
