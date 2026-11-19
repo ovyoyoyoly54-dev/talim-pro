@@ -627,6 +627,7 @@ def grade_lesson(request):
             else:
                 with transaction.atomic():
                     grade = GradeRecord.objects.filter(lesson=lesson, student=student).first()
+                    previous_score = grade.score if grade is not None else None
                     if grade is None:
                         # Create neutrally first; selected reasons are attached before
                         # saving the actual score so scores <= 8 pass model validation.
@@ -636,6 +637,11 @@ def grade_lesson(request):
                     grade.score = form.cleaned_data["score"]
                     grade.reasons.set(form.cleaned_data["reasons"])
                     grade.save()
+                    if previous_score is not None and previous_score != grade.score:
+                        # Haqiqiy tuzatish: administrator ko‘ra oladigan jurnalga eski va yangi baho yoziladi.
+                        from . import audit
+                        audit.record("update", request=request, model="GradeCorrection", object_id=grade.pk,
+                                     object_repr=str(grade), changes={"score": [str(previous_score), str(grade.score)]})
                     attendance, _ = Attendance.objects.update_or_create(
                         lesson=lesson, student=student,
                         defaults={"status": form.cleaned_data["attendance"], "teacher": request.user}
@@ -662,7 +668,19 @@ def grade_lesson(request):
                     messages.success(request, "Baho va davomat saqlandi. Ota-ona SMS raqami biriktirilmagan.")
                 return redirect("dashboard")
     else:
-        form = GradeRecordForm(teacher=request.user, allow_all=is_admin(request.user))
+        initial = {}
+        lesson_id, student_id = request.GET.get("lesson", ""), request.GET.get("student", "")
+        if lesson_id.isdigit() and student_id.isdigit():
+            # Jurnaldan «Tuzatish» bosilganda mavjud baho va davomat formaga to‘ldiriladi.
+            existing = GradeRecord.objects.filter(lesson_id=int(lesson_id), student_id=int(student_id)).first()
+            if existing:
+                attendance_row = Attendance.objects.filter(lesson_id=existing.lesson_id, student_id=existing.student_id).first()
+                initial = {"lesson": existing.lesson_id, "student": existing.student_id, "score": existing.score,
+                           "reasons": list(existing.reasons.values_list("pk", flat=True)),
+                           "attendance": attendance_row.status if attendance_row else Attendance.Status.PRESENT}
+            else:
+                initial = {"lesson": int(lesson_id), "student": int(student_id)}
+        form = GradeRecordForm(teacher=request.user, allow_all=is_admin(request.user), initial=initial)
 
     # Invalid POST requests must re-render the bound form with validation errors.
     # Dars tanlanganda faqat o‘sha guruh o‘quvchilari ko‘rsatilishi uchun moslik jadvali.
@@ -832,4 +850,62 @@ def add_student_to_group(request, group_id):
         "group": group,
         "form": form,
         "credentials": credentials,
+    })
+
+
+
+def _manageable_lesson(user, lesson_id):
+    lessons = Lesson.objects.select_related("group", "teacher")
+    if is_admin(user):
+        return get_object_or_404(lessons, pk=lesson_id)
+    if user.role != User.Role.TEACHER:
+        raise PermissionDenied
+    return get_object_or_404(lessons.filter(teacher=user, group__teachers=user), pk=lesson_id)
+
+
+@login_required
+def lesson_journal(request, lesson_id):
+    """Bitta dars jurnali: butun guruh davomati va baholari, xatoni tuzatish imkoni bilan."""
+    from .models import AuditLog
+    lesson = _manageable_lesson(request.user, lesson_id)
+    students = list(StudentProfile.objects.filter(
+        group=lesson.group, user__role=User.Role.STUDENT, user__is_active=True,
+    ).select_related("user").order_by("user__last_name", "user__first_name"))
+    if request.method == "POST":
+        valid = {value for value, _label in Attendance.Status.choices}
+        changed = 0
+        with transaction.atomic():
+            for student in students:
+                status = request.POST.get(f"attendance_{student.pk}", "")
+                if status not in valid:
+                    continue
+                row = Attendance.objects.filter(lesson=lesson, student=student).first()
+                if row is None:
+                    Attendance(lesson=lesson, student=student, status=status, teacher=request.user).save()
+                    changed += 1
+                elif row.status != status:
+                    row.status, row.teacher = status, request.user
+                    row.save()
+                    changed += 1
+        messages.success(request, f"Davomat saqlandi. O‘zgartirilgan qatorlar: {changed}." if changed else "Davomatda o‘zgarish yo‘q.")
+        return redirect("lesson_journal", lesson_id=lesson.pk)
+
+    grades = {g.student_id: g for g in lesson.grades.prefetch_related("reasons")}
+    attendance = {a.student_id: a for a in lesson.attendance.all()}
+    corrections = {}
+    if grades:
+        logs = AuditLog.objects.filter(
+            model="GradeCorrection", object_id__in=[str(g.pk) for g in grades.values()],
+        ).order_by("created_at")
+        for log in logs:
+            if "score" in log.changes:
+                corrections.setdefault(log.object_id, []).append(log)
+    rows = []
+    for student in students:
+        grade, att = grades.get(student.pk), attendance.get(student.pk)
+        history = corrections.get(str(grade.pk), []) if grade else []
+        rows.append({"student": student, "grade": grade, "attendance": att, "history": history,
+                     "previous_score": history[-1].changes["score"][0] if history else None})
+    return render(request, "school/lesson_journal.html", {
+        "lesson": lesson, "rows": rows, "statuses": Attendance.Status.choices,
     })

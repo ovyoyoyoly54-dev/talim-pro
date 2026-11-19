@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}{% trans "Uyga vazifa" %} — TA'LIM PRO{% endblock %}
+{% block page_heading %}{% trans "Uyga vazifa" %}{% endblock %}
+{% block content %}
+<div class="page-intro"><div><span class="eyebrow">{% trans "UYGA VAZIFA" %}</span><h2>{% trans "Qaysi sinf uchun?" %}</h2>
+<p class="muted">{% trans "Siz bir nechta sinfga dars berasiz. Vazifalari ko‘riladigan yoki yangi vazifa beriladigan sinfni tanlang." %}</p></div></div>
+<div class="panel"><div class="table-wrap"><table>
+<thead><tr><th>{% trans "Sinf" %}</th><th>{% trans "Fan" %}</th><th>{% trans "Amal" %}</th></tr></thead><tbody>
+{% for group in groups %}<tr><td><b>{{ group.name }}</b></td><td>{{ group.subject }}</td>
+<td><a class="button button-outline" href="{% url 'homework_list' %}?group={{ group.pk }}">{% trans "Vazifalarni ko‘rish" %}</a>
+<a class="button button-primary" href="{% url 'homework_create' %}?group={{ group.pk }}">{% trans "Yangi vazifa" %}</a></td></tr>{% endfor %}
+</tbody></table></div></div>
+{% endblock %}

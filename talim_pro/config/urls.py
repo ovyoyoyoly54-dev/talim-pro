@@ -63,6 +63,7 @@ urlpatterns = [
     path("sozlamalar/", views.settings_panel, name="settings_panel"),
     path("", views.public_home, name="home"),
     path("baholash/", views.grade_lesson, name="grade_lesson"),
+    path("dars/<int:lesson_id>/jurnal/", views.lesson_journal, name="lesson_journal"),
     path("dars-qoshish/", views.lesson_create, name="lesson_create"),
     path("dars/<int:lesson_id>/vaqtini-ozgartirish/", views.lesson_reschedule, name="lesson_reschedule"),
     path("jadval/", views.schedule, name="schedule"),
