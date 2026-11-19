@@ -85,9 +85,28 @@ def _visible_homework(user):
     raise PermissionDenied
 
 
+def _teacher_groups(user):
+    """Faqat o‘qituvchi uchun: u dars beradigan guruhlar (administrator va boshqalar uchun None)."""
+    if is_admin(user) or user.role != User.Role.TEACHER:
+        return None
+    return list(StudyGroup.objects.filter(teachers=user).order_by("name"))
+
+
 @login_required
 def homework_list(request):
-    items = list(_visible_homework(request.user).order_by("-due_at")[:100])
+    groups = _teacher_groups(request.user)
+    queryset = _visible_homework(request.user)
+    selected = None
+    if groups is not None and len(groups) > 1:
+        # Bir nechta sinfga dars beradigan o‘qituvchidan avval qaysi sinf ekanini so‘raymiz.
+        group_id = request.GET.get("group", "")
+        selected = next((g for g in groups if str(g.pk) == group_id), None)
+        if selected is None:
+            return render(request, "school/homework_group_picker.html", {"groups": groups})
+        queryset = queryset.filter(group=selected)
+    elif groups:
+        selected = groups[0]
+    items = list(queryset.order_by("-due_at")[:100])
     submitted = {}
     if request.user.role == User.Role.STUDENT:
         profile = _student_profile(request.user)
@@ -97,6 +116,7 @@ def homework_list(request):
         item.my_submission = submitted.get(item.pk)
     return render(request, "school/homework_list.html", {
         "items": items, "can_create": is_admin(request.user) or request.user.role == User.Role.TEACHER,
+        "selected_group": selected, "switch_group": bool(groups and len(groups) > 1),
     })
 
 
@@ -105,7 +125,11 @@ def homework_create(request):
     user = request.user
     if not (is_admin(user) or user.role == User.Role.TEACHER):
         raise PermissionDenied
-    form = HomeworkForm(request.POST or None, request.FILES or None, user=user)
+    initial = {}
+    preset = request.GET.get("group", "")
+    if preset.isdigit():
+        initial["group"] = int(preset)
+    form = HomeworkForm(request.POST or None, request.FILES or None, user=user, initial=initial)
     if request.method == "POST" and form.is_valid():
         homework = form.save(commit=False)
         homework.teacher = user

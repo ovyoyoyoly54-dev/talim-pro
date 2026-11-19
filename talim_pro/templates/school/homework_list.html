@@ -6,8 +6,12 @@
 <div class="page-intro">
   <div><span class="eyebrow">{% trans "O‘QUV JARAYONI" %}</span><h2>{% trans "Uyga vazifalar" %}</h2>
   <p class="muted">{% trans "Topshiriqlar, javoblar va o‘qituvchi baholari." %}</p></div>
-  {% if can_create %}<a class="button button-primary" href="{% url 'homework_create' %}">{% trans "Yangi vazifa" %}</a>{% endif %}
+  <div class="top-actions">
+    {% if switch_group %}<a class="button button-outline" href="{% url 'homework_list' %}">{% trans "Sinfni almashtirish" %}</a>{% endif %}
+    {% if can_create %}<a class="button button-primary" href="{% url 'homework_create' %}{% if selected_group %}?group={{ selected_group.pk }}{% endif %}">{% trans "Yangi vazifa" %}</a>{% endif %}
+  </div>
 </div>
+{% if selected_group and switch_group %}<p class="muted">{% trans "Sinf" %}: <b>{{ selected_group.name }}</b> — {{ selected_group.subject }}</p>{% endif %}
 <div class="panel"><div class="table-wrap"><table>
 <thead><tr><th>{% trans "Vazifa" %}</th><th>{% trans "Guruh" %}</th><th>{% trans "Muddat" %}</th><th>{% trans "Holati" %}</th></tr></thead><tbody>
 {% for hw in items %}<tr>
