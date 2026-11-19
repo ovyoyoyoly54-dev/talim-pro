@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080" viewBox="0 0 1920 1080" preserveAspectRatio="xMidYMid slice">
+<defs>
+<linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#F4F7F5"/><stop offset=".55" stop-color="#EAF3EE"/><stop offset="1" stop-color="#F4F7F5"/></linearGradient>
+<filter id="blur" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="140"/></filter>
+<pattern id="g" width="96" height="96" patternUnits="userSpaceOnUse">
+  <g fill="none" stroke="#0E6B52" stroke-opacity="0.07" stroke-width="1.2">
+    <rect x="30" y="30" width="36" height="36"/><rect x="30" y="30" width="36" height="36" transform="rotate(45 48 48)"/>
+    <circle cx="48" cy="48" r="9"/>
+    <path d="M0 0L22.5 22.5M96 0L73.5 22.5M0 96L22.5 73.5M96 96L73.5 73.5M48 0V22.5M48 96V73.5M0 48H22.5M96 48H73.5"/>
+  </g></pattern>
+</defs>
+<rect width="1920" height="1080" fill="url(#bg)"/>
+<g filter="url(#blur)"><circle cx="1600" cy="120" r="420" fill="#F2A33A" opacity="0.22"/>
+<circle cx="150" cy="950" r="420" fill="#0E6B52" opacity="0.14"/>
+<circle cx="1750" cy="900" r="320" fill="#3FC79A" opacity="0.16"/></g>
+<rect width="1920" height="1080" fill="url(#g)"/>
+<path d="M20 3.5Q21.1 9.4 27 10.5Q21.1 11.6 20 17.5Q18.9 11.6 13 10.5Q18.9 9.4 20 3.5z" transform="translate(1542.9 77.5) scale(7.86)" fill="#F2A33A" opacity="0.18"/>
+<path d="M20 3.5Q21.1 9.4 27 10.5Q21.1 11.6 20 17.5Q18.9 11.6 13 10.5Q18.9 9.4 20 3.5z" transform="translate(162.9 829.0) scale(4.86)" fill="#0E6B52" opacity="0.1"/>
+</svg>

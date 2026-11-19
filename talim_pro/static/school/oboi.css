@@ -1,0 +1,71 @@
+/* ==========================================================================
+   TA'LIM PRO — asosiy oboi (fon rasmi): kunduzgi va tungi rejim.
+   Faqat sahifa fonini o'zgartiradi; kartochkalar, menyu va boshqa
+   komponentlar o'z uslubida qoladi. Rejim tanlovi: oboi.js
+   (html[data-oboi="kunduzgi" | "tungi"]; tanlanmagan bo'lsa — tizim rejimi).
+   ========================================================================== */
+
+:root{
+  --oboi-rasm:url("oboi-kunduzgi.svg");
+  --oboi-rang:#F4F7F5;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-oboi="kunduzgi"]){
+    --oboi-rasm:url("oboi-tungi.svg");
+    --oboi-rang:#0B1512;
+    --oboi-matn:#E8F0EC;
+    --oboi-matn-xira:#9DB0A8;
+    --oboi-urgu:#F5B454;
+  }
+}
+:root[data-oboi="tungi"]{
+  --oboi-rasm:url("oboi-tungi.svg");
+  --oboi-rang:#0B1512;
+  --oboi-matn:#E8F0EC;
+  --oboi-matn-xira:#9DB0A8;
+  --oboi-urgu:#F5B454;
+}
+
+html{background:var(--oboi-rang)}
+body{
+  background:var(--oboi-rasm) center / cover no-repeat fixed, var(--oboi-rang);
+}
+
+/* Tungi fonda to'g'ridan-to'g'ri fon ustida turgan matnlar o'qilishi uchun.
+   Faqat tungi rejimda ishlaydi — kunduzgi rejimda loyihaning asl ranglari qoladi. */
+@media (prefers-color-scheme:dark){
+  :root:not([data-oboi="kunduzgi"]) :is(.content>footer,.public-nav .brand,.public-links,.section-intro :is(h1,h2),.page-intro :is(h1,h2,h3)){color:var(--oboi-matn)}
+  :root:not([data-oboi="kunduzgi"]) :is(.content>footer span,.public-nav .brand small,.section-intro p,.feature-grid>p,.page-intro p){color:var(--oboi-matn-xira)}
+  :root:not([data-oboi="kunduzgi"]) :is(.section-intro,.page-intro) .eyebrow{color:var(--oboi-urgu)}
+}
+:root[data-oboi="tungi"] :is(.content>footer,.public-nav .brand,.public-links,.section-intro :is(h1,h2),.page-intro :is(h1,h2,h3)){color:var(--oboi-matn)}
+:root[data-oboi="tungi"] :is(.content>footer span,.public-nav .brand small,.section-intro p,.feature-grid>p,.page-intro p){color:var(--oboi-matn-xira)}
+:root[data-oboi="tungi"] :is(.section-intro,.page-intro) .eyebrow{color:var(--oboi-urgu)}
+
+/* Kirish sahifasi o'z foniga ega emas: tungi rejimda u kunduzgidagidek och panelda turadi */
+@media (prefers-color-scheme:dark){
+  :root:not([data-oboi="kunduzgi"]) .login-layout{background:rgba(244,247,245,.97);border-radius:24px;padding:28px clamp(16px,3vw,40px);margin:24px auto;max-width:1200px;box-shadow:0 20px 50px rgba(0,0,0,.35)}
+}
+:root[data-oboi="tungi"] .login-layout{background:rgba(244,247,245,.97);border-radius:24px;padding:28px clamp(16px,3vw,40px);margin:24px auto;max-width:1200px;box-shadow:0 20px 50px rgba(0,0,0,.35)}
+
+/* Kunduzgi / tungi almashtirgich tugmasi */
+.oboi-toggle{
+  position:fixed;
+  right:calc(16px + env(safe-area-inset-right,0px));
+  bottom:calc(16px + env(safe-area-inset-bottom,0px));
+  z-index:60;
+  width:44px;height:44px;
+  display:grid;place-items:center;
+  border-radius:999px;
+  border:1px solid rgba(14,107,82,.25);
+  background:rgba(255,255,255,.88);
+  color:#0E6B52;
+  box-shadow:0 6px 18px rgba(11,21,18,.18);
+  backdrop-filter:blur(8px);
+  cursor:pointer;
+}
+.oboi-toggle:hover{transform:translateY(-1px)}
+.oboi-toggle:focus-visible{outline:3px solid #F2A33A;outline-offset:3px}
+.oboi-toggle svg{width:20px;height:20px}
+@media (prefers-reduced-motion:reduce){.oboi-toggle{transition:none}}
+@media print{.oboi-toggle{display:none}body{background:#fff}}
