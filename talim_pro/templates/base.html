@@ -22,21 +22,39 @@
   {% if user.is_authenticated %}
   <aside class="sidebar">
     <a class="brand" href="{% url 'dashboard' %}"><span class="brand-mark">T</span><span>TA'LIM <b>PRO</b><small>{% trans "O‘quv markazi" %}</small></span></a>
-    <div class="nav-label">{% trans "ASOSIY" %}</div>
-    <nav>
-      <a href="{% url 'dashboard' %}">◫ <span>{% trans "Bosh sahifa" %}</span></a>
-      {% if user.role == "student" %}<a href="{% url 'dashboard' %}#davomat">✓ <span>{% trans "Davomatim" %}</span></a>{% endif %}
-      {% if user.role == 'teacher' or user.role == 'admin' or user.is_superuser %}<a href="{% url 'grade_lesson' %}">✎ <span>{% trans "Baho qo‘yish" %}</span></a>{% endif %}
-      <a href="{% url 'ranking' %}">↗ <span>{% trans "Reyting" %}</span></a>
-      <a href="{% url 'schedule' %}">▦ <span>{% trans "Dars jadvali" %}</span></a>
-      {% if user.role == 'admin' or user.is_superuser %}<a href="{% url 'group_management' %}"{% if request.resolver_match.url_name == 'group_management' or request.resolver_match.url_name == 'group_detail' %} class="active" aria-current="page"{% endif %}>▦ <span>{% trans "Guruhlar" %}</span></a><a href="{% url 'teacher_management' %}"{% if request.resolver_match.url_name == 'teacher_management' %} class="active" aria-current="page"{% endif %}>👨‍🏫 <span>{% trans "O‘qituvchilar" %}</span></a><a href="{% url 'lesson_create' %}"{% if request.resolver_match.url_name == 'lesson_create' %} class="active" aria-current="page"{% endif %}>+ <span>{% trans "Dars qo‘shish" %}</span></a>{% endif %}
-      <a href="{% url 'homework_list' %}">✎ <span>{% trans "Uyga vazifa" %}</span></a>
-      {% if user.role == 'admin' or user.is_superuser or user.role == 'student' or user.role == 'parent' %}<a href="{% url 'payments_overview' %}">₿ <span>{% trans "To‘lovlar" %}</span></a>{% endif %}
-      {% if user.role == 'admin' or user.is_superuser %}<a href="{% url 'applications_list' %}">✉ <span>{% trans "Arizalar" %}</span></a>{% endif %}
-      {% if user.role == 'admin' or user.is_superuser or user.role == 'teacher' %}<a href="{% url 'reports_home' %}">▤ <span>{% trans "Hisobotlar" %}</span></a>{% endif %}
-      <a href="{% url 'notification_list' %}">🔔 <span>{% trans "Bildirishnomalar" %}</span>{% if unread_notifications %} <b class="pill pill-red">{{ unread_notifications }}</b>{% endif %}</a>
-      <a href="{% url 'settings_panel' %}"{% if request.resolver_match.url_name == 'settings_panel' %} class="active" aria-current="page"{% endif %}>⚙ <span>{% trans "Sozlamalar" %}</span></a>
-      {% if user.is_staff or user.is_superuser %}<a href="{% url 'admin:index' %}">▦ <span>{% trans "Boshqaruv paneli" %}</span></a>{% endif %}
+    <nav aria-label="{% trans 'Asosiy menyu' %}">
+      <div class="nav-group" role="group" aria-labelledby="nav-main">
+        <div class="nav-label" id="nav-main">{% trans "ASOSIY" %}</div>
+        <a href="{% url 'dashboard' %}">◫ <span>{% trans "Bosh sahifa" %}</span></a>
+        {% if user.role == "student" %}<a href="{% url 'dashboard' %}#davomat">✓ <span>{% trans "Davomatim" %}</span></a>{% endif %}
+        <a href="{% url 'schedule' %}">▦ <span>{% trans "Dars jadvali" %}</span></a>
+        <a href="{% url 'ranking' %}">↗ <span>{% trans "Reyting" %}</span></a>
+      </div>
+      <div class="nav-group" role="group" aria-labelledby="nav-learning">
+        <div class="nav-label" id="nav-learning">{% trans "O‘QUV JARAYONI" %}</div>
+        {% if user.role == 'teacher' or user.role == 'admin' or user.is_superuser %}<a href="{% url 'grade_lesson' %}">✎ <span>{% trans "Baho qo‘yish" %}</span></a>{% endif %}
+        <a href="{% url 'homework_list' %}">✎ <span>{% trans "Uyga vazifa" %}</span></a>
+      </div>
+      {% if user.role == 'admin' or user.is_superuser %}
+      <div class="nav-group" role="group" aria-labelledby="nav-manage">
+        <div class="nav-label" id="nav-manage">{% trans "BOSHQARUV" %}</div>
+        <a href="{% url 'group_management' %}"{% if request.resolver_match.url_name == 'group_management' or request.resolver_match.url_name == 'group_detail' %} class="active" aria-current="page"{% endif %}>▦ <span>{% trans "Guruhlar" %}</span></a>
+        <a href="{% url 'teacher_management' %}"{% if request.resolver_match.url_name == 'teacher_management' %} class="active" aria-current="page"{% endif %}>👨‍🏫 <span>{% trans "O‘qituvchilar" %}</span></a>
+        <a href="{% url 'lesson_create' %}"{% if request.resolver_match.url_name == 'lesson_create' %} class="active" aria-current="page"{% endif %}>+ <span>{% trans "Dars qo‘shish" %}</span></a>
+        <a href="{% url 'applications_list' %}">✉ <span>{% trans "Arizalar" %}</span></a>
+      </div>
+      {% endif %}
+      <div class="nav-group" role="group" aria-labelledby="nav-finance">
+        <div class="nav-label" id="nav-finance">{% trans "HISOBOT VA TO‘LOV" %}</div>
+        {% if user.role == 'admin' or user.is_superuser or user.role == 'student' or user.role == 'parent' %}<a href="{% url 'payments_overview' %}">₿ <span>{% trans "To‘lovlar" %}</span></a>{% endif %}
+        {% if user.role == 'admin' or user.is_superuser or user.role == 'teacher' %}<a href="{% url 'reports_home' %}">▤ <span>{% trans "Hisobotlar" %}</span></a>{% endif %}
+      </div>
+      <div class="nav-group" role="group" aria-labelledby="nav-account">
+        <div class="nav-label" id="nav-account">{% trans "AKKAUNT" %}</div>
+        <a href="{% url 'notification_list' %}">🔔 <span>{% trans "Bildirishnomalar" %}</span>{% if unread_notifications %} <b class="pill pill-red">{{ unread_notifications }}</b>{% endif %}</a>
+        <a href="{% url 'settings_panel' %}"{% if request.resolver_match.url_name == 'settings_panel' %} class="active" aria-current="page"{% endif %}>⚙ <span>{% trans "Sozlamalar" %}</span></a>
+        {% if user.is_staff or user.is_superuser %}<a href="{% url 'admin:index' %}">▦ <span>{% trans "Boshqaruv paneli" %}</span></a>{% endif %}
+      </div>
     </nav>
     {% if user.role == "student" and user.must_change_credentials %}<a class="credential-alert" href="{% url 'first_login_credentials' %}"><span class="credential-alert-icon">!</span><span><b>{% trans "Login va parolni almashtiring" %}</b><small>{% trans "Akkauntingizni himoyalang" %}</small></span> ↗</a>{% endif %}
     <div class="sidebar-bottom"><div class="avatar">{{ user.first_name|first|default:user.username|first|upper }}</div><div class="user-meta"><b>{{ user.get_full_name|default:user.username }}</b><small>{{ user.get_role_display|default:"Administrator" }}</small></div><form method="post" action="{% url 'logout' %}" data-confirm="{% trans 'Tizimdan chiqmoqchimisiz?' %}">{% csrf_token %}<button class="icon-button" type="submit" aria-label="{% trans 'Tizimdan chiqish' %}" title="{% trans 'Tizimdan chiqish' %}">↗</button></form></div>
