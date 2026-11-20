@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}{{ group.name }} — TA’LIM PRO{% endblock %}
+{% block page_heading %}Kurs xonasi{% endblock %}
+{% block content %}
+<div class="page-intro">
+  <div><span class="eyebrow">KURS XONASI</span><h2>{{ group.name }}</h2><p class="muted">{{ group.subject }}</p></div>
+  <div class="top-actions">
+    {% if role == 'teacher' %}<a class="button button-outline" href="{% url 'homework_create' %}?group={{ group.pk }}">Yangi vazifa</a>
+    <a class="button button-outline" href="{% url 'add_student_to_group' group.pk %}">O‘quvchi qo‘shish</a>
+    <a class="button button-primary" href="{% url 'grade_lesson' %}">Baho qo‘yish</a>{% endif %}
+    {% if role != 'teacher' %}<a class="button button-primary" href="{% url 'homework_list' %}">Uyga vazifalar</a>{% endif %}
+  </div>
+</div>
+
+{% if children %}
+<div class="stats-grid">
+  {% for child in children %}
+  <div class="stat-card"><span>{{ child.user.get_full_name|default:child.user.username }}</span>
+    <strong>{% if child.avg %}{{ child.avg|floatformat:1 }}{% else %}—{% endif %}<small>/10</small></strong>
+    <small class="stat-foot">O‘rtacha baho · Kelmagan darslar: {{ child.absent_total }}</small></div>
+  {% endfor %}
+  {% if student_total %}<div class="stat-card"><span>Sinfdoshlar</span><strong>{{ student_total }}</strong><small class="stat-foot">Xonadagi o‘quvchilar soni</small></div>{% endif %}
+</div>
+{% endif %}
+
+<div class="panel"><div class="panel-heading"><div><h3>O‘qituvchilar</h3></div></div>
+  <p>{% for t in teachers %}<span class="pill pill-blue">{{ t.get_full_name|default:t.username }}</span> {% empty %}<span class="muted">O‘qituvchi biriktirilmagan.</span>{% endfor %}</p>
+</div>
+
+<div class="panel"><div class="panel-heading"><div><h3>Yaqin darslar</h3></div><a class="text-link" href="{% url 'schedule' %}">To‘liq jadval</a></div>
+<div class="table-wrap"><table><thead><tr><th>Dars</th><th>Sana</th><th>Vaqt</th><th>Xona</th><th>O‘qituvchi</th>{% if role == 'teacher' %}<th>Amal</th>{% endif %}</tr></thead><tbody>
+{% for lesson in upcoming_lessons %}<tr><td><b>{{ lesson.title }}</b></td><td>{{ lesson.starts_at|date:"d.m.Y" }}</td><td>{{ lesson.starts_at|date:"H:i" }}</td><td>{{ lesson.room|default:"—" }}</td><td>{{ lesson.teacher.get_full_name|default:lesson.teacher.username }}</td>
+{% if role == 'teacher' %}<td><a class="text-link" href="{% url 'lesson_journal' lesson.pk %}">Jurnal</a></td>{% endif %}</tr>
+{% empty %}<tr><td colspan="6" class="empty">Yaqin darslar yo‘q.</td></tr>{% endfor %}</tbody></table></div></div>
+
+<div class="panel"><div class="panel-heading"><div><h3>Faol uyga vazifalar</h3></div></div>
+<div class="table-wrap"><table><thead><tr><th>Vazifa</th><th>Muddat</th></tr></thead><tbody>
+{% for hw in homeworks %}<tr><td><a class="student-link" href="{% url 'homework_detail' hw.pk %}">{{ hw.title }}</a></td><td>{{ hw.due_at|date:"d.m.Y H:i" }}</td></tr>
+{% empty %}<tr><td colspan="2" class="empty">Faol vazifa yo‘q.</td></tr>{% endfor %}</tbody></table></div></div>
+
+{% if role == 'teacher' %}
+<div class="panel"><div class="panel-heading"><div><h3>O‘quvchilar</h3></div></div>
+<div class="table-wrap"><table><thead><tr><th>O‘quvchi</th><th>O‘rtacha baho</th></tr></thead><tbody>
+{% for st in students %}<tr><td><a class="student-link" href="{% url 'student_detail' st.pk %}">{{ st.user.get_full_name|default:st.user.username }}</a></td><td>{% if st.average_score %}{{ st.average_score|floatformat:1 }}{% else %}—{% endif %}</td></tr>
+{% empty %}<tr><td colspan="2" class="empty">Xonada o‘quvchi yo‘q.</td></tr>{% endfor %}</tbody></table></div></div>
+{% endif %}
+{% endblock %}

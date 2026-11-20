@@ -43,7 +43,7 @@ class GroupDialogTests(TestCase):
     @override_settings(MAX_STUDY_GROUPS=1)
     def test_limit_disables_button_and_rejects_post(self):
         response = self.client.get(reverse("group_management"))
-        self.assertContains(response, "Guruhlar soni chegaraga yetgan")
+        self.assertContains(response, "Kurs xonalar soni chegaraga yetgan")
         response = self.client.post(reverse("group_management"), {"name": "B2", "subject": "X", "monthly_fee": "0"})
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Ko‘pi bilan 1 ta guruh")

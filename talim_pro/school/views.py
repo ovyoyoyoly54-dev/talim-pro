@@ -912,3 +912,44 @@ def lesson_journal(request, lesson_id):
     return render(request, "school/lesson_journal.html", {
         "lesson": lesson, "rows": rows, "statuses": Attendance.Status.choices,
     })
+
+
+@login_required
+def room_detail(request, group_id):
+    """Kurs xonasi: o‘qituvchi, o‘quvchi va ota-ona faqat o‘z xonasini ko‘radi."""
+    user = request.user
+    if is_admin(user):
+        return redirect("group_detail", group_id=group_id)
+    group = get_object_or_404(StudyGroup.objects.prefetch_related("teachers"), pk=group_id)
+    context = {"group": group, "teachers": group.teachers.all(), "role": user.role}
+    now = timezone.now()
+    if user.role == User.Role.TEACHER:
+        if not group.teachers.filter(pk=user.pk).exists():
+            raise PermissionDenied
+        context["students"] = group.students.filter(
+            user__role=User.Role.STUDENT, user__is_active=True,
+        ).select_related("user").annotate(average_score=Avg("grades__score")).order_by("user__last_name", "user__first_name")
+        lessons = group.lessons.filter(teacher=user)
+    elif user.role == User.Role.STUDENT:
+        profile = StudentProfile.objects.filter(user=user, group=group).first()
+        if profile is None:
+            raise PermissionDenied
+        context["children"] = [profile]
+        context["student_total"] = group.students.filter(user__role=User.Role.STUDENT, user__is_active=True).count()
+        lessons = group.lessons.all()
+    elif user.role == User.Role.PARENT:
+        children = list(StudentProfile.objects.filter(parent=user, group=group).select_related("user").annotate(
+            average_score=Avg("grades__score")))
+        if not children:
+            raise PermissionDenied
+        context["children"] = children
+        lessons = group.lessons.all()
+    else:
+        raise PermissionDenied
+    if "children" in context:
+        for child in context["children"]:
+            child.absent_total = child.attendance.filter(status=Attendance.Status.ABSENT).count()
+            child.avg = child.grades.aggregate(value=Avg("score"))["value"]
+    context["upcoming_lessons"] = lessons.filter(starts_at__gte=now).select_related("teacher").order_by("starts_at")[:6]
+    context["homeworks"] = group.homeworks.filter(due_at__gte=now).order_by("due_at")[:5]
+    return render(request, "school/room_detail.html", context)

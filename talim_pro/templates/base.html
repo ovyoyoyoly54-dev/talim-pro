@@ -23,37 +23,55 @@
   <aside class="sidebar">
     <a class="brand" href="{% url 'dashboard' %}"><span class="brand-mark">T</span><span>TA'LIM <b>PRO</b><small>{% trans "O‘quv markazi" %}</small></span></a>
     <nav aria-label="{% trans 'Asosiy menyu' %}">
-      <div class="nav-group" role="group" aria-labelledby="nav-main">
-        <div class="nav-label" id="nav-main">{% trans "ASOSIY" %}</div>
-        <a href="{% url 'dashboard' %}">◫ <span>{% trans "Bosh sahifa" %}</span></a>
-        {% if user.role == "student" %}<a href="{% url 'dashboard' %}#davomat">✓ <span>{% trans "Davomatim" %}</span></a>{% endif %}
-        <a href="{% url 'schedule' %}">▦ <span>{% trans "Dars jadvali" %}</span></a>
-        <a href="{% url 'ranking' %}">↗ <span>{% trans "Reyting" %}</span></a>
+      <div class="nav-group{% if nav_open == 'main' %} is-open{% endif %}">
+        <button type="button" class="nav-label nav-toggle" id="nav-main" aria-expanded="{% if nav_open == 'main' %}true{% else %}false{% endif %}" aria-controls="nav-main-items">{% trans "ASOSIY" %}<span class="nav-chevron" aria-hidden="true">▾</span></button>
+        <div class="nav-items" id="nav-main-items" role="group" aria-labelledby="nav-main">
+          <a href="{% url 'dashboard' %}">◫ <span>{% trans "Bosh sahifa" %}</span></a>
+          {% if user.role == "student" %}<a href="{% url 'dashboard' %}#davomat">✓ <span>{% trans "Davomatim" %}</span></a>{% endif %}
+          <a href="{% url 'schedule' %}">▦ <span>{% trans "Dars jadvali" %}</span></a>
+        </div>
       </div>
-      <div class="nav-group" role="group" aria-labelledby="nav-learning">
-        <div class="nav-label" id="nav-learning">{% trans "O‘QUV JARAYONI" %}</div>
-        {% if user.role == 'teacher' or user.role == 'admin' or user.is_superuser %}<a href="{% url 'grade_lesson' %}">✎ <span>{% trans "Baho qo‘yish" %}</span></a>{% endif %}
-        <a href="{% url 'homework_list' %}">✎ <span>{% trans "Uyga vazifa" %}</span></a>
+      <div class="nav-group{% if nav_open == 'rooms' %} is-open{% endif %}">
+        <button type="button" class="nav-label nav-toggle" id="nav-rooms" aria-expanded="{% if nav_open == 'rooms' %}true{% else %}false{% endif %}" aria-controls="nav-rooms-items">{% if user.role == 'admin' or user.is_superuser %}{% trans "KURS XONALAR" %}{% elif user.role == 'teacher' %}{% trans "MENING XONALARIM" %}{% elif user.role == 'student' %}{% trans "MENING XONAM" %}{% else %}{% trans "FARZANDIM XONASI" %}{% endif %}<span class="nav-chevron" aria-hidden="true">▾</span></button>
+        <div class="nav-items" id="nav-rooms-items" role="group" aria-labelledby="nav-rooms">
+          {% for room in nav_rooms %}<a href="{% if user.role == 'admin' or user.is_superuser %}{% url 'group_detail' room.pk %}{% else %}{% url 'room_detail' room.pk %}{% endif %}">▣ <span>{{ room.name }}</span></a>
+          {% empty %}<p class="nav-empty">{% if user.role == 'admin' or user.is_superuser %}{% trans "Hali kurs xona yo‘q" %}{% else %}{% trans "Xona biriktirilmagan" %}{% endif %}</p>{% endfor %}
+          {% if user.role == 'admin' or user.is_superuser %}<a href="{% url 'group_management' %}?yangi=1" class="nav-add">＋ <span>{% trans "Kurs xona qo‘shish" %}</span></a>
+          <a href="{% url 'group_management' %}"{% if request.resolver_match.url_name == 'group_management' %} class="active" aria-current="page"{% endif %}>▦ <span>{% trans "Barcha kurs xonalar" %}</span></a>{% endif %}
+        </div>
+      </div>
+      <div class="nav-group{% if nav_open == 'learning' %} is-open{% endif %}">
+        <button type="button" class="nav-label nav-toggle" id="nav-learning" aria-expanded="{% if nav_open == 'learning' %}true{% else %}false{% endif %}" aria-controls="nav-learning-items">{% trans "O‘QUV JARAYONI" %}<span class="nav-chevron" aria-hidden="true">▾</span></button>
+        <div class="nav-items" id="nav-learning-items" role="group" aria-labelledby="nav-learning">
+          {% if user.role == 'teacher' or user.role == 'admin' or user.is_superuser %}<a href="{% url 'grade_lesson' %}">✎ <span>{% trans "Baho qo‘yish" %}</span></a>{% endif %}
+          <a href="{% url 'homework_list' %}">✎ <span>{% trans "Uyga vazifa" %}</span></a>
+          <a href="{% url 'ranking' %}">↗ <span>{% trans "Reyting" %}</span></a>
+        </div>
       </div>
       {% if user.role == 'admin' or user.is_superuser %}
-      <div class="nav-group" role="group" aria-labelledby="nav-manage">
-        <div class="nav-label" id="nav-manage">{% trans "BOSHQARUV" %}</div>
-        <a href="{% url 'group_management' %}"{% if request.resolver_match.url_name == 'group_management' or request.resolver_match.url_name == 'group_detail' %} class="active" aria-current="page"{% endif %}>▦ <span>{% trans "Guruhlar" %}</span></a>
-        <a href="{% url 'teacher_management' %}"{% if request.resolver_match.url_name == 'teacher_management' %} class="active" aria-current="page"{% endif %}>👨‍🏫 <span>{% trans "O‘qituvchilar" %}</span></a>
-        <a href="{% url 'lesson_create' %}"{% if request.resolver_match.url_name == 'lesson_create' %} class="active" aria-current="page"{% endif %}>+ <span>{% trans "Dars qo‘shish" %}</span></a>
-        <a href="{% url 'applications_list' %}">✉ <span>{% trans "Arizalar" %}</span></a>
+      <div class="nav-group{% if nav_open == 'manage' %} is-open{% endif %}">
+        <button type="button" class="nav-label nav-toggle" id="nav-manage" aria-expanded="{% if nav_open == 'manage' %}true{% else %}false{% endif %}" aria-controls="nav-manage-items">{% trans "BOSHQARUV" %}<span class="nav-chevron" aria-hidden="true">▾</span></button>
+        <div class="nav-items" id="nav-manage-items" role="group" aria-labelledby="nav-manage">
+          <a href="{% url 'teacher_management' %}"{% if request.resolver_match.url_name == 'teacher_management' %} class="active" aria-current="page"{% endif %}>👨‍🏫 <span>{% trans "O‘qituvchilar" %}</span></a>
+          <a href="{% url 'lesson_create' %}"{% if request.resolver_match.url_name == 'lesson_create' %} class="active" aria-current="page"{% endif %}>+ <span>{% trans "Dars qo‘shish" %}</span></a>
+          <a href="{% url 'applications_list' %}">✉ <span>{% trans "Arizalar" %}</span></a>
+        </div>
       </div>
       {% endif %}
-      <div class="nav-group" role="group" aria-labelledby="nav-finance">
-        <div class="nav-label" id="nav-finance">{% trans "HISOBOT VA TO‘LOV" %}</div>
-        {% if user.role == 'admin' or user.is_superuser or user.role == 'student' or user.role == 'parent' %}<a href="{% url 'payments_overview' %}">₿ <span>{% trans "To‘lovlar" %}</span></a>{% endif %}
-        {% if user.role == 'admin' or user.is_superuser or user.role == 'teacher' %}<a href="{% url 'reports_home' %}">▤ <span>{% trans "Hisobotlar" %}</span></a>{% endif %}
+      <div class="nav-group{% if nav_open == 'finance' %} is-open{% endif %}">
+        <button type="button" class="nav-label nav-toggle" id="nav-finance" aria-expanded="{% if nav_open == 'finance' %}true{% else %}false{% endif %}" aria-controls="nav-finance-items">{% trans "HISOBOT VA TO‘LOV" %}<span class="nav-chevron" aria-hidden="true">▾</span></button>
+        <div class="nav-items" id="nav-finance-items" role="group" aria-labelledby="nav-finance">
+          {% if user.role == 'admin' or user.is_superuser or user.role == 'student' or user.role == 'parent' %}<a href="{% url 'payments_overview' %}">₿ <span>{% trans "To‘lovlar" %}</span></a>{% endif %}
+          {% if user.role == 'admin' or user.is_superuser or user.role == 'teacher' %}<a href="{% url 'reports_home' %}">▤ <span>{% trans "Hisobotlar" %}</span></a>{% endif %}
+        </div>
       </div>
-      <div class="nav-group" role="group" aria-labelledby="nav-account">
-        <div class="nav-label" id="nav-account">{% trans "AKKAUNT" %}</div>
-        <a href="{% url 'notification_list' %}">🔔 <span>{% trans "Bildirishnomalar" %}</span>{% if unread_notifications %} <b class="pill pill-red">{{ unread_notifications }}</b>{% endif %}</a>
-        <a href="{% url 'settings_panel' %}"{% if request.resolver_match.url_name == 'settings_panel' %} class="active" aria-current="page"{% endif %}>⚙ <span>{% trans "Sozlamalar" %}</span></a>
-        {% if user.is_staff or user.is_superuser %}<a href="{% url 'admin:index' %}">▦ <span>{% trans "Boshqaruv paneli" %}</span></a>{% endif %}
+      <div class="nav-group{% if nav_open == 'account' %} is-open{% endif %}">
+        <button type="button" class="nav-label nav-toggle" id="nav-account" aria-expanded="{% if nav_open == 'account' %}true{% else %}false{% endif %}" aria-controls="nav-account-items">{% trans "AKKAUNT" %}<span class="nav-chevron" aria-hidden="true">▾</span></button>
+        <div class="nav-items" id="nav-account-items" role="group" aria-labelledby="nav-account">
+          <a href="{% url 'notification_list' %}">🔔 <span>{% trans "Bildirishnomalar" %}</span>{% if unread_notifications %} <b class="pill pill-red">{{ unread_notifications }}</b>{% endif %}</a>
+          <a href="{% url 'settings_panel' %}"{% if request.resolver_match.url_name == 'settings_panel' %} class="active" aria-current="page"{% endif %}>⚙ <span>{% trans "Sozlamalar" %}</span></a>
+          {% if user.is_staff or user.is_superuser %}<a href="{% url 'admin:index' %}">▦ <span>{% trans "Boshqaruv paneli" %}</span></a>{% endif %}
+        </div>
       </div>
     </nav>
     {% if user.role == "student" and user.must_change_credentials %}<a class="credential-alert" href="{% url 'first_login_credentials' %}"><span class="credential-alert-icon">!</span><span><b>{% trans "Login va parolni almashtiring" %}</b><small>{% trans "Akkauntingizni himoyalang" %}</small></span> ↗</a>{% endif %}

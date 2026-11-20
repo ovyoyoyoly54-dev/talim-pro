@@ -626,7 +626,8 @@ class PlatformRulesTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "B1")
 
-    def test_group_limit_is_five(self):
+    @override_settings(MAX_STUDY_GROUPS=5)
+    def test_group_limit_can_be_configured(self):
         for n in range(2, 6):
             StudyGroup.objects.create(name=f"G{n}", subject="Matematika")
         with self.assertRaises(ValidationError):
