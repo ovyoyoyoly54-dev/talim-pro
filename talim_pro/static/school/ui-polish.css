@@ -382,3 +382,18 @@ dialog.app-dialog::backdrop{background:rgba(12,22,42,.58);backdrop-filter:blur(4
   .sidebar .nav-group{flex-direction:row;gap:4px}
   .sidebar .nav-group .nav-label{display:none}
 }
+
+/* Sidebar: yengil shisha (blur) effekti */
+.sidebar{
+  background:linear-gradient(180deg,rgba(20,42,71,.88) 0%,rgba(16,35,61,.9) 58%,rgba(13,29,51,.92) 100%);
+  -webkit-backdrop-filter:blur(14px) saturate(140%);
+  backdrop-filter:blur(14px) saturate(140%);
+}
+.sidebar nav a:hover,.sidebar nav a.active{
+  -webkit-backdrop-filter:blur(6px);
+  backdrop-filter:blur(6px);
+}
+.sidebar .nav-label{color:#8196b3}
+@media (max-width:768px){
+  .sidebar{background:rgba(16,35,61,.92)}
+}
