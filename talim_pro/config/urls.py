@@ -64,6 +64,7 @@ urlpatterns = [
     path("birinchi-kirish/", views.first_login_credentials, name="first_login_credentials"),
     path("guruhlar/", views.group_management, name="group_management"),
     path("guruh/<int:group_id>/", views.group_detail, name="group_detail"),
+    path("kurs-xona/<int:group_id>/", views.room_detail, name="room_detail"),
     path("oqituvchilar/", views.teacher_management, name="teacher_management"),
     path("oqituvchilar/<int:teacher_id>/guruhga-biriktirish/", views.teacher_assign_group, name="teacher_assign_group"),
     path("sozlamalar/", views.settings_panel, name="settings_panel"),

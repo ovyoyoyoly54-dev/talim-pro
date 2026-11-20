@@ -1,10 +1,10 @@
 {% extends "base.html" %}
-{% block title %}Guruhlarni boshqarish — TA’LIM PRO{% endblock %}
-{% block page_heading %}Guruhlarni boshqarish{% endblock %}
+{% block title %}Kurs xonalarni boshqarish — TA’LIM PRO{% endblock %}
+{% block page_heading %}Kurs xonalarni boshqarish{% endblock %}
 {% block content %}
 <section class="groups-hero">
-  <div><span class="groups-kicker">ADMINISTRATOR PANELI</span><h2>Guruhlar markazi</h2><p>Barcha o‘quv guruhlari, o‘qituvchilar va darslarni bitta joydan boshqaring.</p></div>
-  <button class="button button-primary" type="button" id="open-group-dialog" data-dialog-open="group-dialog"{% if limit_reached %} disabled title="Guruhlar soni chegaraga yetgan"{% endif %}>＋ Yangi guruh</button>
+  <div><span class="groups-kicker">ADMINISTRATOR PANELI</span><h2>Kurs xonalar markazi</h2><p>Barcha o‘quv guruhlari, o‘qituvchilar va darslarni bitta joydan boshqaring.</p></div>
+  <button class="button button-primary" type="button" id="open-group-dialog" data-dialog-open="group-dialog"{% if limit_reached %} disabled title="Kurs xonalar soni chegaraga yetgan"{% endif %}>＋ Kurs xona qo‘shish</button>
 </section>
 <div class="group-overview-stats">
   <div class="group-overview-stat"><span>Jami guruhlar</span><strong>{{ total_groups }}</strong><small>Faol o‘quv guruhlari</small></div>
@@ -29,13 +29,13 @@
 </section>
 <dialog class="app-dialog" id="group-dialog" aria-labelledby="group-dialog-title"{% if open_group_dialog %} data-open-on-load{% endif %}>
   <div class="app-dialog-body">
-    <span class="eyebrow">YANGI GURUH</span>
-    <h3 id="group-dialog-title">Guruh yaratish</h3>
-    <p class="muted">Guruh yaratilgach, o‘qituvchi va o‘quvchilarni biriktirish sahifasi ochiladi.{% if max_groups %} Ko‘pi bilan {{ max_groups }} ta guruh yaratish mumkin.{% endif %}</p>
+    <span class="eyebrow">YANGI KURS XONA</span>
+    <h3 id="group-dialog-title">Kurs xona yaratish</h3>
+    <p class="muted">Kurs xona yaratilgach, o‘qituvchi va o‘quvchilarni biriktirish sahifasi ochiladi.{% if max_groups %} Ko‘pi bilan {{ max_groups }} ta kurs xona yaratish mumkin.{% endif %}</p>
     <form method="post" action="{% url 'group_management' %}" class="stack-form" novalidate>{% csrf_token %}
       {% for error in group_form.non_field_errors %}<div class="message error" role="alert">{{ error }}</div>{% endfor %}
       {% for field in group_form %}<label for="{{ field.id_for_label }}">{{ field.label }}{{ field }}{% for error in field.errors %}<span class="field-error">{{ error }}</span>{% endfor %}</label>{% endfor %}
-      <div class="app-dialog-actions"><button class="button button-outline" type="button" id="close-group-dialog" data-dialog-close>Bekor qilish</button><button class="button button-primary" type="submit">Guruhni yaratish</button></div>
+      <div class="app-dialog-actions"><button class="button button-outline" type="button" id="close-group-dialog" data-dialog-close>Bekor qilish</button><button class="button button-primary" type="submit">Kurs xonani yaratish</button></div>
     </form>
   </div>
 </dialog>

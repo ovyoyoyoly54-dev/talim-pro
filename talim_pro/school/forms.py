@@ -429,7 +429,7 @@ class StudyGroupForm(forms.ModelForm):
     class Meta:
         model = StudyGroup
         fields = ("name", "subject", "monthly_fee")
-        labels = {"name": "Guruh nomi", "subject": "Fan", "monthly_fee": "Oylik to‘lov (so‘m)"}
+        labels = {"name": "Kurs xona nomi", "subject": "Fan", "monthly_fee": "Oylik to‘lov (so‘m)"}
         widgets = {
             "name": forms.TextInput(attrs={"class": "input", "placeholder": "Masalan: IELTS A1", "autocomplete": "off"}),
             "subject": forms.TextInput(attrs={"class": "input", "placeholder": "Masalan: Ingliz tili", "autocomplete": "off"}),

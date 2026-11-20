@@ -131,7 +131,7 @@ AUTH_RATE_LIMIT_WINDOW = int(os.getenv("AUTH_RATE_LIMIT_WINDOW", "900"))
 # olish uchun ishonchli proksilar soni. 0 bo'lsa faqat REMOTE_ADDR ishlatiladi.
 TRUSTED_PROXY_COUNT = int(os.getenv("TRUSTED_PROXY_COUNT", "0"))
 # Ko'pi bilan nechta o'quv guruhi yaratish mumkin (0 — cheklovsiz).
-MAX_STUDY_GROUPS = int(os.getenv("MAX_STUDY_GROUPS", "5"))
+MAX_STUDY_GROUPS = int(os.getenv("MAX_STUDY_GROUPS", "0"))
 # Urinishlar hisoblagichi uchun kesh. Bir nechta gunicorn ishchisi orasida umumiy
 # bo'lishi uchun standart holatda ma'lumotlar bazasi keshi ishlatiladi
 # (jadval `manage.py createcachetable` bilan yaratiladi).

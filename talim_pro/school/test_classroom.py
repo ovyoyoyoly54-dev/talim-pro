@@ -92,3 +92,51 @@ class HomeworkGroupPickerTests(TestCase):
     def test_student_always_sees_homework_section(self):
         self.client.force_login(self.student)
         self.assertEqual(self.client.get(reverse("homework_list")).status_code, 200)
+
+
+class CourseRoomTests(TestCase):
+    def setUp(self):
+        self.group, self.teacher, self.admin, self.parent, self.student, self.profile = make_world()
+        self.other = StudyGroup.objects.create(name="B1", subject="Mat")
+        self.other_teacher = User.objects.create_user("t2", password="Pass12345!x", role=User.Role.TEACHER)
+        self.other.teachers.add(self.other_teacher)
+
+    def test_rooms_are_unlimited_by_default(self):
+        for i in range(8):
+            StudyGroup.objects.create(name=f"Xona {i}", subject="X")
+        self.assertEqual(StudyGroup.objects.count(), 10)
+
+    def test_room_page_access_by_role(self):
+        url = reverse("room_detail", args=[self.group.pk])
+        for user, code in ((self.teacher, 200), (self.student, 200), (self.parent, 200),
+                           (self.other_teacher, 403)):
+            self.client.force_login(user)
+            self.assertEqual(self.client.get(url).status_code, code, user.username)
+        self.client.force_login(self.student)
+        self.assertEqual(self.client.get(reverse("room_detail", args=[self.other.pk])).status_code, 403)
+        self.client.force_login(self.parent)
+        self.assertEqual(self.client.get(reverse("room_detail", args=[self.other.pk])).status_code, 403)
+        self.client.force_login(self.admin)
+        self.assertRedirects(self.client.get(url), reverse("group_detail", args=[self.group.pk]))
+
+    def test_sidebar_shows_only_own_rooms(self):
+        self.client.force_login(self.student)
+        page = self.client.get(reverse("dashboard"))
+        self.assertContains(page, "MENING XONAM")
+        self.assertContains(page, reverse("room_detail", args=[self.group.pk]))
+        self.assertNotContains(page, reverse("room_detail", args=[self.other.pk]))
+
+    def test_admin_sidebar_lists_every_room_and_add_link(self):
+        self.client.force_login(self.admin)
+        page = self.client.get(reverse("dashboard"))
+        self.assertContains(page, "KURS XONALAR")
+        self.assertContains(page, reverse("group_detail", args=[self.other.pk]))
+        self.assertContains(page, f'{reverse("group_management")}?yangi=1')
+        opened = self.client.get(f'{reverse("group_management")}?yangi=1')
+        self.assertContains(opened, "data-open-on-load")
+
+    def test_active_section_is_open_and_others_collapsed(self):
+        self.client.force_login(self.teacher)
+        page = self.client.get(reverse("homework_list"))
+        self.assertContains(page, 'id="nav-learning" aria-expanded="true"')
+        self.assertContains(page, 'id="nav-main" aria-expanded="false"')

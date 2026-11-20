@@ -46,6 +46,25 @@
     }
   }
 
+  function initNavSections() {
+    // Bo‘lim sarlavhasi bosilganda uning bandlari ochiladi/yopiladi.
+    document.querySelectorAll(".sidebar .nav-toggle").forEach((button) => {
+      button.addEventListener("click", () => {
+        const group = button.closest(".nav-group");
+        const open = group.classList.toggle("is-open");
+        button.setAttribute("aria-expanded", open ? "true" : "false");
+      });
+    });
+    // Joriy sahifa bo‘limi har doim ochiq bo‘lsin.
+    const current = document.querySelector(".sidebar .nav-items a.active");
+    if (current) {
+      const group = current.closest(".nav-group");
+      group.classList.add("is-open");
+      const button = group.querySelector(".nav-toggle");
+      if (button) button.setAttribute("aria-expanded", "true");
+    }
+  }
+
   function initAnimations() {
     document.querySelectorAll(".panel, .stat-card, .group-card").forEach((el, i) => {
       el.style.animationDelay = `${Math.min(i * 45, 220)}ms`;
@@ -210,6 +229,7 @@
     initHistoryBack();
     initScore();
     initNav();
+    initNavSections();
     initAnimations();
     initMessages();
     initDialogs();
